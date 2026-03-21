@@ -173,13 +173,13 @@ function next(){
   loadQuestion();
 }
 
-// ===== PROGRESS =====
+// ===== PROGRESS % TEST =====
 function updateProgress(){
   let percent = ((index+1)/questions.length)*100;
   document.getElementById("progress").style.width = percent + "%";
 }
 
-// ===== TIMER =====
+// ===== TIMER TEST=====
 let time = 60;
 let timerEl = document.getElementById("timer");
 
@@ -235,5 +235,183 @@ function filterResult(){
   renderChart(filtered);
 }
 
+// FUNCTION ADD-QUESTION
+// ===== HIỆN / ẨN FORM =====
+function changeType() {
+  const type = document.getElementById("type").value;
 
+  const boxes = [
+    "mcqBox","tfBox","fillBox","externalBox",
+    "multiBox","matchingBox","orderingBox",
+    "imageBox","audioBox","codeBox"
+  ];
+
+  boxes.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+
+  if (type === "mcq") show("mcqBox");
+  if (type === "multiple") show("multiBox");
+  if (type === "truefalse") show("tfBox");
+  if (type === "fill") show("fillBox");
+  if (type === "external") show("externalBox");
+
+  // ===== MATCHING =====
+  if (type === "matching") {
+    show("matchingBox");
+
+    const container = document.getElementById("pairsContainer");
+    container.innerHTML = "";
+
+    addPair();
+    addPair();
+  }
+
+  // ===== ORDERING =====
+  if (type === "ordering") {
+    show("orderingBox");
+
+    const container = document.getElementById("stepsContainer");
+    container.innerHTML = "";
+
+    addStep();
+    addStep();
+    addStep();
+  }
+
+  if (type === "image") show("imageBox");
+  if (type === "audio") show("audioBox");
+  if (type === "code") show("codeBox");
+}
+
+function show(id){
+  document.getElementById(id).style.display = "block";
+}
+
+// ===== MATCHING DYNAMIC =====
+
+function addPair(left = "", right = "") {
+  const container = document.getElementById("pairsContainer");
+
+  const index = container.children.length + 1;
+
+  const div = document.createElement("div");
+  div.style.display = "flex";
+  div.style.gap = "10px";
+  div.style.marginBottom = "8px";
+
+  div.innerHTML = `
+    <input type="text" placeholder="Vế trái ${index}" value="${left}">
+    <input type="text" placeholder="Vế phải ${index}" value="${right}">
+    <button class="btn btn-danger" onclick="this.parentElement.remove(); updatePairIndex()">❌</button>
+  `;
+
+  container.appendChild(div);
+}
+
+function updatePairIndex() {
+  const rows = document.querySelectorAll("#pairsContainer > div");
+
+  rows.forEach((row, i) => {
+    const inputs = row.querySelectorAll("input");
+    inputs[0].placeholder = "Vế trái " + (i + 1);
+    inputs[1].placeholder = "Vế phải " + (i + 1);
+  });
+}
+
+// ===== ORDERING DYNAMIC =====
+
+function addStep(value = "") {
+  const container = document.getElementById("stepsContainer");
+
+  const index = container.children.length + 1;
+
+  const div = document.createElement("div");
+  div.style.display = "flex";
+  div.style.gap = "10px";
+  div.style.marginBottom = "8px";
+
+  div.innerHTML = `
+    <input type="text" placeholder="Bước ${index}" value="${value}">
+    <button class="btn btn-danger" onclick="this.parentElement.remove()">❌</button>
+  `;
+
+  container.appendChild(div);
+}
+
+// ===== LƯU CÂU HỎI =====
+
+function addQuestion() {
+  const type = document.getElementById("type").value;
+  const question = document.getElementById("question").value.trim();
+
+  let data = {
+    type: type,
+    question: question
+  };
+
+  // ===== MULTIPLE =====
+  if (type === "multiple") {
+    data.options = [
+      document.getElementById("m1").value,
+      document.getElementById("m2").value,
+      document.getElementById("m3").value,
+      document.getElementById("m4").value
+    ].filter(v => v);
+  }
+
+  // ===== MATCHING (FIX CHUẨN) =====
+  if (type === "matching") {
+    const rows = document.querySelectorAll("#pairsContainer > div");
+
+    data.pairs = Array.from(rows).map(row => {
+      const inputs = row.querySelectorAll("input");
+
+      return {
+        left: inputs[0].value.trim(),
+        right: inputs[1].value.trim()
+      };
+    }).filter(p => p.left && p.right);
+  }
+
+  // ===== ORDERING =====
+  if (type === "ordering") {
+    const inputs = document.querySelectorAll("#stepsContainer input");
+
+    data.steps = Array.from(inputs)
+      .map(i => i.value.trim())
+      .filter(v => v);
+  }
+
+  // ===== IMAGE =====
+  if (type === "image") {
+    data.image = document.getElementById("imageUrl").value;
+  }
+
+  // ===== AUDIO =====
+  if (type === "audio") {
+    data.audio = document.getElementById("audioUrl").value;
+  }
+
+  // ===== CODE =====
+  if (type === "code") {
+    data.code = document.getElementById("codeContent").value;
+    data.correct = document.getElementById("codeAnswer").value;
+  }
+
+  // ===== EXTERNAL =====
+  if (type === "external") {
+    data.link = document.getElementById("externalLink").value;
+  }
+
+  console.log("DATA:", data);
+
+  let questions = JSON.parse(localStorage.getItem("questions")) || [];
+  questions.push(data);
+  localStorage.setItem("questions", JSON.stringify(questions));
+
+  alert("✅ Đã lưu câu hỏi!");
+}
+// END CODE FUNCTION ADD QUESTION
 

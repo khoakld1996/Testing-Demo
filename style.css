@@ -468,3 +468,178 @@ background: #555;
   transform: translateY(-3px);
 }
 /* DASHBOARD HEADER END CODE */
+
+/*CSS ADD QUESTION FORM*/
+/* ===== BUTTON ===== */
+.btn {
+  background: linear-gradient(135deg, #4f8cff, #6fc3ff);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.btn-danger {
+  background: #ff5c5c;
+}
+
+.btn-secondary {
+  background: #ccc;
+  color: #333;
+}
+
+/* ===== INPUT / SELECT ===== */
+input, textarea, select {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #4f8cff;
+  box-shadow: 0 0 5px rgba(79,140,255,0.3);
+}
+
+/* ===== BOX ===== */
+.box {
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+/* ===== LABEL ===== */
+h4 {
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+/*NỀn + BOX */
+body {
+  background: linear-gradient(135deg, #2ea6d6, #1e7fbf);
+}
+
+.box {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 25px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  color: white;
+}
+/*NỀN + TEXTAREA*/
+input, textarea, select {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.15);
+  color: white;
+  outline: none;
+  transition: 0.2s;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #fff;
+  background: rgba(255,255,255,0.25);
+}
+
+/* OPTION (dropdown list) */
+select {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+select option {
+  color: #000;  /* QUAN TRỌNG */
+  background: #fff;
+}
+/*BUTTON FIX*/
+button {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+
+/* nút chính */
+button {
+  background: linear-gradient(135deg, #00c6ff, #0072ff);
+  color: white;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+/* nút danger */
+.btn-danger {
+  background: #ff4d4d;
+}
+
+/* nút thêm */
+button:active {
+  transform: scale(0.97);
+}
+
+/*FILE INPUT*/
+input[type="file"] {
+  background: rgba(255,255,255,0.2);
+  padding: 10px;
+  border-radius: 10px;
+  color: white;
+}
+/*TITLE FIX*/
+h2 {
+  font-size: 26px;
+  margin-bottom: 15px;
+}
+
+h4 {
+  margin-top: 20px;
+}
+
+/* SPACING LINE TEXT BOX AND FIELD*/
+.box > * {
+  margin-bottom: 12px;
+}
+
+input, textarea, select {
+  margin-top: 6px;
+}
+
+.box {
+  color: #eaf6ff;
+}
+
+input, textarea, select {
+  color: #fff;
+}
+
+/* placeholder color*/
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255,255,255,0.6);
+}
+
+/* BUTTON SAVE FIX*/
+.btn-save {
+  width: 100%;
+  font-size: 16px;
+  margin-top: 15px;
+}
+
+/*END CSS ADD QUESTION FORM*/

@@ -8,17 +8,34 @@
 <body>
 
 <div class="box">
+
   <h2>➕ Thêm câu hỏi</h2>
 
   <div id="testInfo"></div>
 
-  <select id="type">
-    <option value="mcq">Trắc nghiệm</option>
-    <option value="text">Tự luận</option>
+  <!-- CHỌN LOẠI -->
+  <h4>📌 Loại câu hỏi</h4>
+  <select id="type" onchange="changeType()">
+  <option value="mcq">Trắc nghiệm một đáp án</option>
+  <option value="multiple">Trắc nghiệm nhiều đáp án</option>
+  <option value="truefalse">Đúng / Sai</option>
+  <option value="text">Tự luận</option>
+  <option value="fill">Điền khuyết</option>
+
+  <option value="matching">Nối cặp</option>
+  <option value="ordering">Sắp xếp</option>
+
+  <option value="image">Câu hỏi hình ảnh</option>
+  <option value="audio">Câu hỏi âm thanh</option>
+
+  <option value="code">Câu hỏi code</option>
+  <option value="external">Liên kết ngoài</option>
   </select>
 
-  <textarea id="question" placeholder="Câu hỏi"></textarea>
+  <!-- CÂU HỎI -->
+  <textarea id="question" placeholder="Nhập câu hỏi"></textarea>
 
+  <!-- TRẮC NGHIỆM -->
   <div id="mcqBox">
     <input id="a" placeholder="A">
     <input id="b" placeholder="B">
@@ -26,14 +43,76 @@
     <input id="d" placeholder="D">
 
     <select id="correct">
-      <option value="A">A</option>
-      <option value="B">B</option>
-      <option value="C">C</option>
-      <option value="D">D</option>
+      <option value="A">Đáp án đúng A</option>
+      <option value="B">Đáp án đúng B</option>
+      <option value="C">Đáp án đúng C</option>
+      <option value="D">Đáp án đúng D</option>
+    </select>
+  </div>
+ <!-- TRẮC NGHIỆM chọn nhiều multiple choice -->
+  <div id="multiBox" style="display:none;">
+  <input id="m1" placeholder="Đáp án 1">
+  <input id="m2" placeholder="Đáp án 2">
+  <input id="m3" placeholder="Đáp án 3">
+  <input id="m4" placeholder="Đáp án 4">
+
+  <input placeholder="Đáp án đúng (vd: 1,3)">
+</div>
+
+  <!-- MATCHING - GHÉP NỐI -->
+  <div id="matchingBox" style="display:none;">
+  <div id="pairsContainer"></div>
+
+  <button class="btn" onclick="addPair()">➕ Thêm cặp</button>
+</div>
+
+<!-- IMAGE -->
+<div id="imageBox" style="display:none;">
+  <input id="imageUrl" placeholder="Link ảnh">
+</div>
+
+<!-- AUDIO -->
+<div id="audioBox" style="display:none;">
+  <input id="audioUrl" placeholder="Link audio">
+</div>
+
+<!-- ORDERING - GHÉP CÁC BƯỚC -->
+<div id="orderingBox" style="display:none;">
+  <div id="stepsContainer"></div>
+
+  <button class="btn" onclick="addStep()">➕ Thêm bước</button>
+</div>
+
+<!-- CODE - NHẬP MÃ -->
+<div id="codeBox" style="display:none;">
+  <textarea id="codeContent" placeholder="Nhập đoạn code"></textarea>
+  <input id="codeAnswer" placeholder="Đáp án">
+</div>
+
+  <!-- ĐÚNG SAI -->
+  <div id="tfBox" style="display:none;">
+    <select id="tfCorrect">
+      <option value="true">Đúng</option>
+      <option value="false">Sai</option>
     </select>
   </div>
 
-  <button onclick="addQuestion()">💾 Lưu</button>
+  <!-- ĐIỀN KHUYẾT -->
+  <div id="fillBox" style="display:none;">
+    <input id="fillAnswer" placeholder="Đáp án đúng">
+  </div>
+
+  <!-- LINK NGOÀI -->
+  <div id="externalBox" style="display:none;">
+    <input id="externalLink" placeholder="Dán link web (iSpring...)">
+  </div>
+
+  <!-- IMPORT FILE -->
+  <h4>📂 Import file</h4>
+  <input type="file" id="fileInput" accept=".csv,.json,.txt">
+
+  <button class="btn-save" onclick="addQuestion()">💾 Lưu câu hỏi</button>
+
 </div>
 
 
