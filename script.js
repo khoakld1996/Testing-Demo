@@ -81,7 +81,7 @@ function login(){
   // ✅ ĐÚNG (GV)
   if(user === "admin" && pass === "123"){
     localStorage.setItem("role", "teacher");
-    window.location.href = "Dasboard.html";
+    window.location.href = "dashboard.html";
     return;
   }
 

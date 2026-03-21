@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+  <h2>📊 Dashboard Giáo viên</h2>
+    <button class="btn logout" onclick="logout()">Đăng xuất</button>
+  </div>
+  
+
+  <!-- SEARCH -->
+  <div class="card search-box">
+    <input id="search" placeholder="🔍 Tìm học sinh..." oninput="filterResult()">
+  </div>
+
+  <!-- GRID -->
+  <div class="dashboard-grid">
+
+    <!-- THÊM BÀI -->
+    <div class="card box">
+  <h3>➕ Thêm bài test</h3>
+
+  <input id="testName" placeholder="Tên bài">
+  <input id="testDesc" placeholder="Mô tả">
+
+  <button class="btn" onclick="addTest()">
+    Tiếp tục ➡️ Thêm câu hỏi
+  </button>
+</div>
+
+    <!-- DANH SÁCH -->
+    <div class="card box">
+      <h3>📚 Danh sách bài</h3>
+      <div id="testList"></div>
+    </div>
+
+  </div>
+
+  <!-- RESULT + CHART -->
+  <div class="dashboard-grid" style="margin-top:20px;">
+
+    <!-- RESULT -->
+    <div class="card box">
+      <h3>📊 Kết quả học sinh</h3>
+      <div id="resultList"></div>
+    </div>
+
+    <!-- CHART -->
+    <div class="card box">
+      <h3>📈 Biểu đồ</h3>
+      <canvas id="chart"></canvas>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+// ===== CHECK ROLE =====
+let role = localStorage.getItem("role");
+if(role !== "teacher"){
+  window.location.href = "index.html";
+}
+
+// ===== LOGOUT =====
+function logout(){
+  localStorage.removeItem("role");
+  window.location.href = "index.html";
+}
+
+// ===== TEST =====
+let tests = JSON.parse(localStorage.getItem("tests")) || [];
+
+function renderTests(){
+  let html = "";
+
+  tests.forEach((t,i)=>{
+    html += `
+      <div class="test-item">
+        <b>${t.name}</b>
+        <p>${t.desc}</p>
+        <button class="btn delete" onclick="deleteTest(${i})">Xoá</button>
+      </div>
+    `;
+  });
+
+  document.getElementById("testList").innerHTML = html;
+}
+
+function addTest(){
+  let name = document.getElementById("testName").value;
+  let desc = document.getElementById("testDesc").value;
+
+  if(!name) return alert("Nhập tên bài!");
+
+  tests.push({name, desc});
+  localStorage.setItem("tests", JSON.stringify(tests));
+
+  renderTests();
+}
+
+function deleteTest(i){
+  tests.splice(i,1);
+  localStorage.setItem("tests", JSON.stringify(tests));
+  renderTests();
+}
+
+// ===== RESULT =====
+function renderResults(data = allResults){
+  let html = "";
+
+  data.forEach(r=>{
+    let percent = Math.round((r.score/r.total)*100);
+
+    html += `
+      <div class="result-item">
+        <b>${r.name}</b>
+        <p>${r.score}/${r.total} (${percent}%)</p>
+      </div>
+    `;
+  });
+
+  document.getElementById("resultList").innerHTML = html;
+}
+
+// INIT
+renderTests();
+renderResults();
+// Script Thêm Câu Hỏi
+function addTest() {
+  const name = document.getElementById("testName").value.trim();
+  const desc = document.getElementById("testDesc").value.trim();
+
+  // validate
+  if (!name) {
+    alert("❌ Vui lòng nhập tên bài!");
+    return;
+  }
+
+  // tạo object bài test
+  const testData = {
+    id: Date.now(),
+    name: name,
+    desc: desc
+  };
+
+  // lưu tạm (để mang sang trang câu hỏi)
+  localStorage.setItem("currentTest", JSON.stringify(testData));
+
+  // chuyển sang trang thêm câu hỏi
+  window.location.href = "add-question.html";
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</body>
+</html>
