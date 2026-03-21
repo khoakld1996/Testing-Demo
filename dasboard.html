@@ -25,13 +25,15 @@
 
     <!-- THÊM BÀI -->
     <div class="card box">
-      <h3>➕ Thêm bài test</h3>
+  <h3>➕ Thêm bài test</h3>
 
-      <input id="testName" placeholder="Tên bài">
-      <input id="testDesc" placeholder="Mô tả">
+  <input id="testName" placeholder="Tên bài">
+  <input id="testDesc" placeholder="Mô tả">
 
-      <button class="btn" onclick="addTest()">Thêm bài</button>
-    </div>
+  <button class="btn" onclick="addTest()">
+    Tiếp tục ➡️ Thêm câu hỏi
+  </button>
+</div>
 
     <!-- DANH SÁCH -->
     <div class="card box">
@@ -132,7 +134,30 @@ function renderResults(data = allResults){
 // INIT
 renderTests();
 renderResults();
+// Script Thêm Câu Hỏi
+function addTest() {
+  const name = document.getElementById("testName").value.trim();
+  const desc = document.getElementById("testDesc").value.trim();
 
+  // validate
+  if (!name) {
+    alert("❌ Vui lòng nhập tên bài!");
+    return;
+  }
+
+  // tạo object bài test
+  const testData = {
+    id: Date.now(),
+    name: name,
+    desc: desc
+  };
+
+  // lưu tạm (để mang sang trang câu hỏi)
+  localStorage.setItem("currentTest", JSON.stringify(testData));
+
+  // chuyển sang trang thêm câu hỏi
+  window.location.href = "add-question.html";
+}
 </script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
