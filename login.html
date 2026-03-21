@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<div class="card">
+  <h2>Đăng nhập GV</h2>
+
+  <input id="user" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
+
+  <button class="btn primary" onclick="login()">Đăng nhập</button>
+  <button class="btn back-btn" onclick="goHome()">← Trang chủ</button>
+  <div id="notify" class="notify"></div>
+</div>
+
+<script src="script.js">
+  if(user === "admin" && pass === "123"){
+  window.location.href = "dashboard.html";
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,470 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', 'Poppins', sans-serif;
+}
+
+/* BACKGROUND */
+body {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: linear-gradient(270deg, #667eea, #764ba2, #00c6ff);
+  background-size: 600% 600%;
+  animation: bgMove 15s ease infinite;
+}
+
+@keyframes bgMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+/* CARD */
+.card {
+  width: 380px;
+  padding: 35px;
+  border-radius: 22px;
+
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(18px);
+
+  text-align: center;
+  color: white;
+
+  box-shadow:
+    0 15px 35px rgba(0,0,0,0.3),
+    inset 0 0 10px rgba(255,255,255,0.1);
+
+  animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* TEXT */
+h1, h2 {
+  margin-bottom: 15px;
+  letter-spacing: 1px;
+}
+
+p {
+  opacity: 0.85;
+  margin-bottom: 15px;
+}
+
+
+/* BUTTON */
+.btn {
+  width: 100%;
+  padding: 13px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  color: white;
+
+  background: rgba(255,255,255,0.15);
+
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hover */
+.btn:hover {
+  transform: translateY(-4px) scale(1.03);
+  background: rgba(255,255,255,0.25);
+}
+
+/* Click */
+.btn:active {
+  transform: scale(0.96);
+}
+
+/* Glow effect */
+.btn::after {
+  content: "";
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  background: rgba(255,255,255,0.2);
+  top: -100%;
+  left: -100%;
+  transform: rotate(45deg);
+  transition: 0.5s;
+}
+
+.btn:hover::after {
+  top: 100%;
+  left: 100%;
+}
+
+
+/* PRIMARY */
+.primary {
+  background: linear-gradient(45deg, #ff7a18, #ffb347);
+}
+
+.primary:hover {
+  box-shadow: 0 8px 20px rgba(255,122,24,0.5);
+}
+
+
+/* ANSWER BUTTON */
+.answer {
+  background: linear-gradient(45deg, #6a11cb, #2575fc);
+}
+
+
+/* INPUT */
+input {
+  width: 100%;
+  padding: 13px;
+  margin-top: 12px;
+
+  border-radius: 12px;
+  border: none;
+  outline: none;
+
+  background: rgba(255,255,255,0.2);
+  color: white;
+
+  transition: all 0.3s;
+}
+
+/* Placeholder */
+input::placeholder {
+  color: rgba(255,255,255,0.7);
+}
+
+/* Focus */
+input:focus {
+  box-shadow: 0 0 12px rgba(255,255,255,0.7);
+  transform: scale(1.03);
+}
+
+
+/* QUESTION */
+.question {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.question p {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+
+/* PROGRESS BAR */
+.progress {
+  width: 100%;
+  height: 8px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 10px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 40%;
+  background: linear-gradient(90deg, #ff7a18, #ffb347);
+  border-radius: 10px;
+  transition: width 0.5s;
+}
+
+
+/* QUIZ GRID (nếu muốn nâng cấp sau) */
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+
+/* RESPONSIVE */
+@media (max-width: 420px) {
+  .card {
+    width: 90%;
+    padding: 25px;
+  }
+}
+/* GRID SELECT */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 15px;
+}
+
+/* CARD TEST */
+.test-card {
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: 0.2s;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+.test-card:hover {
+  transform: scale(1.02);
+}
+
+/* IMAGE */
+.test-card img {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+/* INFO */
+.test-card .info {
+  padding: 10px;
+}
+
+.test-card h3 {
+  margin-bottom: 5px;
+}
+
+.test-card p {
+  color: #666;
+  font-size: 14px;
+}
+/*
+Giao diện cho CSS trang Select
+/
+/* TITLE */
+.page-title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+/* CARD */
+.test-card {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: 0.25s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.test-card:hover {
+  transform: translateY(-5px);
+}
+
+/* IMAGE */
+.test-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+/* INFO */
+.info {
+  padding: 15px;
+}
+
+.info h3 {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.info p {
+  color: #666;
+  font-size: 14px;
+}
+
+/*Css for Back Button*/
+.back-btn {
+ 
+  margin-top: 10px;
+  width: 100%;
+
+    padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+
+background: #555;
+  color: white;
+  cursor: pointer;
+
+  font-size: 14px;
+}
+.card button {
+  margin-top: 10px;
+  
+}
+
+.back-btn:hover {
+  background: #777;
+}
+.back-btn:hover {
+  background: #555;
+}
+
+/*Thông báo đăng nhập*/
+/*.notify {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: none;
+  text-align: center;
+}
+
+.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.error {
+  background: #f8d7da;
+  color: #721c24;
+}*/
+.notify {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  display: none;
+  text-align: center;
+}
+
+.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+/* .notify {
+  animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+  */
+/**/
+
+/* ---------------------------------------------- */
+/* HEADER DASHBOARD */
+/* HEADER */
+.dashboard-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 15px; /* giảm khoảng cách cho gọn */
+  padding: 10px 0;
+  
+}
+
+/* TITLE */
+.dashboard-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* LOGOUT */
+.dashboard-header .logout {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: auto;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+
+  background: #ff4d4f;
+}
+
+.dashboard-header .logout:hover {
+  background: #d9363e;
+}
+/*------------------------------*/
+/* SEARCH BOX */
+.search-box {
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.search-box input {
+  width: 100%;
+}
+
+/* GRID */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* BOX */
+.box {
+  padding: 15px;
+  border-radius: 12px;
+}
+
+/* RESULT ITEM */
+.result-item {
+  background: #f5f7fb;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+/* TEST ITEM */
+.test-item {
+  background: #f9fafc;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 8px;
+}
+
+/* LOGOUT */
+.logout {
+  background: #ff4d4f;
+  width: auto; /* 🔥 QUAN TRỌNG */
+  padding: 8px 12px;  /* nhỏ gọn lại */
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+.logout:hover {
+  background: #d9363e;
+}
+.card {
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+}
+/* DASHBOARD HEADER END CODE */

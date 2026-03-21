@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+    <h2>📊 Kết quả</h2>
+
+    <p id="name"></p>
+    <p id="score"></p>
+    <p id="percent"></p>
+
+    <button class="btn" onclick="go('index.html')">Về trang chủ</button>
+  </div>
+
+</div>
+
+<script>
+let name = localStorage.getItem("username");
+let score = localStorage.getItem("score");
+let total = localStorage.getItem("total");
+
+document.getElementById("name").innerText = "Học sinh: " + name;
+document.getElementById("score").innerText = "Điểm: " + score + "/" + total;
+
+let percent = Math.round((score/total)*100);
+document.getElementById("percent").innerText = "Tỉ lệ: " + percent + "%";
+</script>
+
+</body>
+</html>

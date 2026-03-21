@@ -1,0 +1,12 @@
+[
+  {
+    "q": "HTML là gì?",
+    "a": ["Ngôn ngữ lập trình", "Ngôn ngữ đánh dấu", "Hệ điều hành", "Phần mềm"],
+    "correct": 1
+  },
+  {
+    "q": "CSS dùng để làm gì?",
+    "a": ["Trang trí giao diện", "Xử lý logic", "Lưu dữ liệu", "Chạy server"],
+    "correct": 0
+  }
+]
