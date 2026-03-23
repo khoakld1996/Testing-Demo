@@ -407,11 +407,229 @@ function addQuestion() {
 
   console.log("DATA:", data);
 
-  let questions = JSON.parse(localStorage.getItem("questions")) || [];
-  questions.push(data);
+   let questions = JSON.parse(localStorage.getItem("questions")) || [];
+
+  let editIndex = localStorage.getItem("editIndex");
+  let isEdit = editIndex !== null;
+
+  if (isEdit) {
+    questions[editIndex] = data;
+  } else {
+    questions.push(data);
+  }
+
   localStorage.setItem("questions", JSON.stringify(questions));
 
-  alert("✅ Đã lưu câu hỏi!");
+  if (isEdit) {
+    localStorage.removeItem("editIndex");
+    localStorage.removeItem("editData");
+  }
+
+  alert(isEdit ? "✏️ Đã cập nhật!" : "✅ Đã thêm!");
+
+  if (isEdit) {
+    window.location.href = "question-list.html";
+  } else {
+    resetForm();
+  }
 }
 // END CODE FUNCTION ADD QUESTION
 
+// FUNCTION RESET FORM QUESTION 
+
+function resetForm() {
+  // clear question
+  document.getElementById("question").value = "";
+
+  // clear tất cả input (trừ file)
+  document.querySelectorAll("input").forEach(input => {
+    if (input.type !== "file") input.value = "";
+  });
+
+  // clear textarea
+  document.querySelectorAll("textarea").forEach(t => t.value = "");
+
+  // reset type về mặc định
+  document.getElementById("type").value = "mcq";
+
+  // reset UI (ẩn/hiện lại form)
+  changeType();
+}
+
+// END FUNCTION RESET FORM QUESTION
+
+// FUNCTION LOAD QUESTION LIST
+
+function loadQuestions() {
+  const list = document.getElementById("questionList");
+  if (!list) return;
+
+  const data = JSON.parse(localStorage.getItem("questions")) || [];
+
+  list.innerHTML = "";
+
+  if (data.length === 0) {
+    list.innerHTML = "<p>Chưa có câu hỏi nào</p>";
+    return;
+  }
+
+  data.forEach((q, index) => {
+    const div = document.createElement("div");
+    div.className = "card";
+
+   div.innerHTML = `
+  <b>${index + 1}. ${q.question}</b>
+
+  <div class="q-type">
+    Loại: <span class="tag">${formatType(q.type)}</span>
+  </div>
+
+  <div class="action-btns">
+    <button class="btn btn-warning" onclick="editQuestion(${index})">✏️ Sửa</button>
+    <button class="btn btn-danger" onclick="deleteQuestion(${index})">🗑 Xóa</button>
+  </div>
+`;
+
+    list.appendChild(div);
+  });
+}
+// FORMAT TYPE QUESTION 
+function formatType(type) {
+  const map = {
+    mcq: "Trắc nghiệm",
+    multiple: "Nhiều đáp án",
+    truefalse: "True / False",
+    fill: "Điền từ",
+    matching: "Nối cặp",
+    ordering: "Sắp xếp",
+    image: "Câu hỏi hình ảnh",
+    audio: "Câu hỏi âm thanh",
+    code: "Code",
+    external: "Liên kết ngoài"
+  };
+
+  return map[type] || type;
+}
+// LOAD TỰ ĐỘNG
+window.onload = function () {
+  loadQuestions();
+};
+
+// END FUNCTION LOAD QUESTION LIST
+
+// DELETE QUESTION FUNCTION 
+
+function deleteQuestion(index) {
+  let data = JSON.parse(localStorage.getItem("questions")) || [];
+
+  if (!confirm("Xóa câu hỏi này?")) return;
+
+  data.splice(index, 1);
+
+  localStorage.setItem("questions", JSON.stringify(data));
+
+  loadQuestions();
+}
+
+// END DELETE QUESTION FUNCTION
+
+// EDIT QUESTION 
+
+function editQuestion(index) {
+  const data = JSON.parse(localStorage.getItem("questions")) || [];
+
+  localStorage.setItem("editIndex", index);
+  localStorage.setItem("editData", JSON.stringify(data[index]));
+
+  window.location.href = "add-question.html";
+}
+
+// END EDIT QUESTION
+
+// BUTTON GO BACK
+function goBack() {
+  window.location.href = "add-question.html";
+}
+// BUTTON GO BACK
+
+// LOAD DATA QUESTION VÀO TRANG 
+window.onload = function () {
+  const editData = JSON.parse(localStorage.getItem("editData"));
+  if (!editData) return;
+
+  // set type + question
+  document.getElementById("type").value = editData.type;
+  document.getElementById("question").value = editData.question || "";
+
+  // trigger UI
+  changeType();
+
+  // ===== MCQ =====
+  if (editData.type === "mcq") {
+    document.getElementById("a").value = editData.options?.[0] || "";
+    document.getElementById("b").value = editData.options?.[1] || "";
+    document.getElementById("c").value = editData.options?.[2] || "";
+    document.getElementById("d").value = editData.options?.[3] || "";
+    document.getElementById("correct").value = editData.correct || "A";
+  }
+
+  // ===== MULTIPLE =====
+  if (editData.type === "multiple") {
+    document.getElementById("m1").value = editData.options?.[0] || "";
+    document.getElementById("m2").value = editData.options?.[1] || "";
+    document.getElementById("m3").value = editData.options?.[2] || "";
+    document.getElementById("m4").value = editData.options?.[3] || "";
+  }
+
+  // ===== MATCHING =====
+  if (editData.type === "matching") {
+    const container = document.getElementById("pairsContainer");
+    container.innerHTML = "";
+
+    (editData.pairs || []).forEach(p => {
+      addPair(p.left, p.right);
+    });
+  }
+
+  // ===== ORDERING =====
+  if (editData.type === "ordering") {
+    const container = document.getElementById("stepsContainer");
+    container.innerHTML = "";
+
+    (editData.steps || []).forEach(step => {
+      addStep(step);
+    });
+  }
+
+  // ===== TRUE/FALSE =====
+  if (editData.type === "truefalse") {
+    document.getElementById("tfCorrect").value = editData.correct || "true";
+  }
+
+  // ===== FILL =====
+  if (editData.type === "fill") {
+    document.getElementById("fillAnswer").value = editData.answer || "";
+  }
+
+  // ===== IMAGE =====
+  if (editData.type === "image") {
+    document.getElementById("imageUrl").value = editData.image || "";
+  }
+
+  // ===== AUDIO =====
+  if (editData.type === "audio") {
+    document.getElementById("audioUrl").value = editData.audio || "";
+  }
+
+  // ===== CODE =====
+  if (editData.type === "code") {
+    document.getElementById("codeContent").value = editData.code || "";
+    document.getElementById("codeAnswer").value = editData.correct || "";
+  }
+
+  // ===== EXTERNAL =====
+  if (editData.type === "external") {
+    document.getElementById("externalLink").value = editData.link || "";
+  }
+};
+// END LOAD DATA QUESTION VÀO TRANG

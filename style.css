@@ -643,3 +643,62 @@ textarea::placeholder {
 }
 
 /*END CSS ADD QUESTION FORM*/
+
+/*CSS FOR QUESTION LIST*/
+.question-item {
+  margin-bottom: 15px;
+}
+
+.action-btns {
+  margin-top: 8px;
+  display: flex;
+  gap: 10px;
+}
+/*END CSS QUESTION LIST*/
+
+/*BUTTON RETURN FOR ADD_QUESTION*/
+.btn-big {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/*CSS KHÔNG CHO DÍNH*/
+.q-type {
+  margin-top: 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.tag {
+  margin-left: 6px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.2);
+  display: inline-block;
+}
+/*QUESTION LIST LAYOUT*/
+#questionList {
+   display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.card {
+  padding: 20px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-btns {
+  display: flex;
+  gap: 15px;
+  margin-top: 10px;
+}
+/*END QUESTION LIST LAYOUT*/
