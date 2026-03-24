@@ -267,8 +267,14 @@ function deleteQuestion(i){
   loadQuestions();
 }
 
+// ============== GO BACK =================
+function goBack() {
+  window.location.href = "dashboard.html";
+}
+
 // ================= ONLOAD =================
 window.onload = function(){
   loadQuestions();
   loadName();
 };
+
