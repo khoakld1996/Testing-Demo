@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
+  <title>Dashboard Giáo viên</title>
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -10,10 +12,9 @@
 
   <!-- HEADER -->
   <div class="dashboard-header">
-  <h2>📊 Dashboard Giáo viên</h2>
+    <h2>📊 Dashboard Giáo viên</h2>
     <button class="btn logout" onclick="logout()">Đăng xuất</button>
   </div>
-  
 
   <!-- SEARCH -->
   <div class="card search-box">
@@ -25,15 +26,15 @@
 
     <!-- THÊM BÀI -->
     <div class="card box">
-  <h3>➕ Thêm bài test</h3>
+      <h3>➕ Thêm bài test</h3>
 
-  <input id="testName" placeholder="Tên bài">
-  <input id="testDesc" placeholder="Mô tả">
+      <input id="testName" placeholder="Tên bài">
+      <input id="testDesc" placeholder="Mô tả">
 
-  <button class="btn" onclick="addTest()">
-    Tiếp tục ➡️ Thêm câu hỏi
-  </button>
-</div>
+      <button class="btn" onclick="addTest()">
+        Tiếp tục ➡️ Thêm câu hỏi
+      </button>
+    </div>
 
     <!-- DANH SÁCH -->
     <div class="card box">
@@ -76,18 +77,28 @@ function logout(){
   window.location.href = "index.html";
 }
 
-// ===== TEST =====
+// ===== TEST LIST =====
 let tests = JSON.parse(localStorage.getItem("tests")) || [];
 
+// ===== RENDER TEST =====
 function renderTests(){
   let html = "";
+
+  if(tests.length === 0){
+    html = "<p>Chưa có bài test</p>";
+  }
 
   tests.forEach((t,i)=>{
     html += `
       <div class="test-item">
         <b>${t.name}</b>
         <p>${t.desc}</p>
-        <button class="btn delete" onclick="deleteTest(${i})">Xoá</button>
+
+        <div style="margin-top:10px;">
+          <button class="btn" onclick="openTest(${i})">➕ Thêm câu hỏi</button>
+          <button class="btn" onclick="viewQuestions(${i})">📋 DS câu hỏi</button>
+          <button class="btn delete" onclick="deleteTest(${i})">🗑 Xoá</button>
+        </div>
       </div>
     `;
   });
@@ -95,27 +106,104 @@ function renderTests(){
   document.getElementById("testList").innerHTML = html;
 }
 
-function addTest(){
-  let name = document.getElementById("testName").value;
-  let desc = document.getElementById("testDesc").value;
+// ===== ADD TEST =====
+const API = "https://script.google.com/macros/s/AKfycbx5656b8NL_ZirmZbMbqR70QnM3PnAKbvVvoB--BWmMRtIOasJyp6f5oRfsPpw7Rqjv/exec";
 
-  if(!name) return alert("Nhập tên bài!");
+function addTest() {
+  const name = document.getElementById("testName").value.trim();
+  const desc = document.getElementById("testDesc").value.trim();
 
-  tests.push({name, desc});
-  localStorage.setItem("tests", JSON.stringify(tests));
+  if (!name) {
+    alert("❌ Vui lòng nhập tên bài!");
+    return;
+  }
 
-  renderTests();
+  fetch(API, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      action: "createTest",
+      name: name,
+      desc: desc
+    })
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.status === "ok") {
+
+      // ✅ tạo object test
+      const testData = {
+        id: res.id,
+        name: name,
+        desc: desc
+      };
+
+      // ✅ LƯU CURRENT TEST
+      localStorage.setItem("currentTestId", res.id);
+      localStorage.setItem("currentTest", JSON.stringify(testData));
+
+      // ✅ LƯU DANH SÁCH TEST
+      let tests = JSON.parse(localStorage.getItem("tests")) || [];
+      tests.push(testData);
+      localStorage.setItem("tests", JSON.stringify(tests));
+
+      // 👉 reload list cho chắc
+      renderTests();
+
+      // 👉 CHUYỂN TRANG (delay nhẹ để tránh bug)
+      setTimeout(() => {
+        window.location.href = "add-question.html";
+      }, 200);
+
+    } else {
+      alert("❌ Lỗi tạo test");
+    }
+  })
+  .catch(err => {
+    console.log(err);
+    alert("❌ Lỗi kết nối API");
+  });
 }
 
+// ===== MỞ TEST ĐỂ THÊM CÂU HỎI =====
+function openTest(i){
+  const test = tests[i];
+
+  localStorage.setItem("currentTestId", test.id);
+  localStorage.setItem("currentTest", JSON.stringify(test)); // ❗ thêm dòng nà
+  window.location.href = "add-question.html";
+}
+
+// ===== XEM DANH SÁCH CÂU HỎI =====
+function viewQuestions(i){
+  const test = tests[i];
+
+  localStorage.setItem("currentTestId", test.id);
+  localStorage.setItem("currentTest", JSON.stringify(test)); // ❗ thêm dòng này
+  window.location.href = "question-list.html";
+}
+
+// ===== DELETE TEST =====
 function deleteTest(i){
+  if(!confirm("Xóa bài test này?")) return;
+
   tests.splice(i,1);
   localStorage.setItem("tests", JSON.stringify(tests));
+
   renderTests();
 }
 
 // ===== RESULT =====
+let allResults = JSON.parse(localStorage.getItem("results")) || [];
+
 function renderResults(data = allResults){
   let html = "";
+
+  if(data.length === 0){
+    html = "<p>Chưa có dữ liệu</p>";
+  }
 
   data.forEach(r=>{
     let percent = Math.round((r.score/r.total)*100);
@@ -131,34 +219,24 @@ function renderResults(data = allResults){
   document.getElementById("resultList").innerHTML = html;
 }
 
-// INIT
+// ===== FILTER =====
+function filterResult(){
+  let key = document.getElementById("search").value.toLowerCase();
+
+  let filtered = allResults.filter(r =>
+    r.name.toLowerCase().includes(key)
+  );
+
+  renderResults(filtered);
+}
+
+// ===== INIT =====
 renderTests();
 renderResults();
-// Script Thêm Câu Hỏi
-function addTest() {
-  const name = document.getElementById("testName").value.trim();
-  const desc = document.getElementById("testDesc").value.trim();
 
-  // validate
-  if (!name) {
-    alert("❌ Vui lòng nhập tên bài!");
-    return;
-  }
-
-  // tạo object bài test
-  const testData = {
-    id: Date.now(),
-    name: name,
-    desc: desc
-  };
-
-  // lưu tạm (để mang sang trang câu hỏi)
-  localStorage.setItem("currentTest", JSON.stringify(testData));
-
-  // chuyển sang trang thêm câu hỏi
-  window.location.href = "add-question.html";
-}
 </script>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </body>
 </html>
