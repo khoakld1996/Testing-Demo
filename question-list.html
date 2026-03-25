@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
 
-  <!-- ✅ QUAN TRỌNG CHO MOBILE -->
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>Danh sách câu hỏi</title>
-
-  <!-- ✅ CHỈ 1 CSS -->
-  <link rel="stylesheet" href="css/style.css">
+  <!-- CSS duy nhất -->
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -22,20 +21,17 @@
       <!-- HEADER -->
       <div class="header">
         <h2 id="testTitle">📘 Bài test</h2>
-
-        <button class="btn" onclick="go('dashboard.html')">
-          🏠
-        </button>
+        <button class="btn" onclick="go('dashboard.html')">🏠</button>
       </div>
 
-      <!-- LIST -->
-      <div id="questionList"></div>
+      <!-- LIST CÂU HỎI -->
+      <div id="questionList">
+        <p>⏳ Đang tải câu hỏi...</p>
+      </div>
 
       <!-- FOOTER BUTTON -->
       <div style="margin-top:15px;">
-        <button class="btn-save" onclick="goBack()">
-          ⬅️ Quay lại
-        </button>
+        <button class="btn-save" onclick="goBack()">⬅️ Quay lại</button>
       </div>
 
     </div>
@@ -43,7 +39,62 @@
   </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+  // ====== API GOOGLE SCRIPT ======
+  const API = "https://script.google.com/macros/s/AKfycbzyZWzip3R6_p_FRPjZ_u34uNbyRHQTOSp2H8cJjb_E5xd_c5oCEIcTaXzVZs6X0Q8u/exec";
+
+  // ====== NAVIGATION ======
+  function go(page){
+    window.location.href = page;
+  }
+
+  function goBack(){
+    const test = JSON.parse(localStorage.getItem("currentTest"));
+    go(test ? "dashboard.html" : "dashboard.html");
+  }
+
+  // ====== INIT PAGE ======
+  window.onload = function(){
+    const currentTest = JSON.parse(localStorage.getItem("currentTest"));
+    const listEl = document.getElementById("questionList");
+    const titleEl = document.getElementById("testTitle");
+
+    if(!currentTest){
+      if(titleEl) titleEl.innerText = "⚠️ Chưa chọn bài test";
+      if(listEl) listEl.innerHTML = "<p>⚠️ Chưa chọn bài test</p>";
+      return;
+    }
+
+    if(titleEl) titleEl.innerHTML = `📘 ${currentTest.name}`;
+
+    // Lấy danh sách câu hỏi từ API
+    fetch(`${API}?action=getQuestions&testId=${currentTest.id}`)
+      .then(res => res.json())
+      .then(data => {
+        if(!listEl) return;
+        listEl.innerHTML = "";
+        if(!data || !data.length){
+          listEl.innerHTML = "<p>⚠️ Chưa có câu hỏi</p>";
+          return;
+        }
+
+        // Render câu hỏi
+        data.forEach((q,i)=>{
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <b>${i+1}. ${q.question}</b>
+            <div class="tag">${q.type}</div>
+          `;
+          listEl.appendChild(div);
+        });
+      })
+      .catch(err=>{
+        console.error(err);
+        if(listEl) listEl.innerHTML = "<p>❌ Lỗi tải câu hỏi</p>";
+      });
+  };
+</script>
 
 </body>
 </html>
