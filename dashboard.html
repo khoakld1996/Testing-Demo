@@ -107,7 +107,7 @@ function renderTests(){
 }
 
 // ===== ADD TEST =====
-const API = "https://script.google.com/macros/s/AKfycbx5656b8NL_ZirmZbMbqR70QnM3PnAKbvVvoB--BWmMRtIOasJyp6f5oRfsPpw7Rqjv/exec";
+const API = "https://script.google.com/macros/s/AKfycbyf668rD5EqEKWUX1GV46VV-_O2RPuue-uiD3BGbWhOZ0DZSx7iSTdiUzxSmdCRfHl7/exec";
 
 function addTest() {
   const name = document.getElementById("testName").value.trim();
@@ -118,55 +118,55 @@ function addTest() {
     return;
   }
 
-  fetch(API, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      action: "createTest",
+  const formData = new FormData();
+
+formData.append("data", JSON.stringify({
+  action: "createTest",
+  name: name,
+  desc: desc
+}));
+
+fetch(API, {
+  method: "POST",
+  body: formData
+})
+.then(res => res.json())
+.then(res => {
+  if (res.status === "ok") {
+
+    // ✅ tạo object test
+    const testData = {
+      id: res.id,
       name: name,
       desc: desc
-    })
-  })
-  .then(res => res.json())
-  .then(res => {
-    if (res.status === "ok") {
+    };
 
-      // ✅ tạo object test
-      const testData = {
-        id: res.id,
-        name: name,
-        desc: desc
-      };
+    // ✅ LƯU CURRENT TEST
+    localStorage.setItem("currentTestId", res.id);
+    localStorage.setItem("currentTest", JSON.stringify(testData));
 
-      // ✅ LƯU CURRENT TEST
-      localStorage.setItem("currentTestId", res.id);
-      localStorage.setItem("currentTest", JSON.stringify(testData));
+    // ✅ LƯU DANH SÁCH TEST
+    let tests = JSON.parse(localStorage.getItem("tests")) || [];
+    tests.push(testData);
+    localStorage.setItem("tests", JSON.stringify(tests));
 
-      // ✅ LƯU DANH SÁCH TEST
-      let tests = JSON.parse(localStorage.getItem("tests")) || [];
-      tests.push(testData);
-      localStorage.setItem("tests", JSON.stringify(tests));
+    // 👉 reload list
+    renderTests();
 
-      // 👉 reload list cho chắc
-      renderTests();
+    // 👉 chuyển trang
+    setTimeout(() => {
+      window.location.href = "add-question.html";
+    }, 200);
 
-      // 👉 CHUYỂN TRANG (delay nhẹ để tránh bug)
-      setTimeout(() => {
-        window.location.href = "add-question.html";
-      }, 200);
-
-    } else {
-      alert("❌ Lỗi tạo test");
-    }
-  })
-  .catch(err => {
-    console.log(err);
-    alert("❌ Lỗi kết nối API");
-  });
+  } else {
+    alert("❌ Lỗi tạo test");
+  }
+})
+.catch(err => {
+  console.log(err);
+  alert("❌ Lỗi kết nối API");
+});
 }
-
 // ===== MỞ TEST ĐỂ THÊM CÂU HỎI =====
 function openTest(i){
   const test = tests[i];

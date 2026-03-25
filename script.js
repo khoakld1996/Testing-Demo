@@ -1,5 +1,5 @@
 // ===== API GOOGLE SCRIPT =====
-const API = "https://script.google.com/macros/s/AKfycbx5656b8NL_ZirmZbMbqR70QnM3PnAKbvVvoB--BWmMRtIOasJyp6f5oRfsPpw7Rqjv/exec";
+const API = "https://script.google.com/macros/s/AKfycbyf668rD5EqEKWUX1GV46VV-_O2RPuue-uiD3BGbWhOZ0DZSx7iSTdiUzxSmdCRfHl7/exec";
 
 // ===== GLOBAL =====
 let questions = [];
@@ -22,7 +22,7 @@ function login(){
 
   if(user === "admin" && pass === "123"){
     localStorage.setItem("role", "teacher");
-    window.location.href = "dashboard.html";
+    go("dashboard.html");
   } else {
     if(notify){
       notify.className = "notify error";
@@ -38,7 +38,7 @@ function saveName(){
   if(!input) return;
 
   const name = input.value.trim();
-  if(name === ""){
+  if(!name){
     alert("Nhập tên!");
     return;
   }
@@ -55,11 +55,11 @@ function loadTestInfo(){
   const test = JSON.parse(localStorage.getItem("currentTest"));
 
   if(test){
-    box.innerHTML = `📘 ${test.name}`;
+    box.innerHTML = `📘 <b>${test.name}</b><br><small>${test.desc || ""}</small>`;
   }
 }
 
-// ================= QUIZ LOAD =================
+// ================= QUIZ =================
 function initQuiz(){
   const questionEl = document.getElementById("question");
   const answerEl = document.getElementById("answers");
@@ -79,10 +79,8 @@ function initQuiz(){
   }
 }
 
-// ================= HIỂN THỊ =================
 function loadQuestion(){
   let q = questions[index];
-
   document.getElementById("question").innerText = q.question;
 
   let html = "";
@@ -94,11 +92,9 @@ function loadQuestion(){
   }
 
   document.getElementById("answers").innerHTML = html;
-
   updateProgress();
 }
 
-// ================= CHỌN =================
 function select(i){
   selected = i;
 
@@ -108,15 +104,19 @@ function select(i){
   if(btns[i]) btns[i].classList.add("selected");
 }
 
-// ================= NEXT =================
 function next(){
   if(selected === -1){
     alert("Chọn đáp án!");
     return;
   }
 
-  if(selected == questions[index].correct){
-    score++;
+  let q = questions[index];
+
+  if(q.options){
+    const map = ["A","B","C","D"];
+    if(map[selected] == q.correct){
+      score++;
+    }
   }
 
   index++;
@@ -125,14 +125,13 @@ function next(){
   if(index >= questions.length){
     localStorage.setItem("score", score);
     localStorage.setItem("total", questions.length);
-    window.location.href = "result.html";
+    go("result.html");
     return;
   }
 
   loadQuestion();
 }
 
-// ================= PROGRESS =================
 function updateProgress(){
   let bar = document.getElementById("progress");
   if (!bar) return;
@@ -142,12 +141,12 @@ function updateProgress(){
 }
 
 // ================= ADD QUESTION =================
-function addQuestion() {
+function addQuestion(){
 
   const type = document.getElementById("type")?.value;
   const question = document.getElementById("question")?.value.trim();
 
-  if (!question) {
+  if(!question){
     alert("❌ Nhập câu hỏi!");
     return;
   }
@@ -155,15 +154,15 @@ function addQuestion() {
   const currentTest = JSON.parse(localStorage.getItem("currentTest"));
   const testId = currentTest?.id;
 
-  if (!testId) {
+  if(!testId){
     alert("❌ Chưa chọn bài test!");
     return;
   }
 
   let data = { type, question };
 
-  // ===== MCQ =====
-  if (type === "mcq") {
+  // MCQ
+  if(type === "mcq"){
     data.options = [
       document.getElementById("a")?.value,
       document.getElementById("b")?.value,
@@ -173,21 +172,21 @@ function addQuestion() {
     data.correct = document.getElementById("correct")?.value;
   }
 
-  // ===== MULTIPLE =====
-  if (type === "multiple") {
+  // MULTIPLE
+  if(type === "multiple"){
     data.options = [
       document.getElementById("m1")?.value,
       document.getElementById("m2")?.value,
       document.getElementById("m3")?.value,
       document.getElementById("m4")?.value
     ].filter(v => v);
+
     data.correct = document.getElementById("multiCorrect")?.value;
   }
 
-  // ===== MATCHING =====
-  if (type === "matching") {
+  // MATCHING
+  if(type === "matching"){
     const rows = document.querySelectorAll("#pairsContainer > div");
-
     data.pairs = Array.from(rows).map(row => {
       const inputs = row.querySelectorAll("input");
       return {
@@ -197,26 +196,26 @@ function addQuestion() {
     });
   }
 
-  // ===== ORDERING =====
-  if (type === "ordering") {
+  // ORDERING
+  if(type === "ordering"){
     const inputs = document.querySelectorAll("#stepsContainer input");
     data.steps = Array.from(inputs).map(i => i.value.trim());
   }
 
-  // ===== IMAGE =====
+  // IMAGE
   const file = document.getElementById("imageFile")?.files[0];
   const url = document.getElementById("imageUrl")?.value;
 
-  if (type === "image") {
-    if (file) {
+  if(type === "image"){
+    if(file){
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = function(e){
         data.image = e.target.result;
         saveQuestion(data, testId);
       };
       reader.readAsDataURL(file);
       return;
-    } else if (url) {
+    } else if(url){
       data.image = url;
     } else {
       alert("❌ Chọn ảnh!");
@@ -224,19 +223,16 @@ function addQuestion() {
     }
   }
 
-  // ===== AUDIO =====
-  if (type === "audio") {
+  if(type === "audio"){
     data.audio = document.getElementById("audioUrl")?.value;
   }
 
-  // ===== CODE =====
-  if (type === "code") {
+  if(type === "code"){
     data.code = document.getElementById("codeContent")?.value;
     data.correct = document.getElementById("codeAnswer")?.value;
   }
 
-  // ===== EXTERNAL =====
-  if (type === "external") {
+  if(type === "external"){
     data.link = document.getElementById("externalLink")?.value;
   }
 
@@ -244,40 +240,33 @@ function addQuestion() {
 }
 
 // ================= SAVE =================
-function saveQuestion(data, testId) {
-
-  console.log("📤 SEND:", data);
+function saveQuestion(data, testId){
 
   let all = JSON.parse(localStorage.getItem("allQuestions")) || {};
 
-  if (!all[testId]) all[testId] = [];
-
+  if(!all[testId]) all[testId] = [];
   all[testId].push(data);
+
   localStorage.setItem("allQuestions", JSON.stringify(all));
 
-  fetch(API, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      action: "addQuestion",
-      testId: testId,
-      type: data.type,
-      question: data.question,
-      answer: JSON.stringify(data)
+  const formData = new FormData();
+  formData.append("data", JSON.stringify({
+    action: "addQuestion",
+    testId,
+    type: data.type,
+    question: data.question,
+    answer: JSON.stringify(data)
+  }));
+
+  fetch(API, { method: "POST", body: formData })
+    .then(res => res.json())
+    .then(() => {
+      alert("✅ Đã lưu!");
+      resetForm();
     })
-  })
-  .then(res => res.json())
-  .then(res => {
-    console.log("✅ API:", res);
-    alert("✅ Đã lưu!");
-    resetForm();
-  })
-  .catch(err => {
-    console.log("❌ API:", err);
-    alert("❌ Lỗi Google Sheet!");
-  });
+    .catch(() => {
+      alert("❌ Lỗi Google Sheet!");
+    });
 }
 
 // ================= RESET =================
@@ -286,33 +275,63 @@ function resetForm(){
 
   document.querySelectorAll("input").forEach(i => i.value = "");
   document.querySelectorAll("textarea").forEach(t => t.value = "");
+
+  document.getElementById("pairsContainer")?.replaceChildren();
+  document.getElementById("stepsContainer")?.replaceChildren();
+
+  document.getElementById("question").focus();
 }
 
-// ================= LOAD LIST =================
-function loadQuestions() {
+// ================= LIST =================
+function loadQuestions(){
   const listEl = document.getElementById("questionList");
-  if (!listEl) return;
+  const titleEl = document.getElementById("testTitle");
+
+  if(!listEl) return;
 
   const currentTest = JSON.parse(localStorage.getItem("currentTest"));
   const testId = currentTest?.id;
+
+  if(titleEl){
+    titleEl.innerHTML = currentTest
+      ? `📘 ${currentTest.name}`
+      : "⚠️ Chưa chọn bài test";
+  }
 
   let all = JSON.parse(localStorage.getItem("allQuestions")) || {};
   const data = all[testId] || [];
 
   listEl.innerHTML = "";
 
-  if (!data.length) {
+  if(!data.length){
     listEl.innerHTML = "<p>Chưa có câu hỏi</p>";
     return;
   }
 
-  data.forEach((q, i) => {
+  const typeName = {
+    mcq:"Trắc nghiệm",
+    multiple:"Nhiều đáp án",
+    truefalse:"Đúng/Sai",
+    fill:"Điền khuyết",
+    matching:"Nối cặp",
+    ordering:"Sắp xếp",
+    image:"Hình ảnh",
+    audio:"Âm thanh",
+    code:"Code",
+    external:"Link"
+  };
+
+  data.forEach((q,i)=>{
     let div = document.createElement("div");
     div.className = "card";
 
     div.innerHTML = `
       <b>${i+1}. ${q.question}</b>
-      <button onclick="deleteQuestion(${i})">Xóa</button>
+      <div class="tag">${typeName[q.type] || q.type}</div>
+      <div class="action-btns">
+        <button onclick="editQuestion(${i})">✏️</button>
+        <button class="btn-danger" onclick="deleteQuestion(${i})">🗑️</button>
+      </div>
     `;
 
     listEl.appendChild(div);
@@ -321,6 +340,8 @@ function loadQuestions() {
 
 // ================= DELETE =================
 function deleteQuestion(i){
+  if(!confirm("Xóa câu hỏi này?")) return;
+
   const currentTest = JSON.parse(localStorage.getItem("currentTest"));
   const testId = currentTest?.id;
 
@@ -331,36 +352,109 @@ function deleteQuestion(i){
   loadQuestions();
 }
 
-// ================= DRAG IMAGE =================
-document.addEventListener("dragover", e => e.preventDefault());
+// ================= EDIT =================
+function editQuestion(i){
+  const currentTest = JSON.parse(localStorage.getItem("currentTest"));
+  const testId = currentTest?.id;
 
-document.addEventListener("drop", function(e){
-  e.preventDefault();
+  let all = JSON.parse(localStorage.getItem("allQuestions")) || {};
+  const q = all[testId][i];
 
-  const file = e.dataTransfer.files[0];
+  localStorage.setItem("editIndex", i);
+  localStorage.setItem("editData", JSON.stringify(q));
 
-  if(file && file.type.startsWith("image/")){
-    const reader = new FileReader();
-    reader.onload = function(evt){
-      let input = document.getElementById("imageUrl");
-      if(input) input.value = evt.target.result;
-    };
-    reader.readAsDataURL(file);
-  }
-});
+  go("add-question.html");
+}
+
+// ================= TYPE =================
+function changeType(){
+  const type = document.getElementById("type")?.value;
+
+  const boxes = [
+    "mcqBox","multiBox","tfBox","fillBox",
+    "matchingBox","orderingBox","imageBox",
+    "audioBox","codeBox","externalBox"
+  ];
+
+  boxes.forEach(id=>{
+    let el = document.getElementById(id);
+    if(el) el.style.display = "none";
+  });
+
+  if(type) show(type+"Box");
+}
+
+function show(id){
+  const el = document.getElementById(id);
+  if(el) el.style.display = "block";
+}
 
 // ================= INIT =================
 window.onload = function(){
+  loadTestsFromAPI(); // 🔥 THÊM DÒNG NÀY
   loadQuestions();
   loadTestInfo();
   initQuiz();
+  changeType();
 };
 
+// ENTER QUICK SAVE
+document.addEventListener("keydown", function(e){
+  if(e.ctrlKey && e.key === "Enter"){
+    addQuestion();
+  }
+});
+
+// BACK
 function goBack(){
   const test = JSON.parse(localStorage.getItem("currentTest"));
-  if(test){
-    window.location.href = "add-question.html";
-  } else {
-    window.location.href = "dashboard.html";
-  }
+  go(test ? "add-question.html" : "dashboard.html");
+}
+// LOAD DATA JS 
+function loadTestsFromAPI(){
+
+  fetch(API + "?action=getTests")
+    .then(res => res.json())
+    .then(data => {
+
+      const grid = document.getElementById("testGrid");
+      if(!grid) return;
+
+      grid.innerHTML = "";
+
+      if(!data.length){
+        grid.innerHTML = "<p>Chưa có bài test</p>";
+        return;
+      }
+
+      data.forEach(test => {
+
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+          <img src="https://picsum.photos/400/200?random=${test.id}">
+          <b>${test.name}</b>
+          <span class="tag">${test.totalQuestions} câu</span>
+        `;
+
+        div.onclick = () => startTest(test);
+
+        grid.appendChild(div);
+      });
+
+    })
+    .catch(err => {
+      console.log(err);
+      alert("❌ Lỗi load API");
+    });
+}
+//START TEST 
+function startTest(test){
+
+  // lưu test hiện tại
+  localStorage.setItem("currentTest", JSON.stringify(test));
+
+  // chuyển trang làm bài
+  window.location.href = "quiz.html";
 }

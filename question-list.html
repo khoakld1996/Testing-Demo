@@ -2,25 +2,38 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- ✅ QUAN TRỌNG -->
   <title>Danh sách câu hỏi</title>
+
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
 
-<div class="box">
-  <h2>📋 Danh sách câu hỏi</h2>
+<!-- ===== LAYOUT CHUẨN ===== -->
+<div class="page">
+  <div class="container">
 
-  <div id="questionList"></div>
+    <div class="box">
 
-  <br>
-  <button class="btn" onclick="goBack()">⬅️ Quay lại</button>
+      <!-- HEADER -->
+      <div class="header">
+        <h2 id="testTitle">📘 Bài test</h2>
+        <button onclick="go('dashboard.html')">🏠</button>
+      </div>
+
+      <!-- LIST -->
+      <div id="questionList"></div>
+
+      <!-- BUTTON -->
+      <button class="btn-save" onclick="goBack()">⬅️ Quay lại</button>
+
+    </div>
+
+  </div>
 </div>
-<link rel="stylesheet" href="style.css">
+
 <script src="script.js"></script>
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    loadQuestions();
-  });
-</script>
+
 </body>
 </html>
