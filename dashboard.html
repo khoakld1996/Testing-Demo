@@ -2,180 +2,316 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <!-- ✅ QUAN TRỌNG CHO MOBILE -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard Giáo viên</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Admin - Dashboard Quản lý</title>
+  
+  <style>
+    /* ===== NỀN TẢNG GLASSMORPHISM ===== */
+    :root {
+      --primary: #4facfe;
+      --secondary: #00c6ff;
+      --accent: #00ffcc;
+      --danger: #ff4757;
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+      background-attachment: fixed;
+      color: white;
+      padding: 20px;
+    }
+
+    .container { width: 100%; max-width: 1100px; margin: 0 auto; }
+
+    .glass-box {
+      background: var(--glass-bg);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .dashboard-header { display: flex; justify-content: space-between; align-items: center; }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 20px;
+    }
+
+    /* ITEM BÀI TEST */
+    .test-item {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: 0.3s;
+    }
+    .test-item:hover { background: rgba(255, 255, 255, 0.12); transform: translateX(5px); }
+    .test-item b { font-size: 1.1em; color: var(--accent); }
+
+    /* INPUT & BUTTON */
+    .input-control {
+      width: 100%; padding: 12px; margin-bottom: 10px;
+      border-radius: 10px; border: 1px solid var(--glass-border);
+      background: rgba(0,0,0,0.2); color: white; outline: none;
+    }
+    .btn {
+      padding: 10px 16px; border-radius: 10px; border: none;
+      cursor: pointer; font-weight: 600; transition: 0.3s; color: white;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+    .btn.logout { background: var(--danger); }
+    .btn.delete { background: rgba(255, 71, 87, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+
+    /* KẾT QUẢ */
+    .result-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .score-badge {
+      background: var(--accent); color: #000;
+      padding: 4px 10px; border-radius: 8px; font-weight: bold;
+    }
+
+    @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
 
-<div class="page">
-  <div class="container">
+<div class="container">
+  
+  <div class="glass-box dashboard-header">
+    <h2>📊 Dashboard Giáo Viên</h2>
+    <button class="btn logout" onclick="logout()">Đăng xuất</button>
+  </div>
 
-    <!-- HEADER -->
-    <div class="box dashboard-header">
-      <h2>📊 Dashboard Giáo viên</h2>
-      <button class="btn logout" onclick="logout()">Đăng xuất</button>
+  <div class="glass-box" style="padding: 15px;">
+    <input id="search" class="input-control" style="margin-bottom:0;" placeholder="🔍 Tìm tên bài test hoặc học sinh..." oninput="filterData()">
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- DANH SÁCH BÀI TEST -->
+    <div class="glass-box">
+      <h3 style="margin-bottom:15px;">📚 Danh sách bài test</h3>
+      <div id="testList"><p style="opacity:0.6; text-align:center;">⏳ Đang tải bài test...</p></div>
     </div>
 
-    <!-- SEARCH -->
-    <div class="box card search-box">
-      <input id="search" placeholder="🔍 Tìm học sinh..." oninput="filterResult()">
-    </div>
-
-    <!-- GRID BÀI TEST -->
-    <div class="dashboard-grid">
-
-      <!-- THÊM BÀI TEST -->
-      <div class="box card">
-        <h3>➕ Thêm bài test</h3>
-        <input id="testName" placeholder="Tên bài">
-        <input id="testDesc" placeholder="Mô tả">
-        <button class="btn" onclick="addTest()">Tiếp tục ➡️ Thêm câu hỏi</button>
+    <!-- TẠO MỚI & BIỂU ĐỒ -->
+    <div>
+      <div class="glass-box">
+        <h3 style="margin-bottom:15px;">➕ Tạo bài test mới</h3>
+        <input id="testName" class="input-control" placeholder="Tên bài test">
+        <input id="testDesc" class="input-control" placeholder="Mô tả">
+        <button id="btnAddTest" class="btn" style="width:100%;" onclick="addTest()">Tiếp tục ➡️</button>
       </div>
 
-      <!-- DANH SÁCH BÀI TEST -->
-      <div class="box card">
-        <h3>📚 Danh sách bài</h3>
-        <div id="testList"></div>
-      </div>
-
-    </div>
-
-    <!-- GRID KẾT QUẢ + CHART -->
-    <div class="dashboard-grid" style="margin-top:20px;">
-
-      <!-- KẾT QUẢ -->
-      <div class="box card">
-        <h3>📊 Kết quả học sinh</h3>
-        <div id="resultList"></div>
-      </div>
-
-      <!-- CHART -->
-      <div class="box card">
-        <h3>📈 Biểu đồ</h3>
+      <div class="glass-box">
+        <h3 style="margin-bottom:15px;">📈 Phân phối điểm số</h3>
         <canvas id="chart"></canvas>
       </div>
-
     </div>
-
   </div>
+
+  <!-- KẾT QUẢ HỌC SINH -->
+  <div class="glass-box">
+    <h3 style="margin-bottom:15px;">🏆 Kết quả học sinh (Từ Sheets)</h3>
+    <div id="resultList"><p style="opacity:0.6; text-align:center;">⏳ Đang tải kết quả bài làm...</p></div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Đảm bảo file script.js chứa biến API -->
+<script src="script.js"></script> 
 
 <script>
-// ===== CHECK ROLE =====
-let role = localStorage.getItem("role");
-if(role !== "teacher"){
-  window.location.href = "index.html";
-}
+  // Kiểm tra quyền
+  if(localStorage.getItem("role") !== "teacher") window.location.href = "index.html";
 
-// ===== LOGOUT =====
-function logout(){
-  localStorage.removeItem("role");
-  window.location.href = "index.html";
-}
+  function logout() {
+    localStorage.removeItem("role");
+    window.location.href = "index.html";
+  }
 
-// ===== API =====
-const API = "PASTE_WEB_APP_URL_CỦA_BẠN_VÀO_ĐÂY";
+  let tests = [];
+  let allResults = [];
+  let myChart = null;
+  
+  //.0 ADD BÀI TEST
+  // ===== HÀM TẠO BÀI TEST MỚI =====
+  async function addTest() {
+    const name = document.getElementById("testName").value.trim();
+    const desc = document.getElementById("testDesc").value.trim();
+    const btn = document.getElementById("btnAddTest");
 
-// ===== LOAD TESTS =====
-let tests = JSON.parse(localStorage.getItem("tests")) || [];
+    if (!name) {
+      alert("Vui lòng nhập tên bài test!");
+      return;
+    }
 
-// ===== RENDER TESTS =====
-function renderTests(){
-  let html = "";
-  if(tests.length === 0) html = "<p>Chưa có bài test</p>";
+    // Vô hiệu hóa nút để tránh bấm liên tục
+    btn.disabled = true;
+    btn.innerText = "⏳ Đang tạo...";
 
-  tests.forEach((t,i)=>{
-    html += `
+    try {
+      const response = await fetch(API, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "addTest",
+          name: name,
+          desc: desc
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.status === "ok") {
+        // Lưu thông tin bài test vừa tạo vào localStorage để dùng cho trang tiếp theo
+        const newTest = { id: result.id, name: name, desc: desc };
+        localStorage.setItem("currentTest", JSON.stringify(newTest));
+        
+        // Chuyển hướng sang trang thêm câu hỏi ngay lập tức
+        window.location.href = "add-question.html";
+      } else {
+        alert("Lỗi từ máy chủ: " + result.message);
+        btn.disabled = false;
+        btn.innerText = "Tiếp tục ➡️";
+      }
+    } catch (err) {
+      console.error("Lỗi addTest:", err);
+      alert("Không thể kết nối với Script. Hãy kiểm tra lại URL API hoặc quyền truy cập.");
+      btn.disabled = false;
+      btn.innerText = "Tiếp tục ➡️";
+    }
+  }
+  // 1. TẢI DANH SÁCH BÀI TEST
+  async function loadTests() {
+    try {
+      const res = await fetch(`${API}?action=getTests`);
+      const data = await res.json();
+      if(Array.isArray(data)) {
+        tests = data;
+        renderTests();
+      }
+    } catch(err) {
+      document.getElementById("testList").innerHTML = "<p>❌ Lỗi tải bài test.</p>";
+    }
+  }
+
+  function renderTests(filterData = tests) {
+    const container = document.getElementById("testList");
+    if(filterData.length === 0) {
+      container.innerHTML = "<p style='text-align:center; opacity:0.5;'>Trống.</p>";
+      return;
+    }
+    container.innerHTML = filterData.map((t, i) => `
       <div class="test-item">
         <b>${t.name}</b>
-        <p>${t.desc}</p>
-        <div style="margin-top:10px;">
-          <button class="btn" onclick="openTest(${i})">➕ Thêm câu hỏi</button>
-          <button class="btn" onclick="viewQuestions(${i})">📋 DS câu hỏi</button>
+        <p style="margin-bottom:10px;">${t.desc || "Không có mô tả"}</p>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn" onclick="goTo('add-question.html', ${i})">➕ Thêm câu</button>
+          <button class="btn" style="background:rgba(255,255,255,0.1)" onclick="goTo('question-list.html', ${i})">📋 Xem</button>
           <button class="btn delete" onclick="deleteTest(${i})">🗑 Xoá</button>
         </div>
       </div>
-    `;
-  });
-  document.getElementById("testList").innerHTML = html;
-}
+    `).join('');
+  }
 
-// ===== ADD TEST =====
-function addTest() {
-  const name = document.getElementById("testName").value.trim();
-  const desc = document.getElementById("testDesc").value.trim();
-  if(!name){ alert("❌ Vui lòng nhập tên bài!"); return; }
+  function goTo(page, index) {
+    localStorage.setItem("currentTest", JSON.stringify(tests[index]));
+    window.location.href = page;
+  }
 
-  const formData = new FormData();
-  formData.append("data", JSON.stringify({ action:"createTest", name, desc }));
+  // 2. TẢI KẾT QUẢ TỪ GOOGLE SHEETS
+  async function loadResults() {
+    try {
+      const res = await fetch(`${API}?action=getResults`);
+      const data = await res.json();
+      if(Array.isArray(data)) {
+        allResults = data;
+        renderResults();
+        initChart();
+      }
+    } catch(err) {
+      document.getElementById("resultList").innerHTML = "<p>❌ Không thể load kết quả.</p>";
+    }
+  }
 
-  fetch(API, { method:"POST", body: formData })
-    .then(res => res.json())
-    .then(res => {
-      if(res.status==="ok"){
-        const testData = { id: res.id, name, desc };
-        localStorage.setItem("currentTestId", res.id);
-        localStorage.setItem("currentTest", JSON.stringify(testData));
-        tests.push(testData);
-        localStorage.setItem("tests", JSON.stringify(tests));
-        renderTests();
-        setTimeout(()=>{ window.location.href="add-question.html"; }, 200);
-      } else { alert("❌ Lỗi tạo test"); }
-    })
-    .catch(err=>{ console.log(err); alert("❌ Lỗi kết nối API"); });
-}
+  function renderResults(filterData = allResults) {
+    const container = document.getElementById("resultList");
+    if(filterData.length === 0) {
+      container.innerHTML = "<p style='text-align:center; opacity:0.5;'>Chưa có học sinh làm bài.</p>";
+      return;
+    }
+    container.innerHTML = filterData.map(r => {
+      let p = Math.round((r.score / r.total) * 100);
+      return `
+        <div class="result-item">
+          <div>
+            <strong style="color:var(--accent)">${r.name}</strong><br>
+            <small style="opacity:0.7">Bài: ${r.testName} | ${r.timestamp || ''}</small>
+          </div>
+          <div style="text-align:right">
+            <span class="score-badge">${r.score}/${r.total}</span>
+            <div style="font-size:0.8em; margin-top:4px;">${p}%</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
 
-// ===== OPEN / VIEW TEST =====
-function openTest(i){
-  const test = tests[i];
-  localStorage.setItem("currentTestId", test.id);
-  localStorage.setItem("currentTest", JSON.stringify(test));
-  window.location.href = "add-question.html";
-}
+  // 3. TÌM KIẾM TỔNG HỢP
+  function filterData() {
+    const key = document.getElementById("search").value.toLowerCase();
+    renderTests(tests.filter(t => t.name.toLowerCase().includes(key)));
+    renderResults(allResults.filter(r => r.name.toLowerCase().includes(key) || r.testName.toLowerCase().includes(key)));
+  }
 
-function viewQuestions(i){
-  const test = tests[i];
-  localStorage.setItem("currentTestId", test.id);
-  localStorage.setItem("currentTest", JSON.stringify(test));
-  window.location.href = "question-list.html";
-}
+  // 4. BIỂU ĐỒ
+  function initChart() {
+    const ctx = document.getElementById('chart').getContext('2d');
+    if(myChart) myChart.destroy();
 
-// ===== DELETE TEST =====
-function deleteTest(i){
-  if(!confirm("Xóa bài test này?")) return;
-  tests.splice(i,1);
-  localStorage.setItem("tests", JSON.stringify(tests));
-  renderTests();
-}
+    const counts = [0, 0, 0, 0];
+    allResults.forEach(r => {
+      let p = (r.score / r.total) * 100;
+      if(p < 50) counts[0]++;
+      else if(p < 70) counts[1]++;
+      else if(p < 90) counts[2]++;
+      else counts[3]++;
+    });
 
-// ===== RESULT =====
-let allResults = JSON.parse(localStorage.getItem("results")) || [];
+    myChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Yếu', 'TB', 'Khá', 'Giỏi'],
+        datasets: [{
+          data: counts,
+          backgroundColor: ['#ff4757', '#ffa502', '#1e90ff', '#2ed573'],
+          borderWidth: 0
+        }]
+      },
+      options: { 
+        plugins: { legend: { position: 'bottom', labels: { color: 'white' } } }
+      }
+    });
+  }
 
-function renderResults(data = allResults){
-  let html = "";
-  if(data.length === 0){ html="<p>Chưa có dữ liệu</p>"; }
-  data.forEach(r=>{
-    let percent = Math.round((r.score/r.total)*100);
-    html += `<div class="result-item"><b>${r.name}</b><p>${r.score}/${r.total} (${percent}%)</p></div>`;
-  });
-  document.getElementById("resultList").innerHTML = html;
-}
-
-// ===== FILTER =====
-function filterResult(){
-  let key = document.getElementById("search").value.toLowerCase();
-  let filtered = allResults.filter(r=> r.name.toLowerCase().includes(key));
-  renderResults(filtered);
-}
-
-// ===== INIT =====
-renderTests();
-renderResults();
-
+  // KHỞI CHẠY
+  window.onload = () => {
+    loadTests();
+    loadResults();
+  };
 </script>
 
 </body>

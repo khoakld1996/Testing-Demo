@@ -2,98 +2,239 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-
-  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Danh sách câu hỏi - Admin</title>
+  
+  <style>
+    /* ===== NỀN TẢNG GLASSMORPHISM (Đồng bộ Dashboard) ===== */
+    :root {
+      --primary: #4facfe;
+      --secondary: #00c6ff;
+      --accent: #00ffcc;
+      --danger: #ff4757;
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
 
-  <title>Danh sách câu hỏi</title>
-  <!-- CSS duy nhất -->
-  <link rel="stylesheet" href="style.css">
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+      background-attachment: fixed;
+      color: white;
+      padding: 20px;
+    }
+
+    .container { width: 100%; max-width: 800px; margin: 0 auto; }
+
+    /* HELPER CLASSES */
+    .glass-box {
+      background: var(--glass-bg);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    /* QUESTION CARDS */
+    .q-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 15px;
+      padding: 18px;
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      transition: 0.3s;
+    }
+
+    .q-card:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .q-info b {
+      display: block;
+      font-size: 1.1em;
+      margin-bottom: 8px;
+      line-height: 1.4;
+    }
+
+    .tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      background: var(--primary);
+      color: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    /* BUTTONS */
+    .btn {
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: 0.3s;
+      color: white;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+
+    .btn-del {
+      background: rgba(255, 71, 87, 0.15);
+      color: #ff4757;
+      border: 1px solid #ff4757;
+      padding: 8px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn-del:hover { background: #ff4757; color: white; }
+
+    .empty-box {
+      text-align: center;
+      padding: 40px;
+      border: 2px dashed var(--glass-border);
+      border-radius: 20px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* LOADING ANIMATION */
+    .loading { text-align: center; padding: 20px; font-style: italic; opacity: 0.8; }
+  </style>
 </head>
 
 <body>
 
-<div class="page">
-  <div class="container">
+<div class="container">
+  
+  <!-- HEADER -->
+  <div class="glass-box header">
+    <h2 id="testTitle">📘 Đang tải...</h2>
+    <button class="btn" style="padding: 10px;" onclick="location.href='dashboard.html'">🏠</button>
+  </div>
 
-    <div class="box">
-
-      <!-- HEADER -->
-      <div class="header">
-        <h2 id="testTitle">📘 Bài test</h2>
-        <button class="btn" onclick="go('dashboard.html')">🏠</button>
-      </div>
-
-      <!-- LIST CÂU HỎI -->
-      <div id="questionList">
-        <p>⏳ Đang tải câu hỏi...</p>
-      </div>
-
-      <!-- FOOTER BUTTON -->
-      <div style="margin-top:15px;">
-        <button class="btn-save" onclick="goBack()">⬅️ Quay lại</button>
-      </div>
-
+  <!-- NỘI DUNG DANH SÁCH -->
+  <div class="glass-box">
+    <div id="questionList">
+      <p class="loading">⏳ Đang đồng bộ câu hỏi từ server...</p>
     </div>
 
+    <!-- NÚT THAO TÁC -->
+    <div style="margin-top: 25px; display: flex; gap: 12px;">
+      <a href="dashboard.html" class="btn" style="background: rgba(255,255,255,0.1); flex: 1;">⬅️ Dashboard</a>
+      <a href="add-question.html" class="btn" style="flex: 2;">➕ Thêm câu hỏi mới</a>
+    </div>
   </div>
+
 </div>
 
 <script>
-  // ====== API GOOGLE SCRIPT ======
-  const API = "https://script.google.com/macros/s/AKfycbzyZWzip3R6_p_FRPjZ_u34uNbyRHQTOSp2H8cJjb_E5xd_c5oCEIcTaXzVZs6X0Q8u/exec";
+  // URL API (Hãy đảm bảo hằng số này khớp với các trang khác)
+  const API = "https://script.google.com/macros/s/AKfycbwLbrkimnr1CZgdNBoSnLn5I2MrN1aAS_5TCDhADz5M7QRsAvsfC9g1hinh-hBogbCd/exec";
+  
+  // Lấy dữ liệu bài test hiện tại từ bộ nhớ
+  const currentTestRaw = localStorage.getItem("currentTest");
+  let currentTest = null;
 
-  // ====== NAVIGATION ======
-  function go(page){
-    window.location.href = page;
-  }
-
-  function goBack(){
-    const test = JSON.parse(localStorage.getItem("currentTest"));
-    go(test ? "dashboard.html" : "dashboard.html");
-  }
-
-  // ====== INIT PAGE ======
-  window.onload = function(){
-    const currentTest = JSON.parse(localStorage.getItem("currentTest"));
-    const listEl = document.getElementById("questionList");
-    const titleEl = document.getElementById("testTitle");
-
-    if(!currentTest){
-      if(titleEl) titleEl.innerText = "⚠️ Chưa chọn bài test";
-      if(listEl) listEl.innerHTML = "<p>⚠️ Chưa chọn bài test</p>";
+  window.onload = function() {
+    if (!currentTestRaw) {
+      alert("Không tìm thấy thông tin bài test!");
+      location.href = 'dashboard.html';
       return;
     }
 
-    if(titleEl) titleEl.innerHTML = `📘 ${currentTest.name}`;
-
-    // Lấy danh sách câu hỏi từ API
-    fetch(`${API}?action=getQuestions&testId=${currentTest.id}`)
-      .then(res => res.json())
-      .then(data => {
-        if(!listEl) return;
-        listEl.innerHTML = "";
-        if(!data || !data.length){
-          listEl.innerHTML = "<p>⚠️ Chưa có câu hỏi</p>";
-          return;
-        }
-
-        // Render câu hỏi
-        data.forEach((q,i)=>{
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
-            <b>${i+1}. ${q.question}</b>
-            <div class="tag">${q.type}</div>
-          `;
-          listEl.appendChild(div);
-        });
-      })
-      .catch(err=>{
-        console.error(err);
-        if(listEl) listEl.innerHTML = "<p>❌ Lỗi tải câu hỏi</p>";
-      });
+    currentTest = JSON.parse(currentTestRaw);
+    document.getElementById("testTitle").innerText = "📘 " + (currentTest.name || "Bài test");
+    loadQuestions();
   };
+
+  // 1. Lấy danh sách câu hỏi từ Apps Script
+  async function loadQuestions() {
+    const listEl = document.getElementById("questionList");
+    try {
+      const response = await fetch(`${API}?action=getQuestions&testId=${currentTest.id}`);
+      const data = await response.json();
+
+      if (!data || data.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-box">
+            <p style="margin-bottom:15px;">Bài test này hiện chưa có câu hỏi nào.</p>
+            <a href="add-question.html" class="btn">Tạo ngay</a>
+          </div>`;
+        return;
+      }
+
+      // Render danh sách câu hỏi
+      listEl.innerHTML = data.map((q, i) => `
+        <div class="q-card">
+          <div class="q-info">
+            <b>Câu ${i + 1}: ${q.question}</b>
+            <span class="tag">${q.type === 'multiple' ? 'Trắc nghiệm' : 'Tự luận'}</span>
+          </div>
+          <button class="btn-del" onclick="deleteQuestion('${q.id}', this)" title="Xóa câu hỏi">🗑</button>
+        </div>
+      `).join('');
+
+    } catch (err) {
+      console.error(err);
+      listEl.innerHTML = "<p style='color:#ff4757; text-align:center;'>❌ Lỗi: Không thể kết nối với máy chủ.</p>";
+    }
+  }
+
+  // 2. Xóa câu hỏi
+  async function deleteQuestion(qId, btn) {
+    if (!confirm("Hành động này không thể hoàn tác. Bạn chắc chắn muốn xóa?")) return;
+
+    const originalContent = btn.innerHTML;
+    btn.innerText = "⏳";
+    btn.disabled = true;
+
+    try {
+      const response = await fetch(API, {
+        method: "POST",
+        body: JSON.stringify({ action: "deleteQuestion", qId: qId })
+      });
+      const result = await response.json();
+
+      if (result.status === "ok") {
+        // Hiệu ứng xóa mượt mà
+        btn.parentElement.style.opacity = "0";
+        btn.parentElement.style.transform = "scale(0.9)";
+        setTimeout(loadQuestions, 300); 
+      } else {
+        alert("Lỗi: " + result.message);
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+      }
+    } catch (err) {
+      alert("Lỗi kết nối khi xóa. Vui lòng thử lại.");
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+    }
+  }
 </script>
 
 </body>

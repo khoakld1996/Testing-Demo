@@ -2,139 +2,177 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Thêm câu hỏi</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - Thêm câu hỏi mới</title>
+  
+  <style>
+    /* (Giữ nguyên toàn bộ phần CSS ở đây để đảm bảo giao diện đẹp) */
+    :root {
+      --primary: #4facfe; --secondary: #00c6ff; --accent: #00ffcc;
+      --success: #2ecc71; --danger: #e74c3c; --text-main: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.7); --glass-bg: rgba(255, 255, 255, 0.12);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body {
+      min-height: 100vh; background: linear-gradient(135deg, #2c3e50, #4facfe);
+      display: flex; justify-content: center; align-items: flex-start;
+      padding: 20px 10px; color: var(--text-main);
+    }
+    .container { width: 100%; max-width: 800px; }
+    .box {
+      background: var(--glass-bg); backdrop-filter: blur(20px);
+      border-radius: 24px; padding: 30px; border: 1px solid var(--glass-border);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .q-banner { background: rgba(0, 114, 255, 0.2); padding: 15px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid var(--secondary); }
+    .form-group { margin-bottom: 15px; }
+    .input-control {
+      width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--glass-border);
+      background: rgba(0, 0, 0, 0.2); color: white; outline: none;
+    }
+    #answerArea { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; margin: 20px 0; }
+    .btn-save {
+      background: linear-gradient(135deg, var(--secondary), #0072ff);
+      color: white; width: 100%; padding: 15px; border-radius: 12px; border: none;
+      cursor: pointer; font-weight: bold; font-size: 1.1em;
+    }
+    .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+  </style>
 </head>
 <body>
 
-<div class="page">
-  <div class="container">
-
-    <div class="box">
-
-      <!-- HEADER -->
-      <div class="header">
-        <h2>➕ Thêm câu hỏi</h2>
-        <button onclick="go('dashboard.html')">🏠</button>
-      </div>
-
-      <!-- HIỂN THỊ TEST -->
-      <div id="testInfo" style="margin-bottom:15px; font-weight:bold;"></div>
-
-      <!-- LOẠI CÂU HỎI -->
-      <h4>📌 Loại câu hỏi</h4>
-      <select id="type" onchange="changeType()">
-        <option value="mcq">Trắc nghiệm một đáp án</option>
-        <option value="multiple">Trắc nghiệm nhiều đáp án</option>
-        <option value="truefalse">Đúng / Sai</option>
-        <option value="fill">Điền khuyết</option>
-        <option value="matching">Nối cặp</option>
-        <option value="ordering">Sắp xếp</option>
-        <option value="image">Câu hỏi hình ảnh</option>
-        <option value="audio">Câu hỏi âm thanh</option>
-        <option value="code">Câu hỏi code</option>
-        <option value="external">Liên kết ngoài</option>
-      </select>
-
-      <!-- CÂU HỎI -->
-      <textarea id="question" placeholder="Nhập câu hỏi"></textarea>
-
-      <!-- MCQ -->
-      <div id="mcqBox" class="question-box">
-        <input id="a" placeholder="A">
-        <input id="b" placeholder="B">
-        <input id="c" placeholder="C">
-        <input id="d" placeholder="D">
-        <select id="correct">
-          <option value="A">Đáp án đúng A</option>
-          <option value="B">Đáp án đúng B</option>
-          <option value="C">Đáp án đúng C</option>
-          <option value="D">Đáp án đúng D</option>
-        </select>
-      </div>
-
-      <!-- MULTIPLE -->
-      <div id="multiBox" class="question-box" style="display:none;">
-        <input id="m1" placeholder="Đáp án 1">
-        <input id="m2" placeholder="Đáp án 2">
-        <input id="m3" placeholder="Đáp án 3">
-        <input id="m4" placeholder="Đáp án 4">
-        <input id="multiCorrect" placeholder="Đáp án đúng (vd: 1,3)">
-      </div>
-
-      <!-- TRUE/FALSE -->
-      <div id="tfBox" class="question-box" style="display:none;">
-        <select id="tfCorrect">
-          <option value="true">Đúng</option>
-          <option value="false">Sai</option>
-        </select>
-      </div>
-
-      <!-- FILL -->
-      <div id="fillBox" class="question-box" style="display:none;">
-        <input id="fillAnswer" placeholder="Đáp án đúng">
-      </div>
-
-      <!-- MATCHING -->
-      <div id="matchingBox" class="question-box" style="display:none;">
-        <div id="pairsContainer"></div>
-        <button class="btn" onclick="addPair()">➕ Thêm cặp</button>
-      </div>
-
-      <!-- ORDERING -->
-      <div id="orderingBox" class="question-box" style="display:none;">
-        <div id="stepsContainer"></div>
-        <button class="btn" onclick="addStep()">➕ Thêm bước</button>
-      </div>
-
-      <!-- IMAGE -->
-      <div id="imageBox" class="question-box" style="display:none;">
-        <input id="imageUrl" placeholder="Link ảnh">
-        <input type="file" id="imageFile" accept="image/*">
-      </div>
-
-      <!-- AUDIO -->
-      <div id="audioBox" class="question-box" style="display:none;">
-        <input id="audioUrl" placeholder="Link audio">
-      </div>
-
-      <!-- CODE -->
-      <div id="codeBox" class="question-box" style="display:none;">
-        <textarea id="codeContent" placeholder="Nhập đoạn code"></textarea>
-        <input id="codeAnswer" placeholder="Đáp án">
-      </div>
-
-      <!-- EXTERNAL -->
-      <div id="externalBox" class="question-box" style="display:none;">
-        <input id="externalLink" placeholder="Dán link web">
-      </div>
-
-      <!-- BUTTONS -->
-      <div style="margin-top:15px;">
-        <button class="btn-save" onclick="addQuestion()">💾 Lưu câu hỏi</button>
-        <button class="btn" onclick="go('question-list.html')">📋 Danh sách câu hỏi</button>
-        <button class="btn" onclick="go('dashboard.html')">🏠 Dashboard</button>
-      </div>
-
+<div class="container">
+  <div class="box">
+    <div class="header">
+      <h2>➕ Thêm câu hỏi mới</h2>
+      <a href="dashboard.html" style="color:white; text-decoration:none;">🏠 Home</a>
     </div>
 
+    <div id="testInfo" class="q-banner">
+      ⏳ Đang tải thông tin bài test...
+    </div>
+
+    <div class="form-group">
+      <label>📌 Nội dung câu hỏi</label>
+      <textarea id="question" class="input-control" placeholder="Nhập câu hỏi tại đây..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>📌 Loại câu hỏi</label>
+      <select id="type" class="input-control" onchange="changeType()">
+        <option value="mcq">Trắc nghiệm (4 đáp án)</option>
+        <option value="tf">Đúng / Sai</option>
+        <option value="essay">Tự luận ngắn</option>
+      </select>
+    </div>
+
+    <div id="answerArea">
+      <!-- Vùng nhập đáp án sẽ thay đổi dựa trên loại câu hỏi -->
+      <div id="mcqBox">
+        <input type="text" id="a" class="input-control" placeholder="Đáp án A">
+        <input type="text" id="b" class="input-control" placeholder="Đáp án B">
+        <input type="text" id="c" class="input-control" placeholder="Đáp án C">
+        <input type="text" id="d" class="input-control" placeholder="Đáp án D">
+        <label>Đáp án đúng:</label>
+        <select id="correct" class="input-control">
+          <option value="A">A</option><option value="B">B</option>
+          <option value="C">C</option><option value="D">D</option>
+        </select>
+      </div>
+
+      <div id="tfBox" style="display:none;">
+        <select id="tfCorrect" class="input-control">
+          <option value="Đúng">Đúng</option>
+          <option value="Sai">Sai</option>
+        </select>
+      </div>
+
+      <div id="essayBox" style="display:none;">
+        <textarea id="essayAnswer" class="input-control" placeholder="Nhập đáp án mẫu..."></textarea>
+      </div>
+    </div>
+
+    <button id="btnSave" class="btn-save" onclick="saveQuestion()">💾 Lưu câu hỏi</button>
+
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <a href="question-list.html" style="flex:1; text-align:center; color:var(--accent);">📋 Xem danh sách</a>
+      <a href="dashboard.html" style="flex:1; text-align:center; color:white;">⬅️ Dashboard</a>
+    </div>
   </div>
 </div>
 
 <script src="script.js"></script>
 <script>
-// ===== HIỂN THỊ TÊN TEST =====
 const test = JSON.parse(localStorage.getItem("currentTest"));
-const testInfoEl = document.getElementById("testInfo");
 
-if(test){
-  testInfoEl.innerHTML = `📘 <b>${test.name}</b><br><small>${test.desc || ""}</small>`;
-}else{
-  testInfoEl.innerText = "⚠️ Chưa chọn bài test";
+window.onload = () => {
+  if(!test) {
+    alert("Vui lòng chọn bài test trước!");
+    location.href = "dashboard.html";
+  }
+  document.getElementById("testInfo").innerHTML = `📘 Đang thêm câu hỏi cho: <b>${test.name}</b>`;
+};
+
+// Chuyển đổi giao diện nhập đáp án
+function changeType() {
+  const type = document.getElementById("type").value;
+  document.getElementById("mcqBox").style.display = type === "mcq" ? "block" : "none";
+  document.getElementById("tfBox").style.display = type === "tf" ? "block" : "none";
+  document.getElementById("essayBox").style.display = type === "essay" ? "block" : "none";
 }
 
-// ===== INIT TYPE BOX =====
-changeType();
+// HÀM LƯU CÂU HỎI LÊN SERVER
+async function saveQuestion() {
+  const btn = document.getElementById("btnSave");
+  const qText = document.getElementById("question").value.trim();
+  const qType = document.getElementById("type").value;
+
+  if(!qText) return alert("Vui lòng nhập nội dung câu hỏi!");
+
+  let answerData = {};
+  if(qType === "mcq") {
+    answerData = {
+      a: document.getElementById("a").value,
+      b: document.getElementById("b").value,
+      c: document.getElementById("c").value,
+      d: document.getElementById("d").value,
+      correct: document.getElementById("correct").value
+    };
+  } else if(qType === "tf") {
+    answerData = { correct: document.getElementById("tfCorrect").value };
+  } else {
+    answerData = { correct: document.getElementById("essayAnswer").value };
+  }
+
+  btn.disabled = true;
+  btn.innerText = "⏳ Đang lưu...";
+
+  try {
+    const response = await fetch(API, {
+      method: "POST",
+      body: JSON.stringify({
+        action: "addQuestion",
+        testId: test.id,
+        question: qText,
+        type: qType,
+        answers: answerData
+      })
+    });
+
+    const result = await response.json();
+    if(result.status === "ok") {
+      alert("✅ Đã thêm câu hỏi thành công!");
+      document.getElementById("question").value = ""; // Xóa trắng để nhập câu tiếp theo
+    }
+  } catch (err) {
+    alert("❌ Lỗi kết nối máy chủ!");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "💾 Lưu câu hỏi";
+  }
+}
 </script>
 
 </body>
