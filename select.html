@@ -4,15 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chọn bài kiểm tra</title>
-
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
 <div class="page">
   <div class="container">
-
     <div class="box">
 
       <!-- TITLE -->
@@ -20,32 +18,65 @@
 
       <!-- GRID -->
       <div class="grid" id="testGrid">
-
-        <!-- TEST 1 -->
-        <div class="card" onclick="startQuiz('test1')">
-          <img src="https://picsum.photos/400/200?1">
-          <b>HTML Cơ Bản</b>
-          <span class="tag">10 câu • 10 phút</span>
-        </div>
-
-        <!-- TEST 2 -->
-        <div class="card" onclick="startQuiz('test2')">
-          <img src="https://picsum.photos/400/200?2">
-          <b>CSS Giao Diện</b>
-          <span class="tag">15 câu • 15 phút</span>
-        </div>
-
+        <!-- Các test sẽ được render động từ script.js / API -->
       </div>
 
       <!-- BUTTON -->
-      <button class="btn-save" onclick="goHome()">← Trang chủ</button>
+      <button class="btn back-btn" onclick="goHome()">← Trang chủ</button>
 
     </div>
-
   </div>
 </div>
 
 <script src="script.js"></script>
+<script>
+  // Lấy danh sách test từ API nếu có
+  const API = "https://script.google.com/macros/s/AKfycbx9A9shGbbkh4E0oBzKUFYzo-hqf2uv72PEOmlDS_BD_m6d1WIqE2L3syFTiYFHD2zv/exec";
+
+  function startQuiz(testId) {
+    // Lưu test hiện tại
+    const test = { id: testId, name: testId }; // Có thể fetch tên thật từ API
+    localStorage.setItem("currentTestId", test.id);
+    localStorage.setItem("currentTest", JSON.stringify(test));
+
+    // Chuyển sang trang quiz
+    window.location.href = "quiz.html";
+  }
+
+  function loadTests() {
+    fetch(API + "?action=getTests")
+      .then(res => res.json())
+      .then(data => {
+        const grid = document.getElementById("testGrid");
+        if(!grid) return;
+        grid.innerHTML = "";
+
+        if(!data.length){
+          grid.innerHTML = "<p>Chưa có bài test</p>";
+          return;
+        }
+
+        data.forEach(test => {
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <img src="https://picsum.photos/400/200?random=${test.id}">
+            <b>${test.name}</b>
+            <span class="tag">${test.totalQuestions} câu</span>
+          `;
+          div.onclick = () => startQuiz(test.id);
+          grid.appendChild(div);
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        alert("❌ Lỗi load API");
+      });
+  }
+
+  // INIT
+  window.onload = loadTests;
+</script>
 
 </body>
 </html>

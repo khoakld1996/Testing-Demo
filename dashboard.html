@@ -1,70 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <title>Dashboard Giáo viên</title>
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="container">
+<div class="page">
+  <div class="container">
 
-  <!-- HEADER -->
-  <div class="dashboard-header">
-    <h2>📊 Dashboard Giáo viên</h2>
-    <button class="btn logout" onclick="logout()">Đăng xuất</button>
-  </div>
-
-  <!-- SEARCH -->
-  <div class="card search-box">
-    <input id="search" placeholder="🔍 Tìm học sinh..." oninput="filterResult()">
-  </div>
-
-  <!-- GRID -->
-  <div class="dashboard-grid">
-
-    <!-- THÊM BÀI -->
-    <div class="card box">
-      <h3>➕ Thêm bài test</h3>
-
-      <input id="testName" placeholder="Tên bài">
-      <input id="testDesc" placeholder="Mô tả">
-
-      <button class="btn" onclick="addTest()">
-        Tiếp tục ➡️ Thêm câu hỏi
-      </button>
+    <!-- HEADER -->
+    <div class="box dashboard-header">
+      <h2>📊 Dashboard Giáo viên</h2>
+      <button class="btn logout" onclick="logout()">Đăng xuất</button>
     </div>
 
-    <!-- DANH SÁCH -->
-    <div class="card box">
-      <h3>📚 Danh sách bài</h3>
-      <div id="testList"></div>
+    <!-- SEARCH -->
+    <div class="box card search-box">
+      <input id="search" placeholder="🔍 Tìm học sinh..." oninput="filterResult()">
+    </div>
+
+    <!-- GRID BÀI TEST -->
+    <div class="dashboard-grid">
+
+      <!-- THÊM BÀI TEST -->
+      <div class="box card">
+        <h3>➕ Thêm bài test</h3>
+        <input id="testName" placeholder="Tên bài">
+        <input id="testDesc" placeholder="Mô tả">
+        <button class="btn" onclick="addTest()">Tiếp tục ➡️ Thêm câu hỏi</button>
+      </div>
+
+      <!-- DANH SÁCH BÀI TEST -->
+      <div class="box card">
+        <h3>📚 Danh sách bài</h3>
+        <div id="testList"></div>
+      </div>
+
+    </div>
+
+    <!-- GRID KẾT QUẢ + CHART -->
+    <div class="dashboard-grid" style="margin-top:20px;">
+
+      <!-- KẾT QUẢ -->
+      <div class="box card">
+        <h3>📊 Kết quả học sinh</h3>
+        <div id="resultList"></div>
+      </div>
+
+      <!-- CHART -->
+      <div class="box card">
+        <h3>📈 Biểu đồ</h3>
+        <canvas id="chart"></canvas>
+      </div>
+
     </div>
 
   </div>
-
-  <!-- RESULT + CHART -->
-  <div class="dashboard-grid" style="margin-top:20px;">
-
-    <!-- RESULT -->
-    <div class="card box">
-      <h3>📊 Kết quả học sinh</h3>
-      <div id="resultList"></div>
-    </div>
-
-    <!-- CHART -->
-    <div class="card box">
-      <h3>📈 Biểu đồ</h3>
-      <canvas id="chart"></canvas>
-    </div>
-
-  </div>
-
 </div>
 
-<script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+<script>
 // ===== CHECK ROLE =====
 let role = localStorage.getItem("role");
 if(role !== "teacher"){
@@ -77,23 +75,22 @@ function logout(){
   window.location.href = "index.html";
 }
 
-// ===== TEST LIST =====
+// ===== API =====
+const API = "PASTE_WEB_APP_URL_CỦA_BẠN_VÀO_ĐÂY";
+
+// ===== LOAD TESTS =====
 let tests = JSON.parse(localStorage.getItem("tests")) || [];
 
-// ===== RENDER TEST =====
+// ===== RENDER TESTS =====
 function renderTests(){
   let html = "";
-
-  if(tests.length === 0){
-    html = "<p>Chưa có bài test</p>";
-  }
+  if(tests.length === 0) html = "<p>Chưa có bài test</p>";
 
   tests.forEach((t,i)=>{
     html += `
       <div class="test-item">
         <b>${t.name}</b>
         <p>${t.desc}</p>
-
         <div style="margin-top:10px;">
           <button class="btn" onclick="openTest(${i})">➕ Thêm câu hỏi</button>
           <button class="btn" onclick="viewQuestions(${i})">📋 DS câu hỏi</button>
@@ -102,96 +99,54 @@ function renderTests(){
       </div>
     `;
   });
-
   document.getElementById("testList").innerHTML = html;
 }
 
 // ===== ADD TEST =====
-const API = "https://script.google.com/macros/s/AKfycbyf668rD5EqEKWUX1GV46VV-_O2RPuue-uiD3BGbWhOZ0DZSx7iSTdiUzxSmdCRfHl7/exec";
-
 function addTest() {
   const name = document.getElementById("testName").value.trim();
   const desc = document.getElementById("testDesc").value.trim();
-
-  if (!name) {
-    alert("❌ Vui lòng nhập tên bài!");
-    return;
-  }
+  if(!name){ alert("❌ Vui lòng nhập tên bài!"); return; }
 
   const formData = new FormData();
+  formData.append("data", JSON.stringify({ action:"createTest", name, desc }));
 
-formData.append("data", JSON.stringify({
-  action: "createTest",
-  name: name,
-  desc: desc
-}));
-
-fetch(API, {
-  method: "POST",
-  body: formData
-})
-.then(res => res.json())
-.then(res => {
-  if (res.status === "ok") {
-
-    // ✅ tạo object test
-    const testData = {
-      id: res.id,
-      name: name,
-      desc: desc
-    };
-
-    // ✅ LƯU CURRENT TEST
-    localStorage.setItem("currentTestId", res.id);
-    localStorage.setItem("currentTest", JSON.stringify(testData));
-
-    // ✅ LƯU DANH SÁCH TEST
-    let tests = JSON.parse(localStorage.getItem("tests")) || [];
-    tests.push(testData);
-    localStorage.setItem("tests", JSON.stringify(tests));
-
-    // 👉 reload list
-    renderTests();
-
-    // 👉 chuyển trang
-    setTimeout(() => {
-      window.location.href = "add-question.html";
-    }, 200);
-
-  } else {
-    alert("❌ Lỗi tạo test");
-  }
-})
-.catch(err => {
-  console.log(err);
-  alert("❌ Lỗi kết nối API");
-});
+  fetch(API, { method:"POST", body: formData })
+    .then(res => res.json())
+    .then(res => {
+      if(res.status==="ok"){
+        const testData = { id: res.id, name, desc };
+        localStorage.setItem("currentTestId", res.id);
+        localStorage.setItem("currentTest", JSON.stringify(testData));
+        tests.push(testData);
+        localStorage.setItem("tests", JSON.stringify(tests));
+        renderTests();
+        setTimeout(()=>{ window.location.href="add-question.html"; }, 200);
+      } else { alert("❌ Lỗi tạo test"); }
+    })
+    .catch(err=>{ console.log(err); alert("❌ Lỗi kết nối API"); });
 }
-// ===== MỞ TEST ĐỂ THÊM CÂU HỎI =====
+
+// ===== OPEN / VIEW TEST =====
 function openTest(i){
   const test = tests[i];
-
   localStorage.setItem("currentTestId", test.id);
-  localStorage.setItem("currentTest", JSON.stringify(test)); // ❗ thêm dòng nà
+  localStorage.setItem("currentTest", JSON.stringify(test));
   window.location.href = "add-question.html";
 }
 
-// ===== XEM DANH SÁCH CÂU HỎI =====
 function viewQuestions(i){
   const test = tests[i];
-
   localStorage.setItem("currentTestId", test.id);
-  localStorage.setItem("currentTest", JSON.stringify(test)); // ❗ thêm dòng này
+  localStorage.setItem("currentTest", JSON.stringify(test));
   window.location.href = "question-list.html";
 }
 
 // ===== DELETE TEST =====
 function deleteTest(i){
   if(!confirm("Xóa bài test này?")) return;
-
   tests.splice(i,1);
   localStorage.setItem("tests", JSON.stringify(tests));
-
   renderTests();
 }
 
@@ -200,33 +155,18 @@ let allResults = JSON.parse(localStorage.getItem("results")) || [];
 
 function renderResults(data = allResults){
   let html = "";
-
-  if(data.length === 0){
-    html = "<p>Chưa có dữ liệu</p>";
-  }
-
+  if(data.length === 0){ html="<p>Chưa có dữ liệu</p>"; }
   data.forEach(r=>{
     let percent = Math.round((r.score/r.total)*100);
-
-    html += `
-      <div class="result-item">
-        <b>${r.name}</b>
-        <p>${r.score}/${r.total} (${percent}%)</p>
-      </div>
-    `;
+    html += `<div class="result-item"><b>${r.name}</b><p>${r.score}/${r.total} (${percent}%)</p></div>`;
   });
-
   document.getElementById("resultList").innerHTML = html;
 }
 
 // ===== FILTER =====
 function filterResult(){
   let key = document.getElementById("search").value.toLowerCase();
-
-  let filtered = allResults.filter(r =>
-    r.name.toLowerCase().includes(key)
-  );
-
+  let filtered = allResults.filter(r=> r.name.toLowerCase().includes(key));
   renderResults(filtered);
 }
 
@@ -235,8 +175,6 @@ renderTests();
 renderResults();
 
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>
 </html>

@@ -2,15 +2,18 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- ✅ QUAN TRỌNG -->
+
+  <!-- ✅ QUAN TRỌNG CHO MOBILE -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Danh sách câu hỏi</title>
 
+  <!-- ✅ CHỈ 1 CSS -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
 
-<!-- ===== LAYOUT CHUẨN ===== -->
 <div class="page">
   <div class="container">
 
@@ -19,14 +22,21 @@
       <!-- HEADER -->
       <div class="header">
         <h2 id="testTitle">📘 Bài test</h2>
-        <button onclick="go('dashboard.html')">🏠</button>
+
+        <button class="btn" onclick="go('dashboard.html')">
+          🏠
+        </button>
       </div>
 
       <!-- LIST -->
       <div id="questionList"></div>
 
-      <!-- BUTTON -->
-      <button class="btn-save" onclick="goBack()">⬅️ Quay lại</button>
+      <!-- FOOTER BUTTON -->
+      <div style="margin-top:15px;">
+        <button class="btn-save" onclick="goBack()">
+          ⬅️ Quay lại
+        </button>
+      </div>
 
     </div>
 

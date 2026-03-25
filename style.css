@@ -27,19 +27,19 @@ body {
 
 .container {
   width: 100%;
-  max-width: 900px;
+  max-width: 1000px;
 }
 
 /* ===== MAIN BOX ===== */
 .box {
   width: 100%;
   background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(14px);
 
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 18px;
+  padding: 22px;
 
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.25);
   color: white;
 }
 
@@ -69,6 +69,12 @@ input, textarea, select {
   color: white;
 
   outline: none;
+  transition: 0.2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  background: rgba(255,255,255,0.3);
+  transform: scale(1.02);
 }
 
 input::placeholder,
@@ -78,11 +84,6 @@ textarea::placeholder {
 
 select option {
   color: black;
-}
-
-/* ===== FORM GROUP ===== */
-.group {
-  margin-bottom: 12px;
 }
 
 /* ===== BUTTON ===== */
@@ -102,6 +103,7 @@ button {
 
 button:hover {
   transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
 }
 
 button:active {
@@ -117,38 +119,55 @@ button:active {
   margin-top: 15px;
 }
 
-/* ===== QUESTION LIST ===== */
-#questionList {
-  display: flex;
-  flex-direction: column;
+/* ===== GRID ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 15px;
 }
 
-/* CARD */
+/* ===== CARD ===== */
 .card {
-  padding: 15px;
-  border-radius: 14px;
+  padding: 16px;
+  border-radius: 16px;
 
   background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(10px);
 
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  transition: 0.25s;
+  cursor: pointer;
 }
 
-/* TITLE */
+.card:hover {
+  transform: translateY(-5px) scale(1.02);
+  background: rgba(255,255,255,0.22);
+}
+
+/* TEXT */
 .card b {
   font-size: 16px;
+  line-height: 1.4;
 }
 
 /* TAG */
 .tag {
   width: fit-content;
   padding: 4px 10px;
-  font-size: 13px;
+  font-size: 12px;
 
   border-radius: 8px;
-  background: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.3);
+}
+
+/* ===== QUESTION LIST GRID ===== */
+#questionList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
 }
 
 /* ACTION BUTTON */
@@ -194,52 +213,18 @@ button:active {
   transition: 0.3s;
 }
 
-/* ===== IMAGE PREVIEW ===== */
+/* ===== IMAGE ===== */
 img {
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
-/* ===== RESPONSIVE ===== */
+/* ===== MOBILE ===== */
 @media (max-width: 768px) {
 
-  .container {
-    max-width: 100%;
-  }
-
-  .box {
-    padding: 15px;
-    border-radius: 12px;
-  }
-
-  .header h2 {
-    font-size: 18px;
-  }
-
-  button {
-    font-size: 14px;
-    padding: 10px;
-  }
-
-  input, textarea, select {
-    font-size: 14px;
-    padding: 10px;
-  }
-
-  .card {
-    padding: 12px;
-  }
-}
-
-/* ===== MOBILE NHỎ ===== */
-@media (max-width: 480px) {
-
-  body {
-    padding: 10px 5px;
-  }
-
-  .box {
-    padding: 12px;
+  .grid,
+  #questionList {
+    grid-template-columns: 1fr;
   }
 
   .header {
@@ -247,11 +232,24 @@ img {
     gap: 10px;
   }
 
-  .action-btns {
-    flex-direction: column;
+  button {
+    font-size: 14px;
+    padding: 10px;
+  }
+}
+
+/* ===== MOBILE SMALL ===== */
+@media (max-width: 480px) {
+
+  body {
+    padding: 10px;
   }
 
-  .action-btns button {
-    width: 100%;
+  .box {
+    padding: 15px;
+  }
+
+  .card {
+    padding: 12px;
   }
 }

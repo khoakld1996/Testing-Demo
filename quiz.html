@@ -1,33 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>Làm bài Quiz</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-<div class="container">
+<div class="page">
+  <div class="container">
+    <div class="box">
 
-  <!-- HEADER -->
-  <div class="header">
-    <div class="title" id="name"></div>
-    <div class="timer" id="timer">60s</div>
+      <!-- HEADER -->
+      <div class="header">
+        <div class="title" id="name"></div>
+        <div class="timer" id="timer">60s</div>
+      </div>
+
+      <!-- PROGRESS -->
+      <div class="progress">
+        <div class="progress-bar" id="progress"></div>
+      </div>
+
+      <!-- QUESTION -->
+      <div class="card">
+        <div class="question" id="question">Câu hỏi</div>
+        <div class="answers" id="answers"></div>
+        <button class="btn" onclick="next()">Câu tiếp</button>
+      </div>
+
+      <button class="btn back-btn" onclick="goHome()">← Trang chủ</button>
+
+    </div>
   </div>
-
-  <!-- PROGRESS -->
-  <div class="progress">
-    <div class="progress-bar" id="progress"></div>
-  </div>
-
-  <!-- QUESTION -->
-  <div class="card">
-    <div class="question" id="question">Câu hỏi</div>
-
-    <div class="answers" id="answers"></div>
-
-    <button class="btn" onclick="next()">Câu tiếp</button>
-  </div>
-<button class="btn back-btn" onclick="goHome()">← Trang chủ</button>
 </div>
 
 <script src="script.js"></script>
