@@ -3,224 +3,237 @@ const API = "https://script.google.com/macros/s/AKfycbx9A9shGbbkh4E0oBzKUFYzo-hq
 
 // ================= GLOBAL =================
 let questions = [];
-let index = 0;
+let currentIndex = 0;
 let score = 0;
-let selected = -1;
-let currentTest = null;
+let selectedAnswer = -1;
 
 // ================= NAVIGATION =================
 function go(page){ window.location.href = page; }
+function goHome(){ window.location.href = "index.html"; }
 
-// ================= LOAD TEST INFO =================
-function loadTestInfo(){
-  const box = document.getElementById("testInfo");
-  if(!box) return;
-  currentTest = JSON.parse(localStorage.getItem("currentTest"));
-  if(currentTest){
-    box.innerHTML = `📘 <b>${currentTest.name}</b><br><small>${currentTest.desc || ""}</small>`;
+// ================= LOGIN =================
+function login(){
+  const user = document.getElementById("user")?.value.trim();
+  const pass = document.getElementById("pass")?.value.trim();
+  const notify = document.getElementById("notify");
+
+  if(notify) notify.style.display="none";
+
+  if(user==="admin" && pass==="123"){
+    localStorage.setItem("role","teacher");
+    go("dashboard.html");
+  } else if(notify){
+    notify.className="notify error";
+    notify.innerText="Sai tài khoản hoặc mật khẩu";
+    notify.style.display="block";
   }
 }
 
-// ================= LOAD TESTS =================
-async function loadTestsFromAPI(){
-  const grid = document.getElementById("testGrid");
-  if(!grid) return;
-  grid.innerHTML = "Đang tải...";
+// ================= SAVE STUDENT NAME =================
+function saveName(){
+  const name = document.getElementById("username")?.value.trim();
+  if(!name){ alert("Nhập tên!"); return; }
+  localStorage.setItem("username", name);
+  go("select.html");
+}
 
-  try{
-    const res = await fetch(API+"?action=getTests");
-    const data = await res.json();
-    grid.innerHTML = "";
-    if(!data.length){ grid.innerHTML="<p>Chưa có bài test</p>"; return; }
-
-    data.forEach(test=>{
-      const div=document.createElement("div");
-      div.className="card";
-      div.innerHTML=`<b>${test.name}</b><span class="tag">${test.totalQuestions} câu</span>`;
-      div.onclick=()=>startTest(test);
-      grid.appendChild(div);
-    });
-  }catch(err){
-    console.log(err);
-    grid.innerHTML="<p>❌ Lỗi load API</p>";
+// ================= LOAD TEST INFO (Add Question page) =================
+function loadTestInfo(){
+  const box = document.getElementById("testInfo");
+  const test = JSON.parse(localStorage.getItem("currentTest"));
+  if(box){
+    if(test) box.innerHTML = `📘 <b>${test.name}</b><br><small>${test.desc || ""}</small>`;
+    else box.innerText = "⚠️ Chưa chọn bài test";
   }
+}
+
+// ================= LOAD TESTS FROM API (Select Page / Dashboard) =================
+function loadTestsFromAPI(){
+  const grid = document.getElementById("testGrid");
+  if(grid) grid.innerHTML = "<p>⏳ Đang tải...</p>";
+
+  fetch(API + "?action=getTests")
+    .then(res => res.json())
+    .then(data => {
+      if(!grid) return;
+      grid.innerHTML = "";
+      if(!data.length){ grid.innerHTML="<p>Chưa có bài test</p>"; return; }
+
+      data.forEach(test=>{
+        const div = document.createElement("div");
+        div.className="card";
+        div.innerHTML=`<img src="https://picsum.photos/400/200?random=${test.id}">
+                       <b>${test.name}</b>
+                       <span class="tag">${test.totalQuestions} câu</span>`;
+        div.onclick = () => startTest(test);
+        grid.appendChild(div);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      if(grid) grid.innerHTML="<p>❌ Lỗi tải dữ liệu</p>";
+    });
 }
 
 // ================= START TEST =================
 function startTest(test){
   localStorage.setItem("currentTest", JSON.stringify(test));
+  // reset quiz data
+  localStorage.removeItem("allQuestions");
+  localStorage.removeItem("score");
+  localStorage.removeItem("total");
   go("quiz.html");
 }
-
-// ================= LOAD QUESTIONS =================
-async function loadQuestionsFromAPI(){
-  const listEl=document.getElementById("questionList");
-  if(!listEl) return;
-  currentTest = JSON.parse(localStorage.getItem("currentTest"));
-  if(!currentTest){ listEl.innerHTML="<p>Chưa chọn bài test</p>"; return; }
-
-  try{
-    const res = await fetch(`${API}?action=getQuestions&testId=${currentTest.id}`);
-    questions = await res.json() || [];
-    listEl.innerHTML="";
-    if(!questions.length){ listEl.innerHTML="<p>Chưa có câu hỏi</p>"; return; }
-
-    const typeName = { mcq:"Trắc nghiệm", multiple:"Nhiều đáp án", truefalse:"Đúng/Sai",
-      fill:"Điền khuyết", matching:"Nối cặp", ordering:"Sắp xếp",
-      image:"Hình ảnh", audio:"Âm thanh", code:"Code", external:"Link"};
-
-    questions.forEach((q,i)=>{
-      const div=document.createElement("div");
-      div.className="card";
-      div.innerHTML=`
-        <b>${i+1}. ${q.question}</b>
-        <div class="tag">${typeName[q.type]||q.type}</div>
-        <div class="action-btns">
-          <button onclick="editQuestion(${i})">✏️</button>
-          <button class="btn-danger" onclick="deleteQuestion(${i})">🗑️</button>
-        </div>`;
-      listEl.appendChild(div);
-    });
-  }catch(err){ console.log(err); listEl.innerHTML="<p>❌ Lỗi tải câu hỏi</p>"; }
-}
-
-// ================= ADD / EDIT QUESTION =================
-function editQuestion(i){
-  localStorage.setItem("editIndex", i);
-  localStorage.setItem("editData", JSON.stringify(questions[i]));
-  go("add-question.html");
-}
-
-async function addQuestion(){
-  const type=document.getElementById("type")?.value;
-  const questionText=document.getElementById("question")?.value.trim();
-  if(!questionText){ alert("Nhập câu hỏi!"); return; }
-  if(!currentTest){ alert("Chưa chọn bài test!"); return; }
-
-  let data={type, question:questionText};
-
-  if(type==="mcq"){ 
-    data.options=[...Array(4)].map((_,i)=>document.getElementById(["a","b","c","d"][i])?.value); 
-    data.correct=document.getElementById("correct")?.value; 
-  }
-  if(type==="multiple"){ 
-    data.options=[...Array(4)].map((_,i)=>document.getElementById(["m1","m2","m3","m4"][i])?.value).filter(v=>v); 
-    data.correct=document.getElementById("multiCorrect")?.value; 
-  }
-  if(type==="matching"){ 
-    const rows=document.querySelectorAll("#pairsContainer > div"); 
-    data.pairs=Array.from(rows).map(r=>{ const i=r.querySelectorAll("input"); return {left:i[0].value.trim(), right:i[1].value.trim()}; }); 
-  }
-  if(type==="ordering"){ 
-    const inputs=document.querySelectorAll("#stepsContainer input"); 
-    data.steps=Array.from(inputs).map(i=>i.value.trim()); 
-  }
-  if(type==="image"){ 
-    const url=document.getElementById("imageUrl")?.value; 
-    if(url) data.image=url; else { alert("Chọn ảnh!"); return; } 
-  }
-  if(type==="audio") data.audio=document.getElementById("audioUrl")?.value;
-  if(type==="code"){ 
-    data.code=document.getElementById("codeContent")?.value; 
-    data.correct=document.getElementById("codeAnswer")?.value; 
-  }
-  if(type==="external") data.link=document.getElementById("externalLink")?.value;
-
-  const formData=new FormData();
-  formData.append("data", JSON.stringify({action:"addQuestion", testId:currentTest.id, answer:JSON.stringify(data)}));
-  try{ 
-    await fetch(API,{method:"POST", body:formData}); 
-    alert("✅ Đã lưu"); 
-    resetForm(); 
-    loadQuestionsFromAPI(); 
-  }
-  catch(err){ console.log(err); alert("❌ Lỗi lưu Google Sheet"); }
-}
-
-// ================= DELETE =================
-async function deleteQuestion(i){
-  if(!confirm("Xóa câu hỏi này?")) return;
-  const formData=new FormData();
-  formData.append("data", JSON.stringify({action:"deleteQuestion", testId:currentTest.id, questionIndex:i}));
-  try{ await fetch(API,{method:"POST",body:formData}); alert("✅ Đã xóa"); loadQuestionsFromAPI(); }
-  catch(err){ console.log(err); alert("❌ Lỗi xóa"); }
-}
-
-// ================= RESET =================
-function resetForm(){ 
-  document.getElementById("question").value=""; 
-  document.querySelectorAll("input,textarea").forEach(i=>i.value=""); 
-  document.getElementById("pairsContainer")?.replaceChildren(); 
-  document.getElementById("stepsContainer")?.replaceChildren(); 
-}
-
-// ================= TYPE =================
-function changeType(){ 
-  const type=document.getElementById("type")?.value; 
-  ["mcqBox","multiBox","tfBox","fillBox","matchingBox","orderingBox","imageBox","audioBox","codeBox","externalBox"].forEach(id=>document.getElementById(id)?.style.display="none"); 
-  if(type) document.getElementById(type+"Box")?.style.display="block"; 
-}
-
-// ================= INIT =================
-window.onload=function(){ 
-  loadTestInfo(); 
-  loadTestsFromAPI(); 
-  loadQuestionsFromAPI(); 
-  changeType(); 
-};
 
 // ================= QUIZ =================
 function initQuiz(){
   const questionEl = document.getElementById("question");
   const answerEl = document.getElementById("answers");
+  const currentTest = JSON.parse(localStorage.getItem("currentTest"));
+  const testId = currentTest?.id;
+  if(!questionEl || !answerEl || !testId) return;
 
-  if(!questionEl || !answerEl) return;
+  let all = JSON.parse(localStorage.getItem("allQuestions")) || {};
+  questions = all[testId] || [];
 
-  fetch(`${API}?action=getQuestions&testId=${currentTest.id}`)
-    .then(res=>res.json())
-    .then(data=>{
-      questions = data || [];
-      if(questions.length) loadQuestion();
-      else questionEl.innerText="Chưa có câu hỏi!";
-    })
-    .catch(err=>{ console.log(err); questionEl.innerText="❌ Lỗi tải câu hỏi"; });
+  if(questions.length) loadQuestion();
+  else questionEl.innerText = "Chưa có câu hỏi!";
 }
 
 function loadQuestion(){
-  const q = questions[index];
+  const q = questions[currentIndex];
+  if(!q) return;
+
   document.getElementById("question").innerText = q.question;
 
   let html = "";
-  if(q.options) q.options.forEach((ans,i)=> html+=`<button onclick="select(${i})">${ans}</button>`);
+  if(q.options){
+    q.options.forEach((opt,i)=>{
+      html += `<button onclick="select(${i})">${opt}</button>`;
+    });
+  }
   document.getElementById("answers").innerHTML = html;
   updateProgress();
 }
 
 function select(i){
-  selected = i;
-  document.querySelectorAll("#answers button").forEach(b=>b.classList.remove("selected"));
-  document.querySelectorAll("#answers button")[i]?.classList.add("selected");
+  selectedAnswer = i;
+  document.querySelectorAll("#answers button").forEach(b => b.classList.remove("selected"));
+  const btns = document.querySelectorAll("#answers button");
+  if(btns[i]) btns[i].classList.add("selected");
 }
 
 function next(){
-  if(selected===-1){ alert("Chọn đáp án!"); return; }
-  const q=questions[index];
+  if(selectedAnswer === -1){ alert("Chọn đáp án!"); return; }
+
+  const q = questions[currentIndex];
   if(q.options){
-    const map=["A","B","C","D"];
-    if(map[selected]==q.correct) score++;
+    const map = ["A","B","C","D"];
+    if(map[selectedAnswer] === q.correct) score++;
   }
-  index++; selected=-1;
-  if(index>=questions.length){ localStorage.setItem("score",score); localStorage.setItem("total",questions.length); go("result.html"); return; }
+
+  currentIndex++;
+  selectedAnswer = -1;
+
+  if(currentIndex >= questions.length){
+    localStorage.setItem("score", score);
+    localStorage.setItem("total", questions.length);
+    go("result.html");
+    return;
+  }
+
   loadQuestion();
 }
 
 function updateProgress(){
-  const bar=document.getElementById("progress");
-  if(!bar) return;
-  bar.style.width=((index+1)/questions.length*100)+"%";
+  const bar = document.getElementById("progress");
+  if(bar){
+    const percent = ((currentIndex+1)/questions.length)*100;
+    bar.style.width = percent + "%";
+  }
 }
 
-// ================= ENTER QUICK SAVE =================
-document.addEventListener("keydown", e=>{
-  if(e.ctrlKey && e.key==="Enter") addQuestion();
-});
+// ================= LOAD RESULTS =================
+function renderResults(){
+  const nameEl = document.getElementById("name");
+  const scoreEl = document.getElementById("score");
+  const percentEl = document.getElementById("percent");
+
+  const name = localStorage.getItem("username");
+  const score = localStorage.getItem("score");
+  const total = localStorage.getItem("total");
+
+  if(nameEl) nameEl.innerText = "Học sinh: " + name;
+  if(scoreEl) scoreEl.innerText = "Điểm: " + score + "/" + total;
+  if(percentEl){
+    const p = Math.round((score/total)*100);
+    percentEl.innerText = "Tỉ lệ: " + p + "%";
+  }
+}
+
+// ================= ADD QUESTION =================
+function changeType(){
+  const type = document.getElementById("type")?.value;
+  const boxes = ["mcqBox","multiBox","tfBox","fillBox","matchingBox","orderingBox","imageBox","audioBox","codeBox","externalBox"];
+  boxes.forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display="none"; });
+  if(type) show(type + "Box");
+}
+
+function show(id){ const el=document.getElementById(id); if(el) el.style.display="block"; }
+
+function addQuestion(){
+  const type = document.getElementById("type")?.value;
+  const question = document.getElementById("question")?.value.trim();
+  if(!question){ alert("Nhập câu hỏi!"); return; }
+
+  const currentTest = JSON.parse(localStorage.getItem("currentTest"));
+  const testId = currentTest?.id;
+  if(!testId){ alert("Chưa chọn bài test!"); return; }
+
+  let data = {type, question};
+
+  if(type==="mcq"){
+    data.options=[document.getElementById("a")?.value,document.getElementById("b")?.value,
+                  document.getElementById("c")?.value,document.getElementById("d")?.value];
+    data.correct=document.getElementById("correct")?.value;
+  }
+  if(type==="multiple"){
+    data.options=[document.getElementById("m1")?.value,document.getElementById("m2")?.value,
+                  document.getElementById("m3")?.value,document.getElementById("m4")?.value].filter(v=>v);
+    data.correct=document.getElementById("multiCorrect")?.value;
+  }
+
+  // TODO: xử lý các loại khác (fill, matching, ordering, image, audio, code, external)
+  
+  saveQuestion(data,testId);
+}
+
+function saveQuestion(data,testId){
+  let all=JSON.parse(localStorage.getItem("allQuestions"))||{};
+  if(!all[testId]) all[testId]=[];
+  all[testId].push(data);
+  localStorage.setItem("allQuestions", JSON.stringify(all));
+
+  const formData=new FormData();
+  formData.append("data", JSON.stringify({
+    action:"addQuestion",
+    testId,
+    type:data.type,
+    question:data.question,
+    answer:JSON.stringify(data)
+  }));
+
+  fetch(API,{method:"POST",body:formData})
+    .then(res=>res.json())
+    .then(()=>alert("✅ Đã lưu!"))
+    .catch(()=>alert("❌ Lỗi kết nối Google Sheet!"));
+}
+
+// ================= INIT =================
+window.onload = function(){
+  loadTestsFromAPI();
+  loadTestInfo();
+  initQuiz();
+  changeType();
+  renderResults();
+};
