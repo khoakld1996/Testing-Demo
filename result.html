@@ -2,39 +2,127 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <!-- ✅ QUAN TRỌNG CHO MOBILE -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kết quả Quiz</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Kết quả Quiz | Online Test</title>
+  <style>
+    :root {
+      --primary: #4facfe;
+      --accent: #00ffcc;
+      --glass: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f2027, #2c5364);
+      display: flex; justify-content: center; align-items: center;
+      color: white; padding: 20px;
+    }
+
+    .box {
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      border-radius: 30px;
+      padding: 40px 30px;
+      border: 1px solid var(--glass-border);
+      text-align: center;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+    }
+
+    .icon-result { font-size: 4rem; margin-bottom: 10px; }
+
+    h2 { font-size: 2rem; margin-bottom: 25px; color: var(--accent); }
+
+    .info-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      text-align: left;
+      border: 1px solid var(--glass-border);
+    }
+
+    .info-item {
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .label { color: rgba(255,255,255,0.6); }
+
+    .score-big {
+      font-size: 3.5rem;
+      font-weight: bold;
+      background: linear-gradient(to bottom, #fff, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 10px 0;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 15px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #002f4b;
+      font-weight: bold;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .btn:hover { transform: scale(1.03); filter: brightness(1.1); }
+  </style>
 </head>
 <body>
 
-<div class="page">
-  <div class="container">
-    <div class="box">
+<div class="box">
+  <div class="icon-result">🏆</div>
+  <h2>Hoàn thành!</h2>
 
-      <h2>📊 Kết quả</h2>
-
-      <p id="name"></p>
-      <p id="score"></p>
-      <p id="percent"></p>
-
-      <button class="btn" onclick="go('index.html')">Về trang chủ</button>
-
+  <div class="score-big" id="displayScore">0.0</div>
+  
+  <div class="info-card">
+    <div class="info-item">
+      <span class="label">Học sinh:</span>
+      <span id="resName">...</span>
+    </div>
+    <div class="info-item">
+      <span class="label">Trường:</span>
+      <span id="resSchool">...</span>
+    </div>
+    <div class="info-item">
+      <span class="label">Đúng:</span>
+      <span id="resCorrect">0/0</span>
     </div>
   </div>
+
+  <button class="btn" onclick="location.href='index.html'">Về trang chủ</button>
 </div>
 
 <script>
-let name = localStorage.getItem("username");
-let score = parseInt(localStorage.getItem("score") || 0);
-let total = parseInt(localStorage.getItem("total") || 0);
+  window.onload = () => {
+    // Lấy dữ liệu từ localStorage
+    const name = localStorage.getItem("studentName") || "Học sinh";
+    const school = localStorage.getItem("schoolName") || "N/A";
+    const score = localStorage.getItem("lastScore") || "0.0";
+    const correct = localStorage.getItem("correctCount") || "0/0";
 
-document.getElementById("name").innerText = "Học sinh: " + name;
-document.getElementById("score").innerText = "Điểm: " + score + "/" + total;
-
-let percent = total ? Math.round((score / total) * 100) : 0;
-document.getElementById("percent").innerText = "Tỉ lệ: " + percent + "%";
+    // Hiển thị lên giao diện
+    document.getElementById("resName").innerText = name;
+    document.getElementById("resSchool").innerText = school;
+    document.getElementById("displayScore").innerText = score;
+    document.getElementById("resCorrect").innerText = correct;
+    
+    // Xóa dữ liệu tạm để lần sau làm bài mới (tùy chọn)
+    // localStorage.removeItem("lastScore");
+  };
 </script>
 
 </body>

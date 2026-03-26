@@ -2,42 +2,221 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <!-- ✅ QUAN TRỌNG CHO MOBILE -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Làm bài Quiz</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Đang làm bài thi | Quiz Online</title>
+  <style>
+    :root {
+      --primary: #4facfe;
+      --accent: #00ffcc;
+      --glass: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f2027, #2c5364);
+      color: white; padding: 20px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+
+    /* Header thanh trạng thái */
+    .quiz-header {
+      width: 100%; max-width: 800px;
+      background: var(--glass); backdrop-filter: blur(10px);
+      padding: 15px 25px; border-radius: 15px;
+      display: flex; justify-content: space-between; align-items: center;
+      border: 1px solid var(--glass-border);
+      position: sticky; top: 10px; z-index: 100; margin-bottom: 20px;
+    }
+
+    #timer { font-size: 1.2rem; font-weight: bold; color: #ff4757; }
+
+    /* Vùng chứa câu hỏi */
+    #quizContainer { width: 100%; max-width: 800px; }
+
+    .question-card {
+      background: var(--glass); border-radius: 20px;
+      padding: 25px; margin-bottom: 20px;
+      border: 1px solid var(--glass-border);
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .q-text { font-size: 1.2rem; margin-bottom: 20px; font-weight: 600; line-height: 1.5; }
+
+    .options { display: grid; gap: 12px; }
+
+    .option-label {
+      background: rgba(255,255,255,0.05);
+      padding: 15px 20px; border-radius: 12px;
+      border: 1px solid var(--glass-border);
+      cursor: pointer; transition: 0.3s;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .option-label:hover { background: rgba(255,255,255,0.15); border-color: var(--primary); }
+
+    input[type="radio"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+
+    /* Nút nộp bài */
+    .submit-btn {
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
+      color: white; border: none; padding: 15px 40px;
+      border-radius: 12px; font-size: 1.1rem; font-weight: bold;
+      cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+      transition: 0.3s; margin: 20px 0 50px;
+    }
+
+    .submit-btn:hover { transform: scale(1.05); box-shadow: 0 15px 25px rgba(0, 114, 255, 0.4); }
+
+    .loading { text-align: center; font-size: 1.5rem; margin-top: 100px; }
+  </style>
 </head>
 <body>
 
-<div class="page">
-  <div class="container">
-    <div class="box">
-
-      <!-- HEADER -->
-      <div class="header">
-        <div class="title" id="name"></div>
-        <div class="timer" id="timer">60s</div>
-      </div>
-
-      <!-- PROGRESS -->
-      <div class="progress">
-        <div class="progress-bar" id="progress"></div>
-      </div>
-
-      <!-- QUESTION -->
-      <div class="card">
-        <div class="question" id="question">Câu hỏi</div>
-        <div class="answers" id="answers"></div>
-        <button class="btn" onclick="next()">Câu tiếp</button>
-      </div>
-
-      <button class="btn back-btn" onclick="goHome()">← Trang chủ</button>
-
+  <div class="quiz-header">
+    <div>
+      <h3 id="quizTitle">Đang tải bài thi...</h3>
+      <small id="studentInfo">Học sinh: ...</small>
     </div>
+    <div id="timer">⏱️ 00:00</div>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <div id="quizContainer">
+    <p class="loading">⌛ Đang chuẩn bị câu hỏi...</p>
+  </div>
 
+  <button id="submitBtn" class="submit-btn" style="display: none;" onclick="submitQuiz()">Nộp bài 🏁</button>
+
+  <script>
+    const API = "https://script.google.com/macros/s/AKfycbzFQUVCvqoyPZI2mv2Fmg5XoSCVLHL1yBejwwNKVb57AAI3yLFeTV8nD1DFi24rTtsb/exec";
+    
+    let questions = [];
+    let timeLeft = 0;
+    let timerInterval;
+
+    // 1. Khởi tạo khi load trang
+    window.onload = async () => {
+      const testId = localStorage.getItem("currentTestId");
+      const testName = localStorage.getItem("currentTestName");
+      const studentName = localStorage.getItem("studentName");
+
+      if (!testId || !studentName) {
+        alert("Thông tin không hợp lệ, vui lòng quay lại trang chọn bài!");
+        window.location.href = "select.html";
+        return;
+      }
+
+      document.getElementById("quizTitle").innerText = testName;
+      document.getElementById("studentInfo").innerText = `Học sinh: ${studentName}`;
+
+      await loadQuestions(testId);
+    };
+
+    // 2. Lấy câu hỏi từ API
+    async function loadQuestions(testId) {
+      try {
+        const res = await fetch(`${API}?action=getQuestions&testId=${testId}`);
+        questions = await res.json();
+        
+        // Giả sử mỗi bài thi có 15 phút (900 giây) - Bạn có thể tùy chỉnh
+        timeLeft = 15 * 60; 
+        startTimer();
+        renderQuiz();
+      } catch (err) {
+        document.getElementById("quizContainer").innerHTML = "❌ Lỗi tải câu hỏi!";
+      }
+    }
+
+    // 3. Hiển thị câu hỏi ra màn hình
+    function renderQuiz() {
+      const container = document.getElementById("quizContainer");
+      container.innerHTML = "";
+
+      questions.forEach((q, index) => {
+        const qDiv = document.createElement("div");
+        qDiv.className = "question-card";
+        qDiv.innerHTML = `
+          <div class="q-text">Câu ${index + 1}: ${q.question}</div>
+          <div class="options">
+            ${['A', 'B', 'C', 'D'].map(opt => `
+              <label class="option-label">
+                <input type="radio" name="q${index}" value="${q['option' + opt]}">
+                ${q['option' + opt]}
+              </label>
+            `).join('')}
+          </div>
+        `;
+        container.appendChild(qDiv);
+      });
+
+      document.getElementById("submitBtn").style.display = "block";
+    }
+
+    // 4. Đồng hồ đếm ngược
+    function startTimer() {
+      timerInterval = setInterval(() => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        document.getElementById("timer").innerText = `⏱️ ${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          alert("Hết giờ làm bài! Hệ thống sẽ tự động nộp.");
+          submitQuiz();
+        }
+        timeLeft--;
+      }, 1000);
+    }
+
+    // 5. Xử lý nộp bài
+    async function submitQuiz() {
+      clearInterval(timerInterval);
+      const studentName = localStorage.getItem("studentName");
+      const testName = localStorage.getItem("currentTestName");
+      
+      let score = 0;
+      const userAnswers = [];
+
+      questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        const ansValue = selected ? selected.value : "";
+        userAnswers.push(ansValue);
+        
+        if (ansValue === q.correctAnswer) {
+          score++;
+        }
+      });
+
+      const finalScore = ((score / questions.length) * 10).toFixed(2);
+      
+      // Gửi kết quả về Google Sheets
+      const resultData = {
+        action: "submitResult",
+        studentName: studentName,
+        testName: testName,
+        score: finalScore,
+        details: `${score}/${questions.length}`
+      };
+
+      try {
+        await fetch(API, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify(resultData)
+        });
+        
+        // Lưu kết quả để hiển thị trang Result
+        localStorage.setItem("lastScore", finalScore);
+        localStorage.setItem("correctCount", `${score}/${questions.length}`);
+        window.location.href = "result.html";
+      } catch (err) {
+        alert("Lỗi nộp bài, vui lòng báo giáo viên!");
+      }
+    }
+  </script>
 </body>
 </html>

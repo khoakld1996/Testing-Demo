@@ -2,29 +2,111 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <!-- ✅ QUAN TRỌNG CHO MOBILE -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nhập tên học sinh</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Nhập thông tin | Quiz Online</title>
+  <style>
+    :root { --primary: #4facfe; --accent: #00ffcc; --glass: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2); }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    
+    body { 
+      min-height: 100vh; 
+      background: linear-gradient(135deg, #0f2027, #2c5364); 
+      display: flex; justify-content: center; align-items: center; 
+      color: white; padding: 20px; 
+    }
+
+    .box { 
+      background: var(--glass); 
+      backdrop-filter: blur(15px); 
+      border-radius: 30px; 
+      padding: 40px; 
+      border: 1px solid var(--glass-border); 
+      width: 100%; max-width: 400px; 
+      text-align: center; 
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    h2 { margin-bottom: 25px; color: var(--accent); font-size: 1.6rem; }
+
+    .input-group { text-align: left; margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #ccc; }
+    
+    input { 
+      width: 100%; padding: 12px; border-radius: 12px; 
+      border: 1px solid var(--glass-border); 
+      background: rgba(0,0,0,0.2); color: white; outline: none; 
+      transition: 0.3s; 
+    }
+    input:focus { border-color: var(--primary); background: rgba(0,0,0,0.4); }
+
+    .btn-next { 
+      width: 100%; padding: 15px; border-radius: 12px; border: none; 
+      background: linear-gradient(135deg, #4facfe, #00f2fe); 
+      color: #002f4b; font-weight: bold; font-size: 1rem; 
+      cursor: pointer; transition: 0.3s; margin-top: 10px; 
+    }
+    .btn-next:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4); }
+
+    /* Nút quay lại trang chủ */
+    .btn-home {
+      display: inline-block;
+      margin-top: 25px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.4);
+      cursor: pointer;
+      text-decoration: underline;
+      font-size: 0.9rem;
+      transition: 0.3s;
+    }
+    .btn-home:hover { color: var(--primary); }
+  </style>
 </head>
 <body>
 
-<div class="page">
-  <div class="container">
-    <div class="box">
-
-      <h2>Nhập tên</h2>
-
-      <input id="username" placeholder="Tên của bạn">
-
-      <button class="btn primary" onclick="saveName()">Tiếp tục</button>
-      <button class="btn back-btn" onclick="goHome()">← Trang chủ</button>
-
+  <div class="box">
+    <h2>🧑‍🎓 Nhập thông tin</h2>
+    
+    <div class="input-group">
+      <label>Họ và tên:</label>
+      <input type="text" id="username" placeholder="Nhập tên của bạn..." autocomplete="off">
     </div>
+
+    <div class="input-group">
+      <label>Tên trường:</label>
+      <input type="text" id="school" placeholder="Nhập tên trường..." autocomplete="off">
+    </div>
+
+    <button class="btn-next" onclick="startSelection()">Tiếp tục chọn bài →</button>
+
+    <!-- Nút quay lại màn hình chính (role.html hoặc index.html) -->
+    <button class="btn-home" onclick="window.location.href='index.html'">
+      ← Quay lại màn hình chính
+    </button>
   </div>
-</div>
 
-<script src="script.js"></script>
+  <script>
+    // Xóa sạch dữ liệu cũ khi vào trang
+    window.onload = () => {
+      localStorage.removeItem("studentName");
+      localStorage.removeItem("schoolName");
+    };
 
+    function startSelection() {
+      const name = document.getElementById("username").value.trim();
+      const school = document.getElementById("school").value.trim();
+
+      if (!name || !school) {
+        alert("⚠️ Bạn cần nhập đầy đủ Tên và Trường!");
+        return;
+      }
+
+      localStorage.setItem("studentName", name);
+      localStorage.setItem("schoolName", school);
+      
+      // Chuyển sang trang select.html (Nhớ đặt đúng tên file này nhé)
+      window.location.href = "select.html";
+    }
+  </script>
 </body>
 </html>
