@@ -31,12 +31,12 @@
     .box {
       background: var(--glass-bg);
       backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px); /* Hỗ trợ Safari trên iPhone */
       border-radius: 25px;
       padding: 40px 30px;
       border: 1px solid var(--glass-border);
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
       text-align: center;
-      position: relative;
     }
 
     h2 {
@@ -48,10 +48,7 @@
       -webkit-text-fill-color: transparent;
     }
 
-    .input-group {
-      margin-bottom: 20px;
-      text-align: left;
-    }
+    .input-group { margin-bottom: 20px; text-align: left; }
 
     .input-group label {
       display: block;
@@ -87,19 +84,16 @@
       cursor: pointer;
       transition: 0.3s;
       margin-top: 10px;
+      font-size: 1.1rem;
     }
 
     .btn-primary {
       background: linear-gradient(135deg, var(--primary), #00f2fe);
       color: white;
-      font-size: 1.1rem;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
 
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.1);
-    }
+    .btn-primary:active { transform: scale(0.98); }
 
     .back-link {
       margin-top: 25px;
@@ -107,12 +101,8 @@
       color: rgba(255, 255, 255, 0.6);
       text-decoration: none;
       font-size: 0.9rem;
-      transition: 0.3s;
     }
 
-    .back-link:hover { color: var(--accent); }
-
-    /* Thông báo lỗi */
     .notify {
       margin-top: 15px;
       font-size: 0.9rem;
@@ -122,11 +112,7 @@
       transition: 0.3s;
     }
 
-    /* Hiệu ứng rung khi sai mật khẩu */
-    .shake {
-      animation: shake 0.4s ease-in-out;
-    }
-
+    .shake { animation: shake 0.4s ease-in-out; }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-10px); }
@@ -142,52 +128,64 @@
 
     <div class="input-group">
       <label>Tài khoản</label>
-      <input id="user" type="text" placeholder="Nhập username...">
+      <input id="user" type="text" placeholder="Nhập username..." autocomplete="username">
     </div>
 
     <div class="input-group">
       <label>Mật khẩu</label>
-      <input id="pass" type="password" placeholder="••••••••">
+      <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
     </div>
 
-    <button class="btn btn-primary" onclick="handleLogin()">Đăng nhập ngay</button>
+    <button class="btn btn-primary" id="loginBtn" onclick="handleLogin()">Đăng nhập ngay</button>
     
     <div id="notify" class="notify">Sai tài khoản hoặc mật khẩu!</div>
 
-    <a href="index.html" class="back-link">← Quay về trang chủ</a>
+    <a href="role.html" class="back-link">← Quay lại</a>
   </div>
 </div>
 
 <script>
   function handleLogin() {
-    const user = document.getElementById('user').value;
-    const pass = document.getElementById('pass').value;
+    const user = document.getElementById('user').value.trim();
+    const pass = document.getElementById('pass').value.trim();
     const notify = document.getElementById('notify');
     const box = document.getElementById('loginBox');
 
-    // Giả sử mật khẩu mặc định (Bạn nên kiểm tra qua App Script nếu cần bảo mật cao)
+    // Kiểm tra thông tin
     if (user === "admin" && pass === "123456") {
         notify.style.color = "#00ffcc";
         notify.innerText = "Đang đăng nhập...";
         notify.style.opacity = "1";
         
-        // Lưu trạng thái đã đăng nhập (Optional)
-        localStorage.setItem("isLoggedIn", "true");
+        // LƯU TRẠNG THÁI CỨNG (Để điện thoại không bị out)
+        localStorage.setItem("isTeacherAuthenticated", "true");
+        localStorage.setItem("authTimestamp", Date.now());
 
         setTimeout(() => {
-            window.location.href = "dashboard.html"; // Chuyển trang thành công
-        }, 1000);
+            // Dùng replace để tránh lỗi lưu history trên mobile
+            window.location.replace("dashboard.html"); 
+        }, 800);
     } else {
         // Hiệu ứng lỗi
+        notify.innerText = "Sai tài khoản hoặc mật khẩu!";
         notify.style.opacity = "1";
         box.classList.add('shake');
         setTimeout(() => box.classList.remove('shake'), 400);
     }
   }
 
-  // Cho phép nhấn Enter để đăng nhập
-  document.addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') handleLogin();
+  // LỆNH NHẬN PHÍM ENTER ĐỂ ĐĂNG NHẬP
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  });
+
+  // Xóa thông báo lỗi khi người dùng bắt đầu gõ lại
+  document.querySelectorAll('input').forEach(input => {
+    input.addEventListener('input', () => {
+      document.getElementById('notify').style.opacity = "0";
+    });
   });
 </script>
 

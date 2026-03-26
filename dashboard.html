@@ -23,7 +23,7 @@
       background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
       background-attachment: fixed;
       color: white;
-      padding: 20px;
+      padding: 15px; /* Giảm padding cho mobile */
     }
 
     .container { width: 100%; max-width: 1100px; margin: 0 auto; }
@@ -34,7 +34,7 @@
       -webkit-backdrop-filter: blur(15px);
       border: 1px solid var(--glass-border);
       border-radius: 20px;
-      padding: 25px;
+      padding: 20px;
       margin-bottom: 20px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
@@ -52,38 +52,47 @@
       background: rgba(255, 255, 255, 0.05);
       border-radius: 12px;
       padding: 18px;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       border: 1px solid rgba(255,255,255,0.1);
       transition: 0.3s;
     }
     .test-item:hover { background: rgba(255, 255, 255, 0.12); transform: translateX(5px); }
-    .test-item b { font-size: 1.1em; color: var(--accent); }
+    .test-item b { font-size: 1.1em; color: var(--accent); display: block; margin-bottom: 5px; }
 
     /* INPUT & BUTTON */
     .input-control {
-      width: 100%; padding: 12px; margin-bottom: 10px;
-      border-radius: 10px; border: 1px solid var(--glass-border);
-      background: rgba(0,0,0,0.2); color: white; outline: none;
+      width: 100%; padding: 14px; margin-bottom: 12px;
+      border-radius: 12px; border: 1px solid var(--glass-border);
+      background: rgba(0,0,0,0.2); color: white; outline: none; font-size: 16px; /* 16px để mobile không tự zoom */
     }
     .btn {
-      padding: 10px 16px; border-radius: 10px; border: none;
+      padding: 12px 18px; border-radius: 12px; border: none;
       cursor: pointer; font-weight: 600; transition: 0.3s; color: white;
       background: linear-gradient(135deg, var(--primary), var(--secondary));
+      font-size: 0.95rem;
+      display: inline-flex; align-items: center; justify-content: center;
     }
+    .btn:active { transform: scale(0.95); }
     .btn.logout { background: var(--danger); }
-    .btn.delete { background: rgba(255, 71, 87, 0.2); color: var(--danger); border: 1px solid var(--danger); }
+    .btn.delete { background: rgba(255, 71, 87, 0.15); color: var(--danger); border: 1px solid var(--danger); }
 
     /* KẾT QUẢ */
     .result-item {
       display: flex; justify-content: space-between; align-items: center;
-      padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.1);
     }
     .score-badge {
       background: var(--accent); color: #000;
-      padding: 4px 10px; border-radius: 8px; font-weight: bold;
+      padding: 5px 12px; border-radius: 10px; font-weight: bold;
     }
 
-    @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } }
+    /* Responsive cho điện thoại */
+    @media (max-width: 850px) { 
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .dashboard-header h2 { font-size: 1.2rem; }
+      .test-item div { flex-wrap: wrap; }
+      .test-item .btn { flex: 1; min-width: 100px; font-size: 0.8rem; }
+    }
   </style>
 </head>
 <body>
@@ -91,8 +100,8 @@
 <div class="container">
   
   <div class="glass-box dashboard-header">
-    <h2>📊 Dashboard Giáo Viên</h2>
-    <button class="btn logout" onclick="logout()">Đăng xuất</button>
+    <h2>📊 Quản Lý Giáo Viên</h2>
+    <button class="btn logout" onclick="logout()">Thoát</button>
   </div>
 
   <div class="glass-box" style="padding: 15px;">
@@ -102,21 +111,21 @@
   <div class="dashboard-grid">
     <!-- DANH SÁCH BÀI TEST -->
     <div class="glass-box">
-      <h3 style="margin-bottom:15px;">📚 Danh sách bài test</h3>
-      <div id="testList"><p style="opacity:0.6; text-align:center;">⏳ Đang tải bài test...</p></div>
+      <h3 style="margin-bottom:15px;">📚 Bài đã tạo</h3>
+      <div id="testList"><p style="opacity:0.6; text-align:center;">⏳ Đang tải dữ liệu...</p></div>
     </div>
 
     <!-- TẠO MỚI & BIỂU ĐỒ -->
     <div>
       <div class="glass-box">
-        <h3 style="margin-bottom:15px;">➕ Tạo bài test mới</h3>
-        <input id="testName" class="input-control" placeholder="Tên bài test">
-        <input id="testDesc" class="input-control" placeholder="Mô tả">
-        <button id="btnAddTest" class="btn" style="width:100%;" onclick="addTest()">Tiếp tục ➡️</button>
+        <h3 style="margin-bottom:15px;">➕ Tạo bài mới</h3>
+        <input id="testName" class="input-control" placeholder="Tên bài test (VD: Toán 10)">
+        <input id="testDesc" class="input-control" placeholder="Mô tả ngắn">
+        <button id="btnAddTest" class="btn" style="width:100%;" onclick="addTest()">Tiếp tục tạo câu hỏi ➡️</button>
       </div>
 
       <div class="glass-box">
-        <h3 style="margin-bottom:15px;">📈 Phân phối điểm số</h3>
+        <h3 style="margin-bottom:15px;">📈 Phân phối điểm</h3>
         <canvas id="chart"></canvas>
       </div>
     </div>
@@ -124,44 +133,43 @@
 
   <!-- KẾT QUẢ HỌC SINH -->
   <div class="glass-box">
-    <h3 style="margin-bottom:15px;">🏆 Kết quả học sinh (Từ Sheets)</h3>
-    <div id="resultList"><p style="opacity:0.6; text-align:center;">⏳ Đang tải kết quả bài làm...</p></div>
+    <h3 style="margin-bottom:15px;">🏆 Kết quả học sinh</h3>
+    <div id="resultList"><p style="opacity:0.6; text-align:center;">⏳ Đang cập nhật từ Sheets...</p></div>
   </div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- Đảm bảo file script.js chứa biến API -->
 <script src="script.js"></script> 
 
 <script>
-  // Kiểm tra quyền
-  if(localStorage.getItem("role") !== "teacher") window.location.href = "index.html";
+  // 1. KIỂM TRA QUYỀN (Khớp với trang Login mới)
+  if(localStorage.getItem("isTeacherAuthenticated") !== "true") {
+    window.location.replace("login.html");
+  }
 
   function logout() {
-    localStorage.removeItem("role");
-    window.location.href = "index.html";
+    localStorage.removeItem("isTeacherAuthenticated");
+    window.location.replace("role.html");
   }
 
   let tests = [];
   let allResults = [];
   let myChart = null;
   
-  //.0 ADD BÀI TEST
-  // ===== HÀM TẠO BÀI TEST MỚI =====
+  // 2. TẠO BÀI TEST MỚI
   async function addTest() {
     const name = document.getElementById("testName").value.trim();
     const desc = document.getElementById("testDesc").value.trim();
     const btn = document.getElementById("btnAddTest");
 
     if (!name) {
-      alert("Vui lòng nhập tên bài test!");
+      alert("Bạn chưa nhập tên bài test!");
       return;
     }
 
-    // Vô hiệu hóa nút để tránh bấm liên tục
     btn.disabled = true;
-    btn.innerText = "⏳ Đang tạo...";
+    btn.innerText = "⏳ Đang kết nối...";
 
     try {
       const response = await fetch(API, {
@@ -176,52 +184,49 @@
       const result = await response.json();
 
       if (result.status === "ok") {
-        // Lưu thông tin bài test vừa tạo vào localStorage để dùng cho trang tiếp theo
         const newTest = { id: result.id, name: name, desc: desc };
         localStorage.setItem("currentTest", JSON.stringify(newTest));
-        
-        // Chuyển hướng sang trang thêm câu hỏi ngay lập tức
         window.location.href = "add-question.html";
       } else {
-        alert("Lỗi từ máy chủ: " + result.message);
+        alert("Lỗi: " + result.message);
         btn.disabled = false;
         btn.innerText = "Tiếp tục ➡️";
       }
     } catch (err) {
-      console.error("Lỗi addTest:", err);
-      alert("Không thể kết nối với Script. Hãy kiểm tra lại URL API hoặc quyền truy cập.");
+      alert("Lỗi kết nối Server. Vui lòng thử lại!");
       btn.disabled = false;
       btn.innerText = "Tiếp tục ➡️";
     }
   }
-  // 1. TẢI DANH SÁCH BÀI TEST
+
+  // 3. TẢI DANH SÁCH BÀI TEST
   async function loadTests() {
     try {
-      const res = await fetch(`${API}?action=getTests`);
+      const res = await fetch(`${API}?action=getTests&_t=${Date.now()}`); // _t để tránh cache mobile
       const data = await res.json();
       if(Array.isArray(data)) {
         tests = data;
         renderTests();
       }
     } catch(err) {
-      document.getElementById("testList").innerHTML = "<p>❌ Lỗi tải bài test.</p>";
+      document.getElementById("testList").innerHTML = "<p>❌ Lỗi kết nối dữ liệu.</p>";
     }
   }
 
   function renderTests(filterData = tests) {
     const container = document.getElementById("testList");
     if(filterData.length === 0) {
-      container.innerHTML = "<p style='text-align:center; opacity:0.5;'>Trống.</p>";
+      container.innerHTML = "<p style='text-align:center; opacity:0.5;'>Chưa có bài nào.</p>";
       return;
     }
     container.innerHTML = filterData.map((t, i) => `
       <div class="test-item">
         <b>${t.name}</b>
-        <p style="margin-bottom:10px;">${t.desc || "Không có mô tả"}</p>
+        <p style="margin-bottom:10px; font-size:0.9rem; opacity:0.8;">${t.desc || "Không có mô tả"}</p>
         <div style="display: flex; gap: 8px;">
           <button class="btn" onclick="goTo('add-question.html', ${i})">➕ Thêm câu</button>
           <button class="btn" style="background:rgba(255,255,255,0.1)" onclick="goTo('question-list.html', ${i})">📋 Xem</button>
-          <button class="btn delete" onclick="deleteTest(${i})">🗑 Xoá</button>
+          <button class="btn delete" onclick="deleteTest(${i})">🗑</button>
         </div>
       </div>
     `).join('');
@@ -232,10 +237,10 @@
     window.location.href = page;
   }
 
-  // 2. TẢI KẾT QUẢ TỪ GOOGLE SHEETS
+  // 4. TẢI KẾT QUẢ TỪ GOOGLE SHEETS
   async function loadResults() {
     try {
-      const res = await fetch(`${API}?action=getResults`);
+      const res = await fetch(`${API}?action=getResults&_t=${Date.now()}`);
       const data = await res.json();
       if(Array.isArray(data)) {
         allResults = data;
@@ -243,7 +248,7 @@
         initChart();
       }
     } catch(err) {
-      document.getElementById("resultList").innerHTML = "<p>❌ Không thể load kết quả.</p>";
+      document.getElementById("resultList").innerHTML = "<p>❌ Không thể load kết quả học sinh.</p>";
     }
   }
 
@@ -254,41 +259,46 @@
       return;
     }
     container.innerHTML = filterData.map(r => {
-      let p = Math.round((r.score / r.total) * 100);
+      let p = r.total > 0 ? Math.round((r.score / r.total) * 100) : 0;
       return `
         <div class="result-item">
           <div>
             <strong style="color:var(--accent)">${r.name}</strong><br>
-            <small style="opacity:0.7">Bài: ${r.testName} | ${r.timestamp || ''}</small>
+            <small style="opacity:0.7">${r.testName || 'Bài thi'}</small>
           </div>
           <div style="text-align:right">
             <span class="score-badge">${r.score}/${r.total}</span>
-            <div style="font-size:0.8em; margin-top:4px;">${p}%</div>
+            <div style="font-size:0.8em; margin-top:4px; opacity:0.8;">${p}%</div>
           </div>
         </div>
       `;
     }).join('');
   }
 
-  // 3. TÌM KIẾM TỔNG HỢP
+  // 5. TÌM KIẾM TỔNG HỢP
   function filterData() {
     const key = document.getElementById("search").value.toLowerCase();
     renderTests(tests.filter(t => t.name.toLowerCase().includes(key)));
-    renderResults(allResults.filter(r => r.name.toLowerCase().includes(key) || r.testName.toLowerCase().includes(key)));
+    renderResults(allResults.filter(r => 
+      (r.name && r.name.toLowerCase().includes(key)) || 
+      (r.testName && r.testName.toLowerCase().includes(key))
+    ));
   }
 
-  // 4. BIỂU ĐỒ
+  // 6. BIỂU ĐỒ TRÒN
   function initChart() {
     const ctx = document.getElementById('chart').getContext('2d');
     if(myChart) myChart.destroy();
 
     const counts = [0, 0, 0, 0];
     allResults.forEach(r => {
-      let p = (r.score / r.total) * 100;
-      if(p < 50) counts[0]++;
-      else if(p < 70) counts[1]++;
-      else if(p < 90) counts[2]++;
-      else counts[3]++;
+      if(r.total > 0) {
+        let p = (r.score / r.total) * 100;
+        if(p < 50) counts[0]++;
+        else if(p < 70) counts[1]++;
+        else if(p < 90) counts[2]++;
+        else counts[3]++;
+      }
     });
 
     myChart = new Chart(ctx, {
@@ -302,7 +312,8 @@
         }]
       },
       options: { 
-        plugins: { legend: { position: 'bottom', labels: { color: 'white' } } }
+        cutout: '70%',
+        plugins: { legend: { position: 'bottom', labels: { color: 'white', padding: 20 } } }
       }
     });
   }

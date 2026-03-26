@@ -2,28 +2,155 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <!-- ✅ QUAN TRỌNG CHO MOBILE -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chọn vai trò</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Chọn Vai Trò | Quiz System</title>
+  
+  <style>
+    :root {
+      --primary: #4facfe;
+      --secondary: #00f2fe;
+      --student: #2ed573;
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+      background-attachment: fixed;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      overflow: hidden;
+    }
+
+    .container { width: 90%; max-width: 450px; }
+
+    .box {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 30px;
+      padding: 40px 30px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+      text-align: center;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 30px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: linear-gradient(to right, #fff, var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .role-options {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .role-card {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--glass-border);
+      padding: 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      text-align: left;
+    }
+
+    .role-card:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-5px);
+      border-color: var(--primary);
+    }
+
+    .role-card:active { transform: scale(0.98); }
+
+    .icon-box {
+      width: 60px;
+      height: 60px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 15px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 1.8rem;
+    }
+
+    .role-info h3 { font-size: 1.2rem; margin-bottom: 4px; }
+    .role-info p { font-size: 0.85rem; opacity: 0.7; }
+
+    /* Màu sắc riêng cho từng vai trò */
+    .teacher-card:hover .icon-box { color: var(--primary); box-shadow: 0 0 15px var(--primary); }
+    .student-card:hover .icon-box { color: var(--student); box-shadow: 0 0 15px var(--student); }
+
+    .back-home {
+      margin-top: 30px;
+      display: inline-block;
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: 0.3s;
+      padding: 8px 15px;
+    }
+
+    .back-home:hover { color: #fff; }
+
+  </style>
 </head>
 <body>
 
-<div class="page">
-  <div class="container">
-    <div class="box">
+<div class="container">
+  <div class="box">
+    <h2>Bạn là ai?</h2>
 
-      <h2>Chọn vai trò</h2>
+    <div class="role-options">
+      <!-- THẺ GIÁO VIÊN -->
+      <div class="role-card teacher-card" onclick="window.location.href='login.html'">
+        <div class="icon-box">👨‍🏫</div>
+        <div class="role-info">
+          <h3>Giáo viên</h3>
+          <p>Quản lý bài test và xem điểm</p>
+        </div>
+      </div>
 
-      <button class="btn primary" onclick="go('login.html')">Giáo viên</button>
-      <button class="btn" onclick="go('name.html')">Học sinh</button>
-      <button class="btn back-btn" onclick="goHome()">← Trang chủ</button>
-
+      <!-- THẺ HỌC SINH -->
+      <div class="role-card student-card" onclick="window.location.href='name.html'">
+        <div class="icon-box">🎓</div>
+        <div class="role-info">
+          <h3>Học sinh</h3>
+          <p>Tham gia làm bài kiểm tra</p>
+        </div>
+      </div>
     </div>
+
+    <a href="index.html" class="back-home">← Quay về trang chủ</a>
   </div>
 </div>
 
-<script src="script.js"></script>
+<script>
+  // Hiệu ứng đơn giản khi vào trang
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log("Hệ thống Quiz đã sẵn sàng.");
+  });
+</script>
 
 </body>
 </html>
