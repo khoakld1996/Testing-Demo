@@ -3,191 +3,330 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Đăng nhập Giáo viên | Quiz System</title>
+  <title id="pageTitle">Hệ thống Trắc nghiệm | Login</title>
   
+  <!-- Thư viện Icon FontAwesome & Popup SweetAlert2 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
     :root {
       --primary: #4facfe;
+      --secondary: #00f2fe;
       --accent: #00ffcc;
       --glass-bg: rgba(255, 255, 255, 0.1);
-      --glass-border: rgba(255, 255, 255, 0.2);
+      --glass-border: rgba(255, 255, 255, 0.15);
       --error: #ff4757;
+      --text-main: #ffffff;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
 
     body {
       min-height: 100vh;
-      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
       display: flex;
       justify-content: center;
       align-items: center;
-      color: white;
+      color: var(--text-main);
       overflow: hidden;
+      position: relative;
+      background: url('https://images.unsplash.com/photo-1510070112810-d4e9a46d9e91?q=80&w=2069&auto=format&fit=crop') no-repeat center center/cover;
     }
 
-    .container { width: 100%; max-width: 400px; padding: 20px; }
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(15, 32, 39, 0.85), rgba(44, 83, 100, 0.75));
+      z-index: 0;
+    }
+
+    .container { position: relative; z-index: 10; width: 100%; max-width: 420px; padding: 20px; }
 
     .box {
       background: var(--glass-bg);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px); /* Hỗ trợ Safari trên iPhone */
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       border-radius: 25px;
       padding: 40px 30px;
       border: 1px solid var(--glass-border);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
       text-align: center;
+      animation: fadeInUp 0.8s ease-out;
     }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
     h2 {
       font-size: 1.8rem;
       margin-bottom: 30px;
-      letter-spacing: 2px;
+      font-weight: 800;
       background: linear-gradient(to right, #fff, var(--primary));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
-    .input-group { margin-bottom: 20px; text-align: left; }
-
+    .input-group { margin-bottom: 20px; text-align: left; position: relative; }
     .input-group label {
       display: block;
       margin-bottom: 8px;
-      font-size: 0.9rem;
+      font-size: 0.75rem;
       color: var(--primary);
-      margin-left: 5px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .input-wrapper { position: relative; }
+    .input-wrapper i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.5);
     }
 
     input {
       width: 100%;
-      padding: 14px 20px;
+      padding: 14px 15px 14px 45px;
       border-radius: 12px;
       border: 1px solid var(--glass-border);
       background: rgba(0, 0, 0, 0.2);
       color: white;
       font-size: 1rem;
       outline: none;
-      transition: 0.3s;
+      transition: all 0.3s;
     }
 
     input:focus {
       border-color: var(--primary);
+      background: rgba(0, 0, 0, 0.4);
       box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);
     }
 
     .btn {
       width: 100%;
-      padding: 15px;
+      padding: 16px;
       border-radius: 12px;
       border: none;
-      font-weight: bold;
+      font-weight: 700;
       cursor: pointer;
       transition: 0.3s;
+      font-size: 1rem;
       margin-top: 10px;
-      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, var(--primary), #00f2fe);
+      background: linear-gradient(135deg, var(--primary), #0072ff);
       color: white;
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 20px rgba(0, 114, 255, 0.2);
     }
 
-    .btn-primary:active { transform: scale(0.98); }
+    .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+    .btn-register {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      margin-top: 15px;
+    }
+
+    .btn-register:hover { background: rgba(0, 255, 204, 0.15); }
+
+    .hidden { display: none; }
 
     .back-link {
       margin-top: 25px;
-      display: block;
-      color: rgba(255, 255, 255, 0.6);
+      display: inline-block;
+      color: rgba(255, 255, 255, 0.5);
       text-decoration: none;
-      font-size: 0.9rem;
-    }
-
-    .notify {
-      margin-top: 15px;
-      font-size: 0.9rem;
-      min-height: 20px;
-      color: var(--error);
-      opacity: 0;
+      font-size: 0.85rem;
       transition: 0.3s;
     }
+    .back-link:hover { color: white; }
 
     .shake { animation: shake 0.4s ease-in-out; }
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-10px); }
-      75% { transform: translateX(10px); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="box" id="loginBox">
-    <h2>🔐 ĐĂNG NHẬP GV</h2>
+  <div class="box" id="mainBox">
+    <h2 id="formHeader"><i class="fas fa-lock"></i> ĐĂNG NHẬP</h2>
 
-    <div class="input-group">
-      <label>Tài khoản</label>
-      <input id="user" type="text" placeholder="Nhập username..." autocomplete="username">
+    <!-- FORM ĐĂNG NHẬP -->
+    <div id="loginForm">
+      <div class="input-group">
+        <label>Tài khoản</label>
+        <div class="input-wrapper">
+          <i class="fas fa-user"></i>
+          <input id="user" type="text" placeholder="Nhập username..." autocomplete="off">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Mật khẩu</label>
+        <div class="input-wrapper">
+          <i class="fas fa-key"></i>
+          <input id="pass" type="password" placeholder="••••••••">
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="handleAction('login')">
+        Đăng nhập ngay <i class="fas fa-arrow-right"></i>
+      </button>
+      <button id="regToggleBtn" class="btn btn-register hidden" onclick="toggleForm(true)">
+        <i class="fas fa-user-plus"></i> Tạo tài khoản mới
+      </button>
     </div>
 
-    <div class="input-group">
-      <label>Mật khẩu</label>
-      <input id="pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    <!-- FORM ĐĂNG KÝ -->
+    <div id="registerForm" class="hidden">
+      <div class="input-group">
+        <label>Họ và Tên</label>
+        <div class="input-wrapper">
+          <i class="fas fa-id-card"></i>
+          <input id="regFullName" type="text" placeholder="Ví dụ: Nguyễn Văn A">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Tên đăng nhập</label>
+        <div class="input-wrapper">
+          <i class="fas fa-user-tag"></i>
+          <input id="regUser" type="text" placeholder="Ví dụ: vana123">
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Mật khẩu</label>
+        <div class="input-wrapper">
+          <i class="fas fa-lock"></i>
+          <input id="regPass" type="password" placeholder="Tối thiểu 6 ký tự">
+        </div>
+      </div>
+      <button class="btn btn-primary" style="background: linear-gradient(135deg, #2ed573, #7bed9f);" onclick="handleAction('register')">
+        Gửi yêu cầu duyệt <i class="fas fa-paper-plane"></i>
+      </button>
+      <button class="btn btn-register" style="border-color:#ccc; color:#ccc" onclick="toggleForm(false)">
+        Quay lại Đăng nhập
+      </button>
     </div>
-
-    <button class="btn btn-primary" id="loginBtn" onclick="handleLogin()">Đăng nhập ngay</button>
     
-    <div id="notify" class="notify">Sai tài khoản hoặc mật khẩu!</div>
-
-    <a href="role.html" class="back-link">← Quay lại</a>
+    <a href="index.html" class="back-link"><i class="fas fa-chevron-left"></i> Quay về trang chủ</a>
   </div>
 </div>
 
 <script>
-  function handleLogin() {
-    const user = document.getElementById('user').value.trim();
-    const pass = document.getElementById('pass').value.trim();
-    const notify = document.getElementById('notify');
-    const box = document.getElementById('loginBox');
+  // CẤU HÌNH URL APPS SCRIPT
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcXT1JxjKgD-5ob8ZCw0LYmUQpPNorj4slERM1fCrJhHL1UNx-TWnQmCYn1-0Xitdb/exec";
 
-    // Kiểm tra thông tin
-    if (user === "admin" && pass === "123456") {
-        notify.style.color = "#00ffcc";
-        notify.innerText = "Đang đăng nhập...";
-        notify.style.opacity = "1";
-        
-        // LƯU TRẠNG THÁI CỨNG (Để điện thoại không bị out)
-        localStorage.setItem("isTeacherAuthenticated", "true");
-        localStorage.setItem("authTimestamp", Date.now());
+  const params = new URLSearchParams(window.location.search);
+  const roleFromUrl = params.get('role') || 'admin'; 
+  let isRegisterMode = false;
 
-        setTimeout(() => {
-            // Dùng replace để tránh lỗi lưu history trên mobile
-            window.location.replace("dashboard.html"); 
-        }, 800);
+  window.onload = () => {
+    const header = document.getElementById('formHeader');
+    if (roleFromUrl === 'student') {
+      header.innerHTML = '<i class="fas fa-user-graduate"></i> HỌC SINH';
+      document.getElementById('regToggleBtn').classList.remove('hidden');
     } else {
-        // Hiệu ứng lỗi
-        notify.innerText = "Sai tài khoản hoặc mật khẩu!";
-        notify.style.opacity = "1";
-        box.classList.add('shake');
-        setTimeout(() => box.classList.remove('shake'), 400);
+      header.innerHTML = '<i class="fas fa-user-shield"></i> QUẢN TRỊ VIÊN';
+    }
+  };
+
+  // --- THÊM LẠI SỰ KIỆN ENTER TẠI ĐÂY ---
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      handleAction(isRegisterMode ? 'register' : 'login');
+    }
+  });
+
+  function toggleForm(showReg) {
+    isRegisterMode = showReg;
+    document.getElementById('loginForm').classList.toggle('hidden', showReg);
+    document.getElementById('registerForm').classList.toggle('hidden', !showReg);
+    const header = document.getElementById('formHeader');
+    if (showReg) {
+      header.innerHTML = '<i class="fas fa-edit"></i> ĐĂNG KÝ MỚI';
+    } else {
+      header.innerHTML = roleFromUrl === 'student' ? '<i class="fas fa-user-graduate"></i> HỌC SINH' : '<i class="fas fa-user-shield"></i> QUẢN TRỊ VIÊN';
     }
   }
 
-  // LỆNH NHẬN PHÍM ENTER ĐỂ ĐĂNG NHẬP
-  document.addEventListener('keydown', function (e) {
-    if (e.key === 'Enter') {
-      handleLogin();
+  async function handleAction(action) {
+    let payload = { action: action, role: roleFromUrl };
+
+    if (action === 'login') {
+      payload.user = document.getElementById('user').value.trim();
+      payload.pass = document.getElementById('pass').value.trim();
+    } else {
+      payload.user = document.getElementById('regUser').value.trim();
+      payload.pass = document.getElementById('regPass').value.trim();
+      payload.name = document.getElementById('regFullName').value.trim();
     }
-  });
 
-  // Xóa thông báo lỗi khi người dùng bắt đầu gõ lại
-  document.querySelectorAll('input').forEach(input => {
-    input.addEventListener('input', () => {
-      document.getElementById('notify').style.opacity = "0";
-    });
-  });
+    if (!payload.user || !payload.pass || (action === 'register' && !payload.name)) {
+      Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ!', background: '#1e272e', color: '#fff' });
+      return;
+    }
+
+    Swal.fire({ title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+    try {
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await response.json();
+
+      if (result.status === "success") {
+        if (action === 'login') {
+          // Ép chữ thường và xóa khoảng trắng để so sánh chính xác
+          const actualRole = result.role ? result.role.toLowerCase().trim() : 'student';
+          
+          localStorage.setItem('userRole', actualRole);
+          localStorage.setItem('quiz_user_name', result.name);
+
+          Swal.fire({
+            icon: 'success',
+            title: 'Thành công!',
+            text: `Chào mừng ${result.name} (${actualRole})`,
+            timer: 1500,
+            showConfirmButton: false
+          });
+
+          setTimeout(() => { 
+            if (actualRole === 'admin') {
+              window.location.href = "dashboard.html"; 
+            } else {
+              window.location.href = "quiz_list.html";
+            }
+          }, 1500);
+
+        } else {
+          Swal.fire({ icon: 'success', title: 'Đã gửi yêu cầu!', text: result.message, timer: 2000 });
+          setTimeout(() => toggleForm(false), 2000);
+        }
+      } else {
+        Swal.fire({ icon: 'error', title: 'Thất bại', text: result.message, background: '#1e272e', color: '#fff' });
+        document.getElementById('mainBox').classList.add('shake');
+        setTimeout(() => document.getElementById('mainBox').classList.remove('shake'), 400);
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'Lỗi kết nối', text: 'Máy chủ không phản hồi!', background: '#1e272e', color: '#fff' });
+    }
+  }
 </script>
-
 </body>
 </html>
