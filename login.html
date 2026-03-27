@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="pageTitle">Hệ thống Trắc nghiệm | Login</title>
   
-  <!-- Thư viện Icon FontAwesome & Popup SweetAlert2 -->
+  <!-- Thư viện Icon, Popup & Hiệu ứng chuyển động -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
@@ -30,7 +31,7 @@
       color: var(--text-main);
       overflow: hidden;
       position: relative;
-      background: url('https://images.unsplash.com/photo-1510070112810-d4e9a46d9e91?q=80&w=2069&auto=format&fit=crop') no-repeat center center/cover;
+      background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
     }
 
     body::before {
@@ -159,6 +160,9 @@
       25% { transform: translateX(-8px); }
       75% { transform: translateX(8px); }
     }
+
+    /* Tùy chỉnh loading của SweetAlert */
+    .swal2-loader { border-color: var(--primary) transparent var(--primary) transparent !important; }
   </style>
 </head>
 <body>
@@ -184,7 +188,7 @@
         </div>
       </div>
       <button class="btn btn-primary" onclick="handleAction('login')">
-        Đăng nhập ngay <i class="fas fa-arrow-right"></i>
+        Đăng nhập ngay <i class="fas fa-sign-in-alt"></i>
       </button>
       <button id="regToggleBtn" class="btn btn-register hidden" onclick="toggleForm(true)">
         <i class="fas fa-user-plus"></i> Tạo tài khoản mới
@@ -228,7 +232,7 @@
 
 <script>
   // CẤU HÌNH URL APPS SCRIPT
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwcXT1JxjKgD-5ob8ZCw0LYmUQpPNorj4slERM1fCrJhHL1UNx-TWnQmCYn1-0Xitdb/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz97ESZLmtiMDaVa4UyQ5WKoeeD4X0-zFme2-V0mxZowroldcpZNRHWMis9Sv08yGVe/exec";
 
   const params = new URLSearchParams(window.location.search);
   const roleFromUrl = params.get('role') || 'admin'; 
@@ -244,7 +248,7 @@
     }
   };
 
-  // --- THÊM LẠI SỰ KIỆN ENTER TẠI ĐÂY ---
+  // Phím Enter để đăng nhập nhanh
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       handleAction(isRegisterMode ? 'register' : 'login');
@@ -263,6 +267,20 @@
     }
   }
 
+  // Hàm hiển thị thông báo tùy chỉnh
+  function showAlert(icon, title, text, color = '#4facfe') {
+    return Swal.fire({
+      icon: icon,
+      title: title,
+      text: text,
+      background: 'rgba(30, 39, 46, 0.95)',
+      color: '#fff',
+      confirmButtonColor: color,
+      showClass: { popup: 'animate__animated animate__fadeInDown' },
+      hideClass: { popup: 'animate__animated animate__fadeOutUp' }
+    });
+  }
+
   async function handleAction(action) {
     let payload = { action: action, role: roleFromUrl };
 
@@ -275,12 +293,21 @@
       payload.name = document.getElementById('regFullName').value.trim();
     }
 
+    // Kiểm tra đầu vào
     if (!payload.user || !payload.pass || (action === 'register' && !payload.name)) {
-      Swal.fire({ icon: 'warning', title: 'Thiếu thông tin', text: 'Vui lòng điền đầy đủ!', background: '#1e272e', color: '#fff' });
+      showAlert('warning', 'Thiếu thông tin!', 'Vui lòng điền đầy đủ các ô trống nhé ✍️', '#f1c40f');
       return;
     }
 
-    Swal.fire({ title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+    // Hiển thị loading
+    Swal.fire({
+      title: 'Đang kết nối...',
+      html: 'Vui lòng chờ máy chủ phản hồi 🚀',
+      allowOutsideClick: false,
+      background: 'rgba(30, 39, 46, 0.95)',
+      color: '#fff',
+      didOpen: () => { Swal.showLoading(); }
+    });
 
     try {
       const response = await fetch(SCRIPT_URL, {
@@ -292,39 +319,52 @@
 
       if (result.status === "success") {
         if (action === 'login') {
-          // Ép chữ thường và xóa khoảng trắng để so sánh chính xác
           const actualRole = result.role ? result.role.toLowerCase().trim() : 'student';
           
+          // LƯU DỮ LIỆU ĐỂ DÙNG CHO CÁC TRANG SAU
           localStorage.setItem('userRole', actualRole);
+          localStorage.setItem('studentName', result.name); // Tên để trang name.html tự điền
           localStorage.setItem('quiz_user_name', result.name);
 
           Swal.fire({
             icon: 'success',
-            title: 'Thành công!',
-            text: `Chào mừng ${result.name} (${actualRole})`,
-            timer: 1500,
-            showConfirmButton: false
+            title: '<span style="color:#00ffcc">Thành công!</span>',
+            html: `Chào mừng <b>${result.name}</b> quay trở lại! 🏆`,
+            background: 'rgba(30, 39, 46, 0.95)',
+            color: '#fff',
+            timer: 2000,
+            showConfirmButton: false,
+            showClass: { popup: 'animate__animated animate__zoomIn' }
           });
 
           setTimeout(() => { 
             if (actualRole === 'admin') {
               window.location.href = "dashboard.html"; 
             } else {
-              window.location.href = "quiz_list.html";
+              window.location.href = "name.html"; // Chuyển sang trang nhập tên/trường
             }
-          }, 1500);
+          }, 1800);
 
         } else {
-          Swal.fire({ icon: 'success', title: 'Đã gửi yêu cầu!', text: result.message, timer: 2000 });
-          setTimeout(() => toggleForm(false), 2000);
+          // Xử lý sau khi Đăng ký
+          Swal.fire({
+            icon: 'success',
+            title: 'Đã gửi yêu cầu!',
+            text: 'Tài khoản đang chờ duyệt. Vui lòng quay lại sau nhé! 🎉',
+            background: 'rgba(30, 39, 46, 0.95)',
+            color: '#fff',
+            confirmButtonColor: '#2ed573'
+          });
+          setTimeout(() => toggleForm(false), 2500);
         }
       } else {
-        Swal.fire({ icon: 'error', title: 'Thất bại', text: result.message, background: '#1e272e', color: '#fff' });
+        // Sai tài khoản hoặc mật khẩu
+        showAlert('error', 'Thất bại', result.message + ' ❌', '#ff4757');
         document.getElementById('mainBox').classList.add('shake');
         setTimeout(() => document.getElementById('mainBox').classList.remove('shake'), 400);
       }
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi kết nối', text: 'Máy chủ không phản hồi!', background: '#1e272e', color: '#fff' });
+      showAlert('error', 'Lỗi kết nối', 'Máy chủ không phản hồi. Kiểm tra mạng nhé! 🌐', '#ff4757');
     }
   }
 </script>

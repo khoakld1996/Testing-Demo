@@ -4,67 +4,293 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chọn bài thi | Quiz Online</title>
+  
+  <!-- Thư viện hỗ trợ -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
-    :root { --primary: #4facfe; --accent: #00ffcc; --glass: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2); }
+    :root { 
+      --primary: #4facfe; 
+      --secondary: #00f2fe;
+      --accent: #00ffcc; 
+      --glass: rgba(255, 255, 255, 0.1); 
+      --glass-border: rgba(255, 255, 255, 0.15); 
+    }
+
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-    body { min-height: 100vh; background: linear-gradient(135deg, #0f2027, #2c5364); display: flex; justify-content: center; align-items: center; color: white; padding: 20px; }
-    .box { background: var(--glass); backdrop-filter: blur(15px); border-radius: 30px; padding: 40px; border: 1px solid var(--glass-border); width: 100%; max-width: 500px; text-align: center; }
-    .welcome-text { color: var(--accent); margin-bottom: 30px; font-weight: 500; }
-    #testList { display: flex; flex-direction: column; gap: 15px; max-height: 350px; overflow-y: auto; padding: 5px; }
-    .test-card { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); padding: 15px; border-radius: 15px; text-align: left; cursor: pointer; transition: 0.3s; }
-    .test-card:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--primary); transform: translateY(-2px); }
-    .test-name { font-weight: bold; color: #fff; display: block; font-size: 1.1rem; }
-    .q-count { font-size: 0.8rem; color: #4facfe; }
-    .btn-back { margin-top: 25px; background: none; border: none; color: #aaa; cursor: pointer; text-decoration: underline; font-size: 0.9rem; }
+
+    body { 
+      min-height: 100vh; 
+      background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
+      display: flex; justify-content: center; align-items: center; 
+      color: white; padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Lớp phủ làm tối nền và mờ */
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(15, 32, 39, 0.85), rgba(44, 83, 100, 0.8));
+      z-index: 0;
+    }
+
+    .container { position: relative; z-index: 10; width: 100%; max-width: 550px; }
+
+    .box { 
+      background: var(--glass); 
+      backdrop-filter: blur(25px); 
+      -webkit-backdrop-filter: blur(25px);
+      border-radius: 35px; 
+      padding: 40px; 
+      border: 1px solid var(--glass-border); 
+      text-align: center; 
+      box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+      animation: zoomIn 0.6s ease-out;
+    }
+
+    h2 { 
+      font-size: 2rem; 
+      margin-bottom: 10px; 
+      background: linear-gradient(to right, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+
+    .welcome-text { 
+      color: rgba(255, 255, 255, 0.8); 
+      margin-bottom: 30px; 
+      font-size: 0.95rem;
+      border-bottom: 1px solid var(--glass-border);
+      padding-bottom: 15px;
+    }
+
+    .welcome-text b { color: var(--accent); }
+
+    /* Danh sách bài thi */
+    #testList { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 15px; 
+      max-height: 400px; 
+      overflow-y: auto; 
+      padding-right: 10px;
+      margin-bottom: 10px;
+    }
+
+    /* Tùy chỉnh thanh cuộn */
+    #testList::-webkit-scrollbar { width: 6px; }
+    #testList::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+    #testList::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
+    .test-card { 
+      background: rgba(255, 255, 255, 0.07); 
+      border: 1px solid var(--glass-border); 
+      padding: 20px; 
+      border-radius: 20px; 
+      text-align: left; 
+      cursor: pointer; 
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .test-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: 0.5s;
+    }
+
+    .test-card:hover { 
+      background: rgba(255, 255, 255, 0.15); 
+      border-color: var(--accent); 
+      transform: scale(1.03);
+      box-shadow: 0 10px 20px rgba(0, 255, 204, 0.2);
+    }
+
+    .test-card:hover::before { left: 100%; }
+
+    .test-info { display: flex; flex-direction: column; gap: 5px; }
+
+    .test-name { 
+      font-weight: 700; 
+      color: #fff; 
+      font-size: 1.15rem; 
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .q-count { 
+      font-size: 0.85rem; 
+      color: var(--primary); 
+      font-weight: 600;
+      background: rgba(79, 172, 254, 0.15);
+      padding: 2px 10px;
+      border-radius: 20px;
+      width: fit-content;
+    }
+
+    .start-icon {
+      font-size: 1.5rem;
+      color: var(--accent);
+      opacity: 0.5;
+      transition: 0.3s;
+    }
+
+    .test-card:hover .start-icon {
+      opacity: 1;
+      transform: translateX(5px);
+    }
+
+    .btn-back { 
+      margin-top: 25px; 
+      background: none; 
+      border: none; 
+      color: rgba(255,255,255,0.5); 
+      cursor: pointer; 
+      font-size: 0.9rem; 
+      transition: 0.3s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn-back:hover { color: var(--primary); transform: translateX(-5px); }
+
+    /* Hiệu ứng loading */
+    .loading-spinner {
+      font-size: 1.2rem;
+      color: var(--primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      padding: 40px 0;
+    }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h2>🎯 Chọn bài thi</h2>
-    <p class="welcome-text" id="welcomeMsg">Chào mừng học sinh!</p>
 
-    <div id="testList">
-      <p>⏳ Đang tải danh sách bài thi...</p>
+  <div class="container">
+    <div class="box animate__animated animate__zoomIn">
+      <h2 class="animate__animated animate__fadeInDown animate__delay-1s">
+        <i class="fas fa-rocket"></i> CHỌN BÀI THI
+      </h2>
+      <p class="welcome-text" id="welcomeMsg">Đang tải thông tin thí sinh...</p>
+
+      <div id="testList">
+        <div class="loading-spinner">
+          <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+          <p>Đang quét danh sách bài thi...</p>
+        </div>
+      </div>
+
+      <button class="btn-back" onclick="window.location.href='name.html'">
+        <i class="fas fa-arrow-left"></i> Quay lại đổi thông tin
+      </button>
     </div>
-
-    <button class="btn-back" onclick="window.location.href='name.html'">← Quay lại đổi thông tin</button>
   </div>
 
   <script>
+    // URL API CỦA BẠN
     const API_URL = "https://script.google.com/macros/s/AKfycbzFQUVCvqoyPZI2mv2Fmg5XoSCVLHL1yBejwwNKVb57AAI3yLFeTV8nD1DFi24rTtsb/exec"; 
 
-    // Lấy thông tin đã lưu ở trang name.html
-    const name = localStorage.getItem("studentName") || "Học sinh";
-    const school = localStorage.getItem("schoolName") || "";
-    document.getElementById("welcomeMsg").innerText = `Chào ${name} (${school}), chọn bài để bắt đầu!`;
+    // Lấy thông tin từ LocalStorage
+    const name = localStorage.getItem("studentName") || "Thí sinh";
+    const school = localStorage.getItem("schoolName") || "Tự do";
+    
+    document.getElementById("welcomeMsg").innerHTML = `Sẵn sàng chưa <b>${name}</b>? Hãy chọn một bài thi bên dưới nhé!`;
 
     async function loadTests() {
       const listContainer = document.getElementById("testList");
       try {
         const response = await fetch(`${API_URL}?action=getTests`);
         const tests = await response.json();
+        
         listContainer.innerHTML = "";
         
-        if (tests.length === 0) {
-          listContainer.innerHTML = "<p>Chưa có bài thi nào khả dụng.</p>";
+        if (!tests || tests.length === 0) {
+          listContainer.innerHTML = `
+            <div style="padding: 40px 0; opacity: 0.6;">
+              <i class="fas fa-box-open fa-3x"></i>
+              <p style="margin-top:15px">Hiện tại chưa có bài thi nào được mở.</p>
+            </div>`;
           return;
         }
 
-        tests.forEach(test => {
+        tests.forEach((test, index) => {
           const div = document.createElement("div");
-          div.className = "test-card";
-          div.innerHTML = `<span class="test-name">📘 ${test.name}</span><span class="q-count">${test.totalQuestions} câu hỏi</span>`;
-          div.onclick = () => {
-            localStorage.setItem("currentTestId", test.id);
-            localStorage.setItem("currentTestName", test.name);
-            window.location.href = "quiz.html";
-          };
+          div.className = `test-card animate__animated animate__fadeInUp`;
+          div.style.animationDelay = `${index * 0.1}s`;
+          
+          div.innerHTML = `
+            <div class="test-info">
+              <span class="test-name"><i class="fas fa-book-reader"></i> ${test.name}</span>
+              <span class="q-count">${test.totalQuestions} câu hỏi</span>
+            </div>
+            <div class="start-icon">
+              <i class="fas fa-play-circle"></i>
+            </div>
+          `;
+
+          div.onclick = () => confirmChoice(test);
           listContainer.appendChild(div);
         });
+
       } catch (error) {
-        listContainer.innerHTML = "❌ Lỗi kết nối API!";
+        listContainer.innerHTML = `
+          <div style="color: #ff4757; padding: 40px 0;">
+            <i class="fas fa-exclamation-triangle fa-3x"></i>
+            <p style="margin-top:15px">Lỗi kết nối máy chủ!</p>
+          </div>`;
       }
     }
+
+    function confirmChoice(test) {
+      Swal.fire({
+        title: 'Bắt đầu bài thi?',
+        text: `Bạn đã chọn: ${test.name}`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#4facfe',
+        cancelButtonColor: '#ff4757',
+        confirmButtonText: 'Vào thi ngay!',
+        cancelButtonText: 'Để sau',
+        background: 'rgba(30, 39, 46, 0.95)',
+        color: '#fff',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.setItem("currentTestId", test.id);
+          localStorage.setItem("currentTestName", test.name);
+          
+          // Hiệu ứng chuyển trang mượt
+          let timerInterval;
+          Swal.fire({
+            title: 'Đang tải câu hỏi...',
+            timer: 800,
+            background: 'rgba(30, 39, 46, 0.95)',
+            color: '#fff',
+            didOpen: () => { Swal.showLoading(); },
+            willClose: () => { clearInterval(timerInterval); }
+          }).then(() => {
+            window.location.href = "quiz.html";
+          });
+        }
+      });
+    }
+
     loadTests();
   </script>
 </body>

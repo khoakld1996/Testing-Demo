@@ -3,93 +3,193 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nhập thông tin | Quiz Online</title>
+  <title>Xác nhận thông tin | Quiz Online</title>
+  
+  <!-- Thư viện Icon, Popup & Hiệu ứng -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
-    :root { --primary: #4facfe; --accent: #00ffcc; --glass: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2); }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    :root { 
+      --primary: #4facfe; 
+      --accent: #00ffcc; 
+      --glass: rgba(255, 255, 255, 0.1); 
+      --glass-border: rgba(255, 255, 255, 0.15); 
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     
     body { 
       min-height: 100vh; 
-      background: linear-gradient(135deg, #0f2027, #2c5364); 
+      background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
       display: flex; justify-content: center; align-items: center; 
-      color: white; padding: 20px; 
+      color: white; padding: 20px;
+      position: relative;
     }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, rgba(15, 32, 39, 0.9), rgba(44, 83, 100, 0.8));
+      z-index: 0;
+    }
+
+    .container { position: relative; z-index: 10; width: 100%; max-width: 420px; }
 
     .box { 
       background: var(--glass); 
-      backdrop-filter: blur(15px); 
+      backdrop-filter: blur(20px); 
+      -webkit-backdrop-filter: blur(20px);
       border-radius: 30px; 
       padding: 40px; 
       border: 1px solid var(--glass-border); 
-      width: 100%; max-width: 400px; 
       text-align: center; 
-      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+      animation: fadeInUp 0.8s ease-out;
     }
 
-    h2 { margin-bottom: 25px; color: var(--accent); font-size: 1.6rem; }
+    @keyframes fadeInUp { 
+      from { opacity: 0; transform: translateY(30px); } 
+      to { opacity: 1; transform: translateY(0); } 
+    }
 
-    .input-group { text-align: left; margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-size: 0.9rem; color: #ccc; }
+    h2 { 
+      margin-bottom: 30px; 
+      background: linear-gradient(to right, #fff, var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 1.8rem;
+      font-weight: 800;
+    }
+
+    .input-group { text-align: left; margin-bottom: 25px; }
     
-    input { 
-      width: 100%; padding: 12px; border-radius: 12px; 
-      border: 1px solid var(--glass-border); 
-      background: rgba(0,0,0,0.2); color: white; outline: none; 
-      transition: 0.3s; 
+    label { 
+      display: block; 
+      margin-bottom: 10px; 
+      font-size: 0.8rem; 
+      color: var(--primary); 
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
-    input:focus { border-color: var(--primary); background: rgba(0,0,0,0.4); }
+    
+    .input-wrapper { position: relative; }
+    
+    .input-wrapper i {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    input { 
+      width: 100%; 
+      padding: 14px 15px 14px 45px; 
+      border-radius: 12px; 
+      border: 1px solid var(--glass-border); 
+      background: rgba(0,0,0,0.3); 
+      color: white; 
+      outline: none; 
+      font-size: 1rem;
+      transition: all 0.3s; 
+    }
+    
+    input:focus { 
+      border-color: var(--primary); 
+      background: rgba(0,0,0,0.5); 
+      box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);
+    }
 
     .btn-next { 
-      width: 100%; padding: 15px; border-radius: 12px; border: none; 
+      width: 100%; 
+      padding: 16px; 
+      border-radius: 12px; 
+      border: none; 
       background: linear-gradient(135deg, #4facfe, #00f2fe); 
-      color: #002f4b; font-weight: bold; font-size: 1rem; 
-      cursor: pointer; transition: 0.3s; margin-top: 10px; 
+      color: #002f4b; 
+      font-weight: 800; 
+      font-size: 1rem; 
+      cursor: pointer; 
+      transition: 0.3s; 
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
-    .btn-next:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4); }
+    
+    .btn-next:hover { 
+      transform: translateY(-3px); 
+      box-shadow: 0 10px 20px rgba(79, 172, 254, 0.4); 
+      filter: brightness(1.1);
+    }
 
-    /* Nút quay lại trang chủ */
     .btn-home {
       display: inline-block;
-      margin-top: 25px;
+      margin-top: 30px;
       background: none;
       border: none;
       color: rgba(255,255,255,0.4);
       cursor: pointer;
-      text-decoration: underline;
-      font-size: 0.9rem;
+      text-decoration: none;
+      font-size: 0.85rem;
       transition: 0.3s;
     }
-    .btn-home:hover { color: var(--primary); }
+    .btn-home:hover { color: white; }
   </style>
 </head>
 <body>
 
-  <div class="box">
-    <h2>🧑‍🎓 Nhập thông tin</h2>
-    
-    <div class="input-group">
-      <label>Họ và tên:</label>
-      <input type="text" id="username" placeholder="Nhập tên của bạn..." autocomplete="off">
+  <div class="container">
+    <div class="box">
+      <h2 class="animate__animated animate__lightSpeedInLeft">
+        <i class="fas fa-user-check"></i> THÔNG TIN THI
+      </h2>
+      
+      <div class="input-group">
+        <label>Họ và tên thí sinh</label>
+        <div class="input-wrapper">
+          <i class="fas fa-user-edit"></i>
+          <input type="text" id="username" placeholder="Đang tải tên..." autocomplete="off">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Tên trường / Đơn vị</label>
+        <div class="input-wrapper">
+          <i class="fas fa-school"></i>
+          <input type="text" id="school" placeholder="Ví dụ: THPT Nguyễn Du..." autocomplete="off">
+        </div>
+      </div>
+
+      <button class="btn-next" onclick="startSelection()">
+        TIẾP TỤC CHỌN BÀI <i class="fas fa-chevron-right"></i>
+      </button>
+
+      <button class="btn-home" onclick="window.location.href='index.html'">
+        <i class="fas fa-arrow-left"></i> Quay lại trang chủ
+      </button>
     </div>
-
-    <div class="input-group">
-      <label>Tên trường:</label>
-      <input type="text" id="school" placeholder="Nhập tên trường..." autocomplete="off">
-    </div>
-
-    <button class="btn-next" onclick="startSelection()">Tiếp tục chọn bài →</button>
-
-    <!-- Nút quay lại màn hình chính (role.html hoặc index.html) -->
-    <button class="btn-home" onclick="window.location.href='index.html'">
-      ← Quay lại màn hình chính
-    </button>
   </div>
 
   <script>
-    // Xóa sạch dữ liệu cũ khi vào trang
+    // CHỈNH SỬA: Tự động lấy tên từ trang Login truyền qua
     window.onload = () => {
-      localStorage.removeItem("studentName");
-      localStorage.removeItem("schoolName");
+      // 1. Lấy tên từ localStorage (Đã được lưu ở login.html)
+      const savedName = localStorage.getItem("studentName") || localStorage.getItem("quiz_user_name");
+      const savedSchool = localStorage.getItem("schoolName");
+      
+      if (savedName) {
+        document.getElementById("username").value = savedName;
+      }
+
+      if (savedSchool) {
+        document.getElementById("school").value = savedSchool;
+      }
     };
 
     function startSelection() {
@@ -97,16 +197,38 @@
       const school = document.getElementById("school").value.trim();
 
       if (!name || !school) {
-        alert("⚠️ Bạn cần nhập đầy đủ Tên và Trường!");
+        Swal.fire({
+          icon: 'warning',
+          title: 'Thiếu thông tin!',
+          text: 'Vui lòng điền đầy đủ Tên và Trường để tiếp tục nhé! 😊',
+          background: 'rgba(30, 39, 46, 0.95)',
+          color: '#fff',
+          confirmButtonColor: '#4facfe'
+        });
         return;
       }
 
+      // Lưu lại thông tin (phòng trường hợp học sinh sửa tên)
       localStorage.setItem("studentName", name);
       localStorage.setItem("schoolName", school);
       
-      // Chuyển sang trang select.html (Nhớ đặt đúng tên file này nhé)
-      window.location.href = "select.html";
+      // Hiệu ứng chuyển cảnh đẹp
+      Swal.fire({
+        title: 'Đang khởi tạo...',
+        timer: 1000,
+        timerProgressBar: true,
+        background: 'rgba(30, 39, 46, 0.95)',
+        color: '#fff',
+        didOpen: () => { Swal.showLoading(); }
+      }).then(() => {
+        window.location.href = "select.html";
+      });
     }
+
+    // Nhấn Enter để gửi
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') startSelection();
+    });
   </script>
 </body>
 </html>
