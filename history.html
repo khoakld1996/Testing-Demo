@@ -45,9 +45,10 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
-    .btn-home {
+    /* NÚT QUAY LẠI TRANG CHỌN BÀI (SELECT) */
+    .btn-select {
       padding: 12px 24px; 
-      background: linear-gradient(135deg, var(--primary), #00f2fe);
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
       color: white; 
       border: none; 
       border-radius: 12px; 
@@ -55,11 +56,16 @@
       text-decoration: none; 
       font-weight: bold;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
     }
-    .btn-home:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6); }
+    .btn-select:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 6px 20px rgba(0, 114, 255, 0.5); 
+    }
 
-    /* Danh sách bài thi */
     .history-item {
       background: var(--card); 
       border-radius: 20px; 
@@ -75,80 +81,66 @@
       display: flex; 
       justify-content: space-between; 
       align-items: center;
-      position: relative;
     }
     .item-summary:hover { background: rgba(255,255,255,0.05); }
     
-    .test-info h4 { color: var(--accent); margin-bottom: 6px; font-size: 1.25rem; }
-    .test-info small { color: var(--text-muted); display: block; font-size: 0.9rem; }
+    .test-info h4 { color: var(--accent); margin-bottom: 6px; font-size: 1.2rem; }
+    .test-info small { color: var(--text-muted); display: block; font-size: 0.85rem; }
 
     .score-badge {
       text-align: center;
-      padding: 10px;
-      min-width: 80px;
+      padding: 8px 15px;
       background: rgba(0,0,0,0.3);
-      border-radius: 15px;
+      border-radius: 12px;
       border: 1px solid var(--primary);
     }
-    .score-val { display: block; font-size: 1.4rem; font-weight: 800; color: var(--primary); }
-    .score-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; }
+    .score-val { display: block; font-size: 1.3rem; font-weight: 800; color: var(--primary); }
 
-    /* Chi tiết bài làm */
     .item-details {
       max-height: 0; 
       overflow: hidden; 
-      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
       background: rgba(15, 23, 42, 0.6);
     }
-    .item-details.active { max-height: 10000px; border-top: 1px solid var(--glass-border); }
+    .item-details.active { max-height: 20000px; border-top: 1px solid var(--glass-border); }
 
     .filter-bar {
-      padding: 15px 25px;
+      padding: 12px 25px;
       background: rgba(255,255,255,0.03);
       display: flex;
       justify-content: flex-end;
-      align-items: center;
-      gap: 10px;
-      border-bottom: 1px solid var(--glass-border);
     }
-    .filter-bar label { font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
-    .filter-bar input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--error); }
 
-    .review-content { padding: 25px; }
+    .review-content { padding: 20px; }
 
     .review-card {
       background: rgba(255,255,255,0.03); 
-      padding: 18px; 
-      border-radius: 15px;
-      margin-bottom: 20px; 
-      border-left: 6px solid transparent;
-      transition: 0.3s;
+      padding: 15px; 
+      border-radius: 12px;
+      margin-bottom: 15px; 
+      border-left: 5px solid transparent;
     }
     .review-card.correct { border-left-color: var(--success); }
     .review-card.incorrect { border-left-color: var(--error); }
 
-    .q-header { font-weight: 600; margin-bottom: 12px; line-height: 1.5; color: #f1f5f9; font-size: 1.05rem; }
-    .q-img-review { max-width: 100%; max-height: 200px; border-radius: 10px; margin: 10px 0; border: 1px solid var(--glass-border); }
+    .q-header { font-weight: 600; margin-bottom: 10px; color: #f1f5f9; }
     
     .ans-box { 
-      font-size: 0.95rem; 
-      padding: 10px 14px; 
+      font-size: 0.9rem; 
+      padding: 10px; 
       border-radius: 8px; 
       margin-top: 8px;
       display: flex;
-      align-items: center;
       gap: 10px;
     }
     .user-ans-box { background: rgba(255,255,255,0.05); color: #cbd5e1; }
-    .correct-ans-box { background: rgba(46, 204, 113, 0.15); color: var(--success); font-weight: 600; margin-top: 12px; }
+    .correct-ans-box { background: rgba(46, 204, 113, 0.1); color: var(--success); font-weight: 600; }
 
     .no-data { text-align: center; padding: 80px 20px; color: var(--text-muted); }
     
-    /* Mobile Responsive */
     @media (max-width: 600px) {
       .header-box { flex-direction: column; text-align: center; gap: 15px; }
-      .item-summary { padding: 15px; }
-      .test-info h4 { font-size: 1.1rem; }
+      .btn-select { width: 100%; justify-content: center; }
     }
   </style>
 </head>
@@ -160,7 +152,10 @@
         <h2 style="background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Lịch Sử Bài Làm</h2>
         <p id="studentDisplay" style="font-size: 0.85rem; color: var(--accent); font-weight: 500;"></p>
       </div>
-      <a href="index.html" class="btn-home">🏠 Làm bài tiếp</a>
+      <!-- QUAN TRỌNG: Trỏ về trang select.html của bạn -->
+      <a href="select.html" class="btn-select">
+        📝 Làm bài tiếp
+      </a>
     </div>
 
     <div id="historyList"></div>
@@ -179,35 +174,33 @@
     const container = document.getElementById("historyList");
 
     if (history.length === 0) {
-      container.innerHTML = `
-        <div class="no-data">
-          <div style="font-size: 4rem; margin-bottom: 15px;">📊</div>
-          <p>Bạn chưa có dữ liệu bài làm nào.</p>
-        </div>`;
+      container.innerHTML = `<div class="no-data"><p>Chưa có dữ liệu bài làm.</p></div>`;
       return;
     }
 
     container.innerHTML = ""; 
-
-    history.forEach((record, index) => {
+    // Hiện bài mới nhất lên đầu danh sách
+    [...history].reverse().forEach((record, index) => {
+      const realIndex = history.length - 1 - index;
       const item = document.createElement("div");
       item.className = "history-item";
       
       let html = `
-        <div class="item-summary" onclick="toggleDetails(${index})">
+        <div class="item-summary" onclick="toggleDetails(${realIndex})">
           <div class="test-info">
             <h4>${record.testName}</h4>
-            <small>📅 ${record.date}</small>
-            <small>✅ Đúng: ${record.correctText} câu</small>
+            <small>📅 ${record.date} | ✅ Đúng: ${record.correctText}</small>
           </div>
           <div class="score-badge">
             <span class="score-val">${record.score}</span>
-            <span class="score-label">Điểm</span>
+            <span style="font-size: 0.6rem; text-transform: uppercase;">Điểm</span>
           </div>
         </div>
-        <div class="item-details" id="details-${index}">
+        <div class="item-details" id="details-${realIndex}">
           <div class="filter-bar">
-             <label><input type="checkbox" onchange="filterWrong(this, ${index})"> Chỉ hiện câu sai</label>
+             <label style="cursor:pointer; font-size: 0.8rem;">
+                <input type="checkbox" onchange="filterWrong(this, ${realIndex})"> Chỉ hiện câu sai ❌
+             </label>
           </div>
           <div class="review-content">
       `;
@@ -215,30 +208,16 @@
       record.review.forEach((q, i) => {
         const statusClass = q.isRight ? "correct" : "incorrect";
         const icon = q.isRight ? "✅" : "❌";
-        
-        let correctTxt = "";
-        if (q.type === "mcq") {
-          correctTxt = q.details.items.filter(it => it.isCorrect).map(it => it.text).join(", ");
-        } else if (q.type === "tf") {
-          correctTxt = q.details.correct === "true" ? "Đúng" : "Sai";
-        } else {
-          correctTxt = q.details.items.join(" / ");
-        }
+        let correctTxt = q.type === "mcq" ? q.details.items.filter(it => it.isCorrect).map(it => it.text).join(", ") : 
+                         (q.type === "tf" ? (q.details.correct === "true" ? "Đúng" : "Sai") : q.details.items);
 
         html += `
           <div class="review-card ${statusClass}">
             <div class="q-header">Câu ${i+1}: ${q.question}</div>
-            ${q.image ? `<img src="${q.image}" class="q-img-review">` : ''}
-            
             <div class="ans-box user-ans-box">
-              <span>${icon}</span>
-              <span>Lựa chọn của bạn: <b>${formatUserAns(q)}</b></span>
+              <span>${icon} Bạn chọn: <b>${formatUserAns(q)}</b></span>
             </div>
-
-            ${!q.isRight ? `
-              <div class="ans-box correct-ans-box">
-                <span>💡 Đáp án đúng: ${correctTxt}</span>
-              </div>` : ''}
+            ${!q.isRight ? `<div class="ans-box correct-ans-box"><span>💡 Đáp án: ${correctTxt}</span></div>` : ''}
           </div>
         `;
       });
@@ -250,41 +229,23 @@
   }
 
   function formatUserAns(q) {
-    if (!q.userAns || (Array.isArray(q.userAns) && q.userAns.length === 0)) return "Bỏ trống";
-    if (q.type === "mcq") {
-      return q.userAns.map(idx => q.details.items[idx].text).join(", ");
-    }
+    if (!q.userAns) return "Bỏ trống";
+    if (q.type === "mcq") return q.userAns.map(idx => q.details.items[idx].text).join(", ");
     if (q.type === "tf") return q.userAns === "true" ? "Đúng" : "Sai";
     return q.userAns;
   }
 
   function toggleDetails(index) {
     const el = document.getElementById(`details-${index}`);
-    const isAlreadyActive = el.classList.contains("active");
-    
-    // KÍCH HOẠT: Đóng tất cả các bài khác trước khi mở bài mới
+    const isActive = el.classList.contains("active");
     document.querySelectorAll('.item-details').forEach(d => d.classList.remove('active'));
-
-    // Nếu cái đang chọn chưa mở thì mới mở nó ra
-    if (!isAlreadyActive) {
-      el.classList.add("active");
-      // Cuộn nhẹ xuống để thấy nội dung vừa mở
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 300);
-    }
+    if (!isActive) el.classList.add("active");
   }
 
   function filterWrong(checkbox, index) {
     const container = document.getElementById(`details-${index}`);
     const cards = container.querySelectorAll('.review-card');
-    cards.forEach(card => {
-      if (checkbox.checked) {
-        if (card.classList.contains('correct')) card.style.display = 'none';
-      } else {
-        card.style.display = 'block';
-      }
-    });
+    cards.forEach(card => card.style.display = (checkbox.checked && card.classList.contains('correct')) ? 'none' : 'block');
   }
 </script>
 </body>

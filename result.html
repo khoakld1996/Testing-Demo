@@ -15,45 +15,52 @@
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 
     body {
-      min-height: 100vh;
+      height: 100vh;
       background: linear-gradient(135deg, #0f2027, #2c5364);
-      display: flex; justify-content: center; align-items: center;
-      color: white; padding: 20px;
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      color: white; 
+      padding: 20px;
+      overflow: hidden; /* Không cho cả trang web cuộn, chỉ thẻ box cuộn */
     }
 
     .box {
       background: var(--glass);
       backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
       border-radius: 30px;
       padding: 40px 30px;
       border: 1px solid var(--glass-border);
       text-align: center;
       width: 100%;
       max-width: 450px;
+      max-height: 90vh; /* Giới hạn chiều cao box là 90% màn hình */
       box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-    }
-
-    .icon-result { font-size: 4rem; margin-bottom: 10px; }
-
-    h2 { font-size: 2rem; margin-bottom: 25px; color: var(--accent); }
-
-    .info-card {
-      background: rgba(255,255,255,0.05);
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 25px;
-      text-align: left;
-      border: 1px solid var(--glass-border);
-    }
-
-    .info-item {
-      margin-bottom: 10px;
-      font-size: 1.1rem;
+      
+      /* CẤU HÌNH THANH CUỘN */
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      overflow-y: auto; 
     }
 
-    .label { color: rgba(255,255,255,0.6); }
+    /* Tùy chỉnh thanh cuộn cho đẹp */
+    .box::-webkit-scrollbar {
+      width: 6px;
+    }
+    .box::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      margin: 20px 0;
+    }
+    .box::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 10px;
+    }
+
+    .icon-result { font-size: 4rem; margin-bottom: 10px; flex-shrink: 0; }
+
+    h2 { font-size: 2rem; margin-bottom: 25px; color: var(--accent); flex-shrink: 0; }
 
     .score-big {
       font-size: 3.5rem;
@@ -62,6 +69,34 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       margin: 10px 0;
+      flex-shrink: 0;
+    }
+
+    .info-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 15px;
+      padding: 20px;
+      margin-bottom: 25px;
+      text-align: left;
+      border: 1px solid var(--glass-border);
+      flex-shrink: 0;
+    }
+
+    .info-item {
+      margin-bottom: 10px;
+      font-size: 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+    }
+
+    .label { color: rgba(255,255,255,0.6); }
+
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        flex-shrink: 0;
     }
 
     .btn {
@@ -78,6 +113,17 @@
     }
 
     .btn:hover { transform: scale(1.03); filter: brightness(1.1); }
+    
+    .btn-secondary {
+        background: rgba(255,255,255,0.1);
+        color: white;
+        border: 1px solid var(--glass-border);
+    }
+
+    @media (max-width: 480px) {
+      .box { padding: 30px 20px; }
+      .score-big { font-size: 2.8rem; }
+    }
   </style>
 </head>
 <body>
@@ -91,22 +137,24 @@
   <div class="info-card">
     <div class="info-item">
       <span class="label">Học sinh:</span>
-      <span id="resName">...</span>
+      <span id="resName" style="text-align: right; font-weight: 500;">...</span>
     </div>
     <div class="info-item">
       <span class="label">Trường:</span>
-      <span id="resSchool">...</span>
+      <span id="resSchool" style="text-align: right; font-weight: 500;">...</span>
     </div>
     <div class="info-item">
       <span class="label">Đúng:</span>
-      <span id="resCorrect">0/0</span>
+      <span id="resCorrect" style="font-weight: bold; color: var(--accent);">0/0</span>
     </div>
   </div>
 
-  <button class="btn" onclick="location.href='index.html'">Về trang chủ</button>
-  <button class="btn" style="background: #64748b; margin-top: 10px;" onclick="location.href='history.html'">
-   🔍 Xem lại chi tiết bài làm
-</button>
+  <div class="btn-group">
+      <button class="btn" onclick="location.href='index.html'">Về trang chủ</button>
+      <button class="btn btn-secondary" onclick="location.href='history.html'">
+         🔍 Xem lại chi tiết bài làm
+      </button>
+  </div>
 </div>
 
 <script>
@@ -122,9 +170,6 @@
     document.getElementById("resSchool").innerText = school;
     document.getElementById("displayScore").innerText = score;
     document.getElementById("resCorrect").innerText = correct;
-    
-    // Xóa dữ liệu tạm để lần sau làm bài mới (tùy chọn)
-    // localStorage.removeItem("lastScore");
   };
 </script>
 
