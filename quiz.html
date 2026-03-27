@@ -21,180 +21,144 @@
       padding: 15px 25px; border-radius: 15px; display: flex; justify-content: space-between;
       align-items: center; border: 1px solid var(--glass-border); position: sticky; top: 10px; z-index: 100; margin-bottom: 20px;
     }
-    #timer { font-size: 1.2rem; font-weight: bold; color: #ff4757; }
+    #timer { font-size: 1.2rem; font-weight: bold; color: #ff4757; text-shadow: 0 0 10px rgba(255,71,87,0.3); }
 
-    /* Layout chính */
-    .main-layout {
-      display: grid; grid-template-columns: 1fr 280px; gap: 20px;
-      width: 100%; max-width: 1000px;
-    }
+    /* Layout */
+    .main-layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; width: 100%; max-width: 1000px; }
     @media (max-width: 850px) { .main-layout { grid-template-columns: 1fr; } }
 
-    /* Vùng câu hỏi */
-    .question-container { min-height: 400px; }
     .question-card {
-      background: var(--card); border-radius: 20px; padding: 30px;
-      border: 1px solid var(--glass-border); display: none; /* Ẩn mặc định */
-      animation: slideIn 0.3s ease-out;
+      background: var(--card); border-radius: 20px; padding: 30px; border: 1px solid var(--glass-border);
+      display: none; animation: slideIn 0.3s ease-out; min-height: 350px;
     }
     .question-card.active { display: block; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-    .q-text { font-size: 1.3rem; margin-bottom: 20px; font-weight: 600; }
-    .q-image { max-width: 100%; border-radius: 12px; margin-bottom: 20px; max-height: 250px; display: block; margin-left: auto; margin-right: auto; }
+    .q-text { font-size: 1.3rem; margin-bottom: 20px; font-weight: 600; line-height: 1.5; }
+    .q-image { max-width: 100%; border-radius: 12px; margin: 0 auto 20px; display: block; max-height: 250px; }
 
     /* Đáp án */
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
     @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
     .option-label {
-      background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px;
-      border: 2px solid transparent; cursor: pointer; transition: 0.2s;
-      display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+      background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; border: 2px solid transparent;
+      cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; gap: 10px;
     }
     .option-label:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
     .option-label input { display: none; }
     .selected-card { border-color: var(--accent) !important; background: rgba(0, 255, 204, 0.1) !important; }
-    .opt-img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; }
+    .input-fill { width: 100%; padding: 15px; border-radius: 10px; background: rgba(0,0,0,0.3); color: white; border: 1px solid var(--glass-border); }
 
-    /* Điều hướng câu hỏi (Bên phải) */
-    .nav-panel {
-      background: var(--card); border-radius: 20px; padding: 20px;
-      border: 1px solid var(--glass-border); height: fit-content;
-    }
-    .nav-title { font-size: 0.9rem; margin-bottom: 15px; color: var(--accent); font-weight: bold; text-transform: uppercase; }
-    .q-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+    /* Navigation Panel */
+    .nav-panel { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid var(--glass-border); }
+    .q-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 15px; }
     .q-num {
       aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer;
-      font-weight: bold; transition: 0.3s; font-size: 0.9rem;
+      background: rgba(255,255,255,0.1); border-radius: 8px; cursor: pointer; font-weight: bold;
     }
-    .q-num:hover { background: var(--primary); }
-    .q-num.done { background: #10b981; color: white; } /* Đã làm */
+    .q-num.done { background: #10b981; }
     .q-num.current { border: 2px solid var(--accent); box-shadow: 0 0 10px var(--accent); }
 
-    /* Nút bấm */
-    .ctrl-btns { display: flex; justify-content: space-between; margin-top: 25px; gap: 15px; }
-    .btn {
-      padding: 12px 25px; border-radius: 10px; border: none; cursor: pointer;
-      font-weight: bold; transition: 0.3s; flex: 1;
-    }
-    .btn-prev { background: rgba(255,255,255,0.1); color: white; }
+    .ctrl-btns { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+    .btn { padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; flex: 1; }
     .btn-next { background: var(--primary); color: white; }
-    .submit-btn {
-      width: 100%; background: linear-gradient(to right, #ef4444, #f87171);
-      color: white; padding: 15px; border-radius: 12px; margin-top: 20px;
-      font-weight: bold; border: none; cursor: pointer;
-    }
+    .submit-btn { width: 100%; background: #ef4444; color: white; padding: 15px; border-radius: 12px; margin-top: 20px; border: none; cursor: pointer; font-weight: bold; }
 
-    .input-fill {
-      width: 100%; padding: 15px; border-radius: 10px; border: 1px solid var(--glass-border);
-      background: rgba(0,0,0,0.2); color: white; font-size: 1rem;
+    /* POPUP MODAL */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8);
+      display: none; justify-content: center; align-items: center; z-index: 1000; backdrop-filter: blur(5px);
     }
+    .modal-box {
+      background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid var(--primary);
+      max-width: 400px; width: 90%; text-align: center; animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-box h3 { color: var(--accent); margin-bottom: 15px; }
+    .modal-box p { margin-bottom: 25px; line-height: 1.5; color: #cbd5e1; }
+    .modal-btns { display: flex; gap: 10px; }
   </style>
 </head>
 <body>
 
   <div class="quiz-header">
     <div>
-      <h3 id="quizTitle">Đang tải...</h3>
-      <small id="studentInfo">Đang tải học sinh...</small>
+      <h3 id="quizTitle">Tải bài thi...</h3>
+      <small id="studentInfo">...</small>
     </div>
     <div id="timer">⏱️ 00:00</div>
   </div>
 
   <div class="main-layout">
-    <!-- Vùng câu hỏi bên trái -->
     <div class="question-container">
-      <div id="quizContent">
-         <p style="text-align:center">Đang tải câu hỏi...</p>
-      </div>
-      
+      <div id="quizContent"></div>
       <div class="ctrl-btns">
-        <button class="btn btn-prev" onclick="changeQuestion(-1)">⬅️ Câu trước</button>
+        <button class="btn" style="background:rgba(255,255,255,0.1); color:white" onclick="changeQuestion(-1)">⬅️ Câu trước</button>
         <button class="btn btn-next" onclick="changeQuestion(1)">Câu sau ➡️</button>
       </div>
     </div>
 
-    <!-- Bảng số câu hỏi bên phải -->
     <div class="nav-panel">
-      <div class="nav-title">Danh sách câu hỏi</div>
+      <div style="font-size:0.8rem; opacity:0.7">TIẾN ĐỘ</div>
       <div class="q-grid" id="qGrid"></div>
-      <button class="submit-btn" onclick="submitQuiz()">NỘP BÀI 🏁</button>
+      <button class="submit-btn" onclick="checkBeforeSubmit()">NỘP BÀI 🏁</button>
+    </div>
+  </div>
+
+  <!-- Popup thông báo -->
+  <div class="modal-overlay" id="modal">
+    <div class="modal-box">
+      <h3 id="modalTitle">Thông báo</h3>
+      <p id="modalMsg"></p>
+      <div class="modal-btns" id="modalBtns"></div>
     </div>
   </div>
 
 <script>
   const API = "https://script.google.com/macros/s/AKfycbzhfdXXw8LVl75r4JkxJSVPpz2p8GDp7NEMQdl7381Fa3xj3pIdcTWgHg2lEeNNHevb/exec";
-  
-  let questions = [];
-  let currentIdx = 0; // Câu hỏi hiện tại
-  let timeLeft = 15 * 60;
-  let timerInterval;
+  let questions = [], currentIdx = 0, timeLeft = 15 * 60, timerInterval;
 
   window.onload = async () => {
     const testId = localStorage.getItem("currentTestId");
     if (!testId) return location.href = "index.html";
-
-    document.getElementById("quizTitle").innerText = localStorage.getItem("currentTestName") || "Bài thi";
-    document.getElementById("studentInfo").innerText = "Học sinh: " + (localStorage.getItem("studentName") || "Khách");
-
+    document.getElementById("quizTitle").innerText = localStorage.getItem("currentTestName");
+    document.getElementById("studentInfo").innerText = `${localStorage.getItem("studentName")} - ${localStorage.getItem("schoolName")}`;
     await loadQuestions(testId);
   };
 
   async function loadQuestions(testId) {
-    try {
-      const res = await fetch(`${API}?action=getQuestions&testId=${testId}`);
-      const data = await res.json();
-      questions = data.map(q => ({ ...q, details: JSON.parse(q.answer) }));
-      
-      renderQuiz();
-      renderNavGrid();
-      showQuestion(0);
-      startTimer();
-    } catch (e) {
-      document.getElementById("quizContent").innerHTML = "❌ Lỗi tải câu hỏi!";
-    }
+    const res = await fetch(`${API}?action=getQuestions&testId=${testId}`);
+    const data = await res.json();
+    questions = data.map(q => ({ ...q, details: JSON.parse(q.answer) }));
+    renderQuiz();
+    renderNavGrid();
+    showQuestion(0);
+    startTimer();
   }
 
   function renderQuiz() {
     const content = document.getElementById("quizContent");
-    content.innerHTML = "";
-
     questions.forEach((q, idx) => {
       const card = document.createElement("div");
       card.className = "question-card";
       card.id = `qCard${idx}`;
-
       let html = `<div class="q-text">Câu ${idx + 1}: ${q.question}</div>`;
       if (q.image) html += `<img src="${q.image}" class="q-image">`;
-
+      
       const type = q.details.type;
       html += `<div class="ans-box">`;
-
       if (type === "mcq") {
         html += `<div class="options-grid">`;
         const isMulti = q.details.items.filter(x => x.isCorrect).length > 1;
         q.details.items.forEach((opt, i) => {
-          html += `
-            <label class="option-label">
-              <input type="${isMulti ? 'checkbox' : 'radio'}" name="ans${idx}" value="${i}" onchange="markAsDone(${idx}); updateUI(this, ${isMulti})">
-              ${opt.img ? `<img src="${opt.img}" class="opt-img">` : ""}
-              <span>${opt.text}</span>
-            </label>`;
+          html += `<label class="option-label"><input type="${isMulti?'checkbox':'radio'}" name="ans${idx}" value="${i}" onchange="markAsDone(${idx});updateUI(this,${isMulti})"><span>${opt.text}</span></label>`;
         });
         html += `</div>`;
-      } 
-      else if (type === "tf") {
-        html += `<div class="options-grid">
-          <label class="option-label"><input type="radio" name="ans${idx}" value="Đúng" onchange="markAsDone(${idx}); updateUI(this, false)"> Đúng</label>
-          <label class="option-label"><input type="radio" name="ans${idx}" value="Sai" onchange="markAsDone(${idx}); updateUI(this, false)"> Sai</label>
-        </div>`;
+      } else if (type === "tf") {
+        html += `<div class="options-grid"><label class="option-label"><input type="radio" name="ans${idx}" value="Đúng" onchange="markAsDone(${idx});updateUI(this,false)"> Đúng</label><label class="option-label"><input type="radio" name="ans${idx}" value="Sai" onchange="markAsDone(${idx});updateUI(this,false)"> Sai</label></div>`;
+      } else if (type === "fill") {
+        html += `<input type="text" class="input-fill" id="fill${idx}" placeholder="Nhập đáp án..." oninput="if(this.value.trim()){markAsDone(${idx})}">`;
       }
-      else if (type === "fill") {
-        html += `<input type="text" class="input-fill" id="fill${idx}" placeholder="Nhập đáp án..." oninput="markAsDone(${idx})">`;
-      }
-
       card.innerHTML = html + `</div>`;
       content.appendChild(card);
     });
@@ -202,12 +166,9 @@
 
   function renderNavGrid() {
     const grid = document.getElementById("qGrid");
-    grid.innerHTML = "";
     questions.forEach((_, i) => {
       const btn = document.createElement("div");
-      btn.className = "q-num";
-      btn.id = `qNum${i}`;
-      btn.innerText = i + 1;
+      btn.className = "q-num"; btn.id = `qNum${i}`; btn.innerText = i + 1;
       btn.onclick = () => showQuestion(i);
       grid.appendChild(btn);
     });
@@ -216,25 +177,33 @@
   function showQuestion(index) {
     if (index < 0 || index >= questions.length) return;
     
-    // Ẩn tất cả, hiện câu được chọn
+    // Ẩn tất cả cards, hiện card được chọn
     document.querySelectorAll(".question-card").forEach(c => c.classList.remove("active"));
     document.getElementById(`qCard${index}`).classList.add("active");
 
-    // Cập nhật trạng thái lưới điều hướng
+    // Cập nhật trạng thái lưới điều hướng bên phải
     document.querySelectorAll(".q-num").forEach(n => n.classList.remove("current"));
     document.getElementById(`qNum${index}`).classList.add("current");
     
     currentIdx = index;
-  }
 
-  function changeQuestion(step) {
-    showQuestion(currentIdx + step);
-  }
+    // --- LOGIC ĐỔI NÚT CÂU SAU ---
+    const nextBtn = document.querySelector(".btn-next");
+    if (currentIdx === questions.length - 1) {
+        nextBtn.innerHTML = "NỘP BÀI 🏁";
+        nextBtn.style.background = "linear-gradient(to right, #ef4444, #f87171)";
+        // Đổi onclick để khi bấm vào sẽ chạy hàm kiểm tra nộp bài
+        nextBtn.setAttribute("onclick", "checkBeforeSubmit()");
+    } else {
+        nextBtn.innerHTML = "Câu sau ➡️";
+        nextBtn.style.background = "var(--primary)";
+        nextBtn.setAttribute("onclick", "changeQuestion(1)");
+    }
+}
 
-  function markAsDone(index) {
-    document.getElementById(`qNum${index}`).classList.add("done");
-  }
-
+  function changeQuestion(s) { showQuestion(currentIdx + s); }
+  function markAsDone(i) { document.getElementById(`qNum${i}`).classList.add("done"); }
+  
   function updateUI(input, isMulti) {
     const parent = input.closest('.options-grid');
     if (!isMulti) parent.querySelectorAll('.option-label').forEach(l => l.classList.remove('selected-card'));
@@ -244,117 +213,123 @@
   function startTimer() {
     timerInterval = setInterval(() => {
       let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-      document.getElementById("timer").innerText = `⏱️ ${m}:${s < 10 ? '0' : ''}${s}`;
-      if (timeLeft-- <= 0) { clearInterval(timerInterval); submitQuiz(); }
+      document.getElementById("timer").innerText = `⏱️ ${m}:${s<10?'0':''}${s}`;
+      if (timeLeft-- <= 0) { clearInterval(timerInterval); submitQuiz(true); }
     }, 1000);
   }
 
-  async function submitQuiz() {
-    if(!confirm("Bạn có muốn nộp bài không?")) return;
-    clearInterval(timerInterval);
+  // --- HÀM KIỂM TRA TRƯỚC KHI NỘP ---
+  function checkBeforeSubmit() {
+    let unDoneIndices = [];
     
-    let score = 0;
     questions.forEach((q, i) => {
-      const type = q.details.type;
-      let isRight = false;
-      if (type === "mcq") {
-        const sel = Array.from(document.querySelectorAll(`input[name="ans${i}"]:checked`)).map(el => parseInt(el.value));
-        const cor = q.details.items.map((it, idx) => it.isCorrect ? idx : null).filter(idx => idx !== null);
-        isRight = JSON.stringify(sel.sort()) === JSON.stringify(cor.sort());
-      } else if (type === "tf") {
-        const sel = document.querySelector(`input[name="ans${i}"]:checked`)?.value;
-        isRight = (sel === q.details.correct);
-      } else if (type === "fill") {
-        const val = document.getElementById(`fill${i}`).value.trim().toLowerCase();
-        isRight = q.details.items.some(k => val === k.toLowerCase());
-      }
-      if (isRight) score++;
+        const type = q.details.type;
+        let answered = false;
+        
+        if (type === "mcq" || type === "tf") {
+            answered = !!document.querySelector(`input[name="ans${i}"]:checked`);
+        } else if (type === "fill") {
+            answered = document.getElementById(`fill${i}`).value.trim() !== "";
+        }
+        
+        if (!answered) unDoneIndices.push(i);
+    });
+
+    if (unDoneIndices.length > 0) {
+        // Nếu còn câu chưa làm
+        const firstUnDone = unDoneIndices[0];
+        showModal(
+            "⚠️ Chưa hoàn thành!", 
+            `Bạn còn <b>${unDoneIndices.length}</b> câu chưa làm. Hãy hoàn tất trước khi nộp nhé!`,
+            `<button class="btn btn-next" onclick="closeModal(); showQuestion(${firstUnDone})">Quay lại câu ${firstUnDone + 1}</button>`
+        );
+    } else {
+        // Nếu đã làm hết
+        showModal(
+            "🚀 Tuyệt vời!", 
+            "Bạn đã hoàn thành tất cả câu hỏi. Bạn có muốn nộp bài ngay bây giờ không?",
+            `<button class="btn" style="background:#64748b; color:white" onclick="closeModal()">Xem lại</button>
+             <button class="btn btn-next" onclick="submitQuiz()">Nộp bài ngay</button>`
+        );
+    }
+}
+
+  function showModal(title, msg, btns) {
+    document.getElementById("modalTitle").innerHTML = title;
+    document.getElementById("modalMsg").innerHTML = msg;
+    document.getElementById("modalBtns").innerHTML = btns;
+    document.getElementById("modal").style.display = "flex";
+  }
+
+  function closeModal() { document.getElementById("modal").style.display = "none"; }
+
+  async function submitQuiz() {
+    closeModal();
+    let score = 0;
+    let reviewData = []; // Lưu chi tiết để xem lại
+
+    questions.forEach((q, i) => {
+        const type = q.details.type;
+        let userAns = "";
+        let isRight = false;
+
+        // Lấy đáp án học sinh đã chọn
+        if (type === "mcq") {
+            userAns = Array.from(document.querySelectorAll(`input[name="ans${i}"]:checked`)).map(el => parseInt(el.value));
+            const cor = q.details.items.map((it, idx) => it.isCorrect ? idx : null).filter(idx => idx !== null);
+            isRight = JSON.stringify(userAns.sort()) === JSON.stringify(cor.sort());
+        } else if (type === "tf") {
+            userAns = document.querySelector(`input[name="ans${i}"]:checked`)?.value || "";
+            isRight = (userAns === q.details.correct);
+        } else if (type === "fill") {
+            userAns = document.getElementById(`fill${i}`).value.trim();
+            isRight = q.details.items.some(k => userAns.toLowerCase() === k.toLowerCase());
+        }
+
+        if (isRight) score++;
+
+        // Đóng gói câu hỏi này vào danh sách xem lại
+        reviewData.push({
+            question: q.question,
+            image: q.image,
+            type: type,
+            details: q.details,
+            userAns: userAns,
+            isRight: isRight
+        });
     });
 
     const final = ((score / questions.length) * 10).toFixed(1);
     
-    // Gửi API (ẩn danh POST)
+    // LƯU VÀO LỊCH SỬ (Ghi đè hoặc thêm mới tùy bạn, ở đây là thêm vào danh sách)
+    let history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+    history.unshift({
+        id: Date.now(),
+        testName: localStorage.getItem("currentTestName") || "Bài thi không tên",
+        date: new Date().toLocaleString('vi-VN'),
+        score: final,
+        correctText: `${score}/${questions.length}`,
+        review: reviewData
+    });
+    localStorage.setItem("quizHistory", JSON.stringify(history.slice(0, 10))); // Lưu tối đa 10 bài gần nhất cho nhẹ máy
+
+    // Lưu các biến cần thiết cho trang result.html
+    localStorage.setItem("lastScore", final);
+    localStorage.setItem("correctCount", `${score}/${questions.length}`);
+    
+    // Gửi API lên Sheets (vẫn giữ để giáo viên theo dõi)
     try {
-        await fetch(API, {
-          method: "POST", mode: "no-cors",
-          body: JSON.stringify({
-            action: "submitResult",
+        await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify({
+            action: "submitResult", 
             studentName: localStorage.getItem("studentName"),
-            testName: localStorage.getItem("currentTestName"),
-            score: final,
+            schoolName: localStorage.getItem("schoolName"), 
+            score: final, 
             details: `${score}/${questions.length}`
-          })
-        });
+        })});
     } catch(e) {}
 
-    alert(`Hoàn thành! Đúng ${score}/${questions.length} câu. Điểm: ${final}`);
-    localStorage.setItem("lastScore", final);
     window.location.href = "result.html";
-  }
-
-  function startTimer() { /* Giữ nguyên hàm của bạn */ }
-
-    // 4. Đồng hồ đếm ngược
-    function startTimer() {
-      timerInterval = setInterval(() => {
-        const minutes = Math.floor(timeLeft / 60);
-        const seconds = timeLeft % 60;
-        document.getElementById("timer").innerText = `⏱️ ${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-        
-        if (timeLeft <= 0) {
-          clearInterval(timerInterval);
-          alert("Hết giờ làm bài! Hệ thống sẽ tự động nộp.");
-          submitQuiz();
-        }
-        timeLeft--;
-      }, 1000);
-    }
-
-    // 5. Xử lý nộp bài
-    async function submitQuiz() {
-      clearInterval(timerInterval);
-      const studentName = localStorage.getItem("studentName");
-      const testName = localStorage.getItem("currentTestName");
-      
-      let score = 0;
-      const userAnswers = [];
-
-      questions.forEach((q, index) => {
-        const selected = document.querySelector(`input[name="q${index}"]:checked`);
-        const ansValue = selected ? selected.value : "";
-        userAnswers.push(ansValue);
-        
-        if (ansValue === q.correctAnswer) {
-          score++;
-        }
-      });
-
-      const finalScore = ((score / questions.length) * 10).toFixed(2);
-      
-      // Gửi kết quả về Google Sheets
-      const resultData = {
-        action: "submitResult",
-        studentName: studentName,
-        testName: testName,
-        score: finalScore,
-        details: `${score}/${questions.length}`
-      };
-
-      try {
-        await fetch(API, {
-          method: "POST",
-          mode: "no-cors",
-          body: JSON.stringify(resultData)
-        });
-        
-        // Lưu kết quả để hiển thị trang Result
-        localStorage.setItem("lastScore", finalScore);
-        localStorage.setItem("correctCount", `${score}/${questions.length}`);
-        window.location.href = "result.html";
-      } catch (err) {
-        alert("Lỗi nộp bài, vui lòng báo giáo viên!");
-      }
-    }
-  </script>
+}
+</script>
 </body>
 </html>
