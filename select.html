@@ -17,6 +17,7 @@
       --accent: #00ffcc; 
       --glass: rgba(255, 255, 255, 0.1); 
       --glass-border: rgba(255, 255, 255, 0.15); 
+      --error: #ff4757;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -30,13 +31,42 @@
       overflow: hidden;
     }
 
-    /* Lớp phủ làm tối nền và mờ */
     body::before {
       content: "";
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
       background: linear-gradient(135deg, rgba(15, 32, 39, 0.85), rgba(44, 83, 100, 0.8));
       z-index: 0;
+    }
+
+    /* Nút Đăng xuất góc trên */
+    .logout-box {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 100;
+    }
+
+    .btn-logout {
+      background: rgba(255, 71, 87, 0.2);
+      border: 1px solid rgba(255, 71, 87, 0.3);
+      color: #ff4757;
+      padding: 10px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-logout:hover {
+      background: #ff4757;
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
     }
 
     .container { position: relative; z-index: 10; width: 100%; max-width: 550px; }
@@ -50,7 +80,6 @@
       border: 1px solid var(--glass-border); 
       text-align: center; 
       box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-      animation: zoomIn 0.6s ease-out;
     }
 
     h2 { 
@@ -83,7 +112,6 @@
       margin-bottom: 10px;
     }
 
-    /* Tùy chỉnh thanh cuộn */
     #testList::-webkit-scrollbar { width: 6px; }
     #testList::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
     #testList::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
@@ -95,7 +123,7 @@
       border-radius: 20px; 
       text-align: left; 
       cursor: pointer; 
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -103,23 +131,12 @@
       overflow: hidden;
     }
 
-    .test-card::before {
-      content: "";
-      position: absolute;
-      top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-      transition: 0.5s;
-    }
-
     .test-card:hover { 
       background: rgba(255, 255, 255, 0.15); 
       border-color: var(--accent); 
-      transform: scale(1.03);
+      transform: scale(1.02);
       box-shadow: 0 10px 20px rgba(0, 255, 204, 0.2);
     }
-
-    .test-card:hover::before { left: 100%; }
 
     .test-info { display: flex; flex-direction: column; gap: 5px; }
 
@@ -169,23 +186,24 @@
     
     .btn-back:hover { color: var(--primary); transform: translateX(-5px); }
 
-    /* Hiệu ứng loading */
     .loading-spinner {
-      font-size: 1.2rem;
-      color: var(--primary);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 15px;
-      padding: 40px 0;
+      font-size: 1.2rem; color: var(--primary);
+      display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 40px 0;
     }
   </style>
 </head>
 <body>
 
+  <!-- NÚT ĐĂNG XUẤT -->
+  <div class="logout-box animate__animated animate__fadeInRight">
+    <button class="btn-logout" onclick="handleLogout()">
+      <i class="fas fa-sign-out-alt"></i> Đăng xuất
+    </button>
+  </div>
+
   <div class="container">
     <div class="box animate__animated animate__zoomIn">
-      <h2 class="animate__animated animate__fadeInDown animate__delay-1s">
+      <h2 class="animate__animated animate__fadeInDown">
         <i class="fas fa-rocket"></i> CHỌN BÀI THI
       </h2>
       <p class="welcome-text" id="welcomeMsg">Đang tải thông tin thí sinh...</p>
@@ -204,12 +222,14 @@
   </div>
 
   <script>
-    // URL API CỦA BẠN
-    const API_URL = "https://script.google.com/macros/s/AKfycbzFQUVCvqoyPZI2mv2Fmg5XoSCVLHL1yBejwwNKVb57AAI3yLFeTV8nD1DFi24rTtsb/exec"; 
+    // URL API (Thay bằng URL của bạn nếu khác)
+    const API_URL = "https://script.google.com/macros/s/AKfycbyMNDhpE9eNmQfEJizQtjfvAoTfmc7C0WgOWNb9g82txlzLxC_EwKE8IIWvGxEYH5pk/exec"; 
 
-    // Lấy thông tin từ LocalStorage
-    const name = localStorage.getItem("studentName") || "Thí sinh";
-    const school = localStorage.getItem("schoolName") || "Tự do";
+    // Kiểm tra đăng nhập sơ bộ
+    const name = localStorage.getItem("studentName");
+    if (!name) {
+        window.location.href = "login.html"; // Chuyển về login nếu chưa có tên
+    }
     
     document.getElementById("welcomeMsg").innerHTML = `Sẵn sàng chưa <b>${name}</b>? Hãy chọn một bài thi bên dưới nhé!`;
 
@@ -238,7 +258,7 @@
           div.innerHTML = `
             <div class="test-info">
               <span class="test-name"><i class="fas fa-book-reader"></i> ${test.name}</span>
-              <span class="q-count">${test.totalQuestions} câu hỏi</span>
+              <span class="q-count">${test.duration || 40} phút</span>
             </div>
             <div class="start-icon">
               <i class="fas fa-play-circle"></i>
@@ -250,18 +270,14 @@
         });
 
       } catch (error) {
-        listContainer.innerHTML = `
-          <div style="color: #ff4757; padding: 40px 0;">
-            <i class="fas fa-exclamation-triangle fa-3x"></i>
-            <p style="margin-top:15px">Lỗi kết nối máy chủ!</p>
-          </div>`;
+        listContainer.innerHTML = `<div style="color: #ff4757; padding: 40px 0;"><p>Lỗi kết nối máy chủ!</p></div>`;
       }
     }
 
     function confirmChoice(test) {
       Swal.fire({
         title: 'Bắt đầu bài thi?',
-        text: `Bạn đã chọn: ${test.name}`,
+        text: `Bài thi: ${test.name}`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#4facfe',
@@ -274,19 +290,34 @@
         if (result.isConfirmed) {
           localStorage.setItem("currentTestId", test.id);
           localStorage.setItem("currentTestName", test.name);
+          window.location.href = "quiz.html";
+        }
+      });
+    }
+
+    // HÀM XỬ LÝ ĐĂNG XUẤT
+    function handleLogout() {
+      Swal.fire({
+        title: 'Bạn muốn đăng xuất?',
+        text: "Mọi thông tin phiên đăng nhập sẽ được xóa.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ff4757',
+        cancelButtonColor: '#ccc',
+        confirmButtonText: 'Đăng xuất',
+        cancelButtonText: 'Hủy',
+        background: 'rgba(30, 39, 46, 0.95)',
+        color: '#fff',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Xóa các dữ liệu cần thiết
+          localStorage.removeItem("studentName");
+          localStorage.removeItem("studentClass");
+          localStorage.removeItem("userRole");
+          localStorage.removeItem("quiz_user_name");
           
-          // Hiệu ứng chuyển trang mượt
-          let timerInterval;
-          Swal.fire({
-            title: 'Đang tải câu hỏi...',
-            timer: 800,
-            background: 'rgba(30, 39, 46, 0.95)',
-            color: '#fff',
-            didOpen: () => { Swal.showLoading(); },
-            willClose: () => { clearInterval(timerInterval); }
-          }).then(() => {
-            window.location.href = "quiz.html";
-          });
+          // Chuyển hướng
+          window.location.href = "login.html?role=student";
         }
       });
     }

@@ -3,66 +3,78 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quản lý Câu hỏi - Nebula System</title>
+  <title>Nebula - Quản Lý Câu Hỏi</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
     :root {
       --primary: #448aff;
-      --secondary: #2979ff;
+      --secondary: #00e5ff;
       --danger: #ff5252;
       --warning: #ffb142;
-      --glass: rgba(10, 15, 28, 0.85);
+      --bg-dark: #0a0f1c;
+      --glass: rgba(15, 23, 42, 0.85);
       --glass-border: rgba(255, 255, 255, 0.1);
-      --text: #ffffff;
-      --accent: #00e5ff;
+      --accent: #7c4dff;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
     body {
       min-height: 100vh;
-      background: radial-gradient(circle at top right, #1e293b, #0f172a);
-      background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
-                        url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
+      /* SỬA LẠI NỀN VŨ TRỤ CŨ HUYỀN ẢO */
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), 
+                  url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
       background-size: cover;
       background-attachment: fixed;
-      color: var(--text);
+      background-position: center;
+      color: #fff;
       display: flex;
       justify-content: center;
-      padding: 40px 20px;
+      padding: 50px 20px;
     }
 
-    .container { width: 100%; max-width: 950px; }
+    .container { width: 100%; max-width: 1000px; }
 
+    /* PANEL CHÍNH - HIỆU ỨNG KÍNH MỜ */
     .glass-panel {
       background: var(--glass);
       backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
       border: 1px solid var(--glass-border);
-      border-radius: 30px;
-      padding: 40px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      border-radius: 40px;
+      padding: 45px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
       position: relative;
       overflow: hidden;
     }
 
+    /* THANH GRADIENT TRÊN CÙNG */
+    .glass-panel::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
+      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+    }
+
+    /* HEADER */
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 35px;
-      padding-bottom: 25px;
+      margin-bottom: 40px;
+      padding-bottom: 20px;
       border-bottom: 1px solid rgba(255,255,255,0.05);
     }
 
     .header h2 {
-      font-size: 1.6rem;
-      letter-spacing: 1.5px;
+      font-size: 1.8rem;
       font-weight: 800;
-      background: linear-gradient(to right, #90caf9, #00e5ff);
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 30%, #90caf9 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       display: flex;
@@ -70,135 +82,188 @@
       gap: 15px;
     }
 
+    /* DANH SÁCH CÂU HỎI */
     #questionList {
-      max-height: 60vh;
+      max-height: 58vh;
       overflow-y: auto;
-      padding-right: 10px;
+      padding-right: 15px;
     }
 
+    /* THẺ CÂU HỎI */
     .q-card {
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--glass-border);
-      border-radius: 20px;
-      padding: 20px;
-      margin-bottom: 15px;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
+      border-radius: 24px;
+      padding: 22px;
+      margin-bottom: 20px;
+      display: flex;
       align-items: center;
       gap: 20px;
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .q-card:hover {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: var(--primary);
-      transform: scale(1.02) translateX(10px);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-5px) scale(1.01);
+      border-color: rgba(68, 138, 255, 0.5);
+      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
     }
 
-    .q-thumb-container { width: 85px; height: 85px; position: relative; }
-    .q-thumb { width: 100%; height: 100%; border-radius: 15px; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.3s; }
-    .q-thumb:hover { transform: scale(1.1); border-color: var(--accent); }
-
+    /* HÌNH ẢNH THU NHỎ */
+    .q-thumb-container {
+      width: 90px; height: 90px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+    .q-thumb { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: 0.3s; }
+    .q-thumb:hover { transform: scale(1.1); }
+    
     .no-thumb {
-      width: 85px; height: 85px; background: rgba(255,255,255,0.03); border-radius: 15px;
-      display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1);
-      font-size: 1.5rem; border: 1px dashed rgba(255,255,255,0.1);
+      width: 90px; height: 90px;
+      background: rgba(255,255,255,0.02);
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.1);
+      border: 1px dashed rgba(255,255,255,0.1);
     }
 
-    .q-main { overflow: hidden; }
-    .q-text { display: block; font-size: 1.05rem; font-weight: 500; color: #f1f5f9; margin-bottom: 10px; line-height: 1.5; }
+    /* NỘI DUNG CHÍNH */
+    .q-main { flex-grow: 1; overflow: hidden; }
+    .q-text {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: #e2e8f0;
+      margin-bottom: 12px;
+      line-height: 1.5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-    .badge-group { display: flex; gap: 10px; }
-    .tag { font-size: 0.65rem; padding: 5px 12px; border-radius: 50px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
-    .tag-mcq { background: rgba(68, 138, 255, 0.15); color: #90caf9; border: 1px solid rgba(68, 138, 255, 0.3); }
-    .tag-tf { background: rgba(0, 229, 255, 0.1); color: #00e5ff; border: 1px solid rgba(0, 229, 255, 0.3); }
-
-    /* Action Buttons */
-    .action-controls { display: flex; gap: 10px; }
-
-    .btn-icon {
-      width: 40px;
-      height: 40px;
+    /* TAGS LOẠI CÂU HỎI */
+    .badge-group { display: flex; gap: 10px; flex-wrap: wrap; }
+    .tag {
+      font-size: 0.7rem;
+      padding: 6px 14px;
       border-radius: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: 1px solid transparent;
+    }
+    .tag-mcq { background: rgba(68, 138, 255, 0.15); color: #90caf9; border-color: rgba(68, 138, 255, 0.3); }
+    .tag-tf { background: rgba(0, 229, 255, 0.1); color: #00e5ff; border-color: rgba(0, 229, 255, 0.3); }
+    .tag-other { background: rgba(124, 77, 255, 0.1); color: #b388ff; border-color: rgba(124, 77, 255, 0.3); }
+
+    /* NÚT ĐIỀU KHIỂN CHỨC NĂNG */
+    .action-controls { display: flex; gap: 12px; }
+    .btn-icon {
+      width: 44px; height: 44px;
+      border-radius: 14px;
       border: 1px solid transparent;
       cursor: pointer;
       transition: 0.3s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .btn-edit { background: rgba(255, 177, 66, 0.1); color: var(--warning); border-color: rgba(255, 177, 66, 0.3); }
+    .btn-edit:hover { background: var(--warning); color: #000; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 177, 66, 0.3); }
+    
+    .btn-del { background: rgba(255, 82, 82, 0.1); color: var(--danger); border-color: rgba(255, 82, 82, 0.3); }
+    .btn-del:hover { background: var(--danger); color: #fff; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 82, 82, 0.3); }
+
+    /* NÚT HÀNH ĐỘNG DƯỚI CÙNG */
+    .footer-actions {
+      margin-top: 45px;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 25px;
     }
 
-    .btn-edit {
-      background: rgba(255, 177, 66, 0.1);
-      color: var(--warning);
-      border-color: rgba(255, 177, 66, 0.2);
+    .btn {
+      padding: 18px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: 700;
+      transition: 0.4s;
+      color: white;
+      text-decoration: none;
+      display: flex; align-items: center; justify-content: center;
+      gap: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 0.9rem;
     }
-    .btn-edit:hover { background: var(--warning); color: #000; }
 
-    .btn-del {
-      background: rgba(255, 82, 82, 0.1);
-      color: var(--danger);
-      border-color: rgba(255, 82, 82, 0.2);
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 10px 25px rgba(68, 138, 255, 0.3);
     }
-    .btn-del:hover { background: var(--danger); color: white; transform: rotate(90deg); }
+    .btn-primary:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(68, 138, 255, 0.5); filter: brightness(1.1); }
 
-    .btn { padding: 14px 28px; border-radius: 16px; border: none; cursor: pointer; font-weight: 700; transition: 0.4s; color: white; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 12px; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
-    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); box-shadow: 0 8px 20px rgba(68, 138, 255, 0.3); }
-    .btn-secondary { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); }
-    .btn:hover { transform: translateY(-3px); filter: brightness(1.2); }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--glass-border);
+    }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-2px); }
 
-    ::-webkit-scrollbar { width: 5px; }
+    /* THANH CUỘN CHUYÊN NGHIỆP */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-    .loader-container { text-align: center; padding: 60px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+    /* TRẠNG THÁI ĐANG TẢI */
+    .loading-state { text-align: center; padding: 70px; }
+    .loading-state i { font-size: 3.5rem; margin-bottom: 25px; color: var(--secondary); text-shadow: 0 0 25px var(--primary); }
+    .loading-state p { font-weight: 300; letter-spacing: 1px; opacity: 0.7; }
   </style>
 </head>
 
 <body>
-
 <div class="container animate__animated animate__fadeIn">
   <div class="glass-panel">
     
-    <!-- HEADER -->
     <div class="header">
-      <h2 id="testTitle"><i class="fas fa-satellite-dish"></i> Đang kết nối...</h2>
-      <button class="btn-icon" style="color: #90caf9; border: 1px solid rgba(144,202,249,0.3); background: rgba(144,202,249,0.05);" onclick="location.href='dashboard.html'">
-        <i class="fas fa-home"></i>
-      </button>
+      <h2 id="testTitle"><i class="fas fa-satellite-dish fa-spin"></i> KẾT NỐI NEBULA...</h2>
+      <button class="btn-icon" style="background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="location.href='dashboard.html'" title="Về trang chủ"><i class="fas fa-th-large"></i></button>
     </div>
 
-    <!-- DANH SÁCH -->
     <div id="questionList">
-      <div class="loader-container">
-        <i class="fas fa-atom fa-spin loader-icon" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
-        <p style="opacity: 0.6; letter-spacing: 2px;">ĐỒNG BỘ HÓA DỮ LIỆU NEBULA...</p>
+      <div class="loading-state">
+        <i class="fas fa-atom fa-spin"></i>
+        <p>Đang truy xuất luồng dữ liệu câu hỏi...</p>
       </div>
     </div>
 
-    <!-- ACTIONS -->
-    <div style="margin-top: 35px; display: grid; grid-template-columns: 1fr 2fr; gap: 20px;">
-      <a href="dashboard.html" class="btn btn-secondary"><i class="fas fa-chevron-left"></i> Quay lại</a>
+    <div class="footer-actions">
+      <a href="dashboard.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
       <button onclick="goToAdd()" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Thêm câu hỏi mới</button>
     </div>
-
-    <p style="text-align: center; margin-top: 30px; font-size: 0.65rem; opacity: 0.3; letter-spacing: 4px;">
-      NEBULA QUANTUM INTERFACE • VERSION 2.6 • KIEU LE DANG KHOA
-    </p>
+    
+    <div style="text-align: center; margin-top: 40px; opacity: 0.15; font-size: 0.75rem; letter-spacing: 6px; text-transform: uppercase;">
+      Nebula Quantum Interface • Version 2.8
+    </div>
   </div>
 </div>
 
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbx1W9ScwVxvLm01sbxjiMdZoFn430UzKiTnenHnxO0Vpnhlqv5BypwY0sY64byPufhB/exec";
+  // Cập nhật URL API của bạn tại đây
+  const API = "https://script.google.com/macros/s/AKfycbyMNDhpE9eNmQfEJizQtjfvAoTfmc7C0WgOWNb9g82txlzLxC_EwKE8IIWvGxEYH5pk/exec";
+  
   const currentTest = JSON.parse(localStorage.getItem("currentTest") || "{}");
-  let listQuestions = []; // Lưu trữ để tìm kiếm khi nhấn Sửa
+  let listQuestions = [];
 
   window.onload = function() {
-    if (!currentTest.id) {
-      location.href = 'dashboard.html';
-      return;
-    }
-    document.getElementById("testTitle").innerHTML = `<i class="fas fa-microchip"></i> ${currentTest.name}`;
+    if (!currentTest.id) { location.href = 'dashboard.html'; return; }
+    document.getElementById("testTitle").innerHTML = `<i class="fas fa-microchip"></i> ${currentTest.name.toUpperCase()}`;
     loadQuestions();
   };
 
@@ -206,64 +271,59 @@
     const listEl = document.getElementById("questionList");
     try {
       const response = await fetch(`${API}?action=getQuestions&testId=${currentTest.id}`);
-      const data = await response.json();
-      listQuestions = data;
+      listQuestions = await response.json();
 
-      if (data.length === 0) {
+      if (listQuestions.length === 0) {
         listEl.innerHTML = `
-          <div style="text-align:center; padding:60px; border: 1px dashed rgba(255,255,255,0.05); border-radius:20px;">
-            <i class="fas fa-folder-open fa-3x" style="opacity:0.1; margin-bottom:20px;"></i>
-            <p style="opacity:0.4;">Không gian trống rỗng. Hãy thêm câu hỏi đầu tiên!</p>
+          <div style="text-align:center; padding:70px; opacity:0.3; border: 2px dashed rgba(255,255,255,0.05); border-radius: 30px; margin: 20px 0;">
+            <i class="fas fa-ghost fa-4x" style="margin-bottom:25px;"></i>
+            <p style="font-size: 1.1rem;">Chưa có thực thể dữ liệu nào được khởi tạo trong không gian này.</p>
           </div>`;
         return;
       }
 
-      listEl.innerHTML = data.map((q, i) => {
-        const hasImg = q.image && q.image.length > 10;
-        const thumbHtml = hasImg 
-          ? `<div class="q-thumb-container"><img src="${q.image}" class="q-thumb" onclick="zoomImg('${q.image}')"></div>`
-          : `<div class="no-thumb"><i class="fas fa-mountain-sun"></i></div>`;
+      listEl.innerHTML = listQuestions.map((q, i) => {
+        const hasImg = q.image && q.image.length > 20;
+        
+        let typeInfo = { name: "Trắc nghiệm", class: "tag-mcq", icon: "fa-list-ul" };
+        if(q.type === 'tf') typeInfo = { name: "Đúng/Sai", class: "tag-tf", icon: "fa-check-double" };
+        else if(q.type === 'matching') typeInfo = { name: "Ghép nối", class: "tag-other", icon: "fa-project-diagram" };
+        else if(q.type === 'ordering') typeInfo = { name: "Sắp xếp", class: "tag-other", icon: "fa-sort-amount-down" };
+        else if(q.type === 'fill') typeInfo = { name: "Điền khuyết", class: "tag-other", icon: "fa-pen-nib" };
 
         return `
-          <div class="q-card animate__animated animate__fadeInRight" style="animation-delay: ${i * 0.08}s">
-            ${thumbHtml}
+          <div class="q-card animate__animated animate__fadeInUp" style="animation-delay: ${i * 0.1}s">
+            ${hasImg ? 
+              `<div class="q-thumb-container"><img src="${q.image}" class="q-thumb" onclick="zoomImg('${q.image}')" title="Bấm để phóng to"></div>` : 
+              `<div class="no-thumb"><i class="fas fa-atom fa-2x"></i></div>`}
+            
             <div class="q-main">
-              <span class="q-text">${i + 1}. ${q.question}</span>
+              <span class="q-text" title="${q.question}">${i + 1}. ${q.question}</span>
               <div class="badge-group">
-                <span class="tag ${q.type === 'multiple' ? 'tag-mcq' : 'tag-tf'}">
-                  <i class="fas ${q.type === 'multiple' ? 'fa-layer-group' : 'fa-toggle-on'}"></i>
-                  ${q.type === 'multiple' ? 'Trắc nghiệm' : 'Đúng/Sai'}
-                </span>
+                <span class="tag ${typeInfo.class}"><i class="fas ${typeInfo.icon}"></i> ${typeInfo.name}</span>
               </div>
             </div>
-            <div class="action-controls">
-              <button class="btn-icon btn-edit" onclick="editQuestion('${q.id}')" title="Sửa câu hỏi">
-                <i class="fas fa-pen-to-square"></i>
-              </button>
-              <button class="btn-icon btn-del" onclick="deleteQuestion('${q.id}', this)" title="Xóa dữ liệu">
-                <i class="fas fa-trash-alt"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
 
+            <div class="action-controls">
+              <button class="btn-icon btn-edit" onclick="editQuestion(${i})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
+              <button class="btn-icon btn-del" onclick="deleteQuestion('${q.question}', this)" title="Xóa"><i class="fas fa-trash"></i></button>
+            </div>
+          </div>`;
+      }).join('');
     } catch (err) {
-      listEl.innerHTML = `<p style="color:var(--danger); text-align:center; padding: 40px;">⚠️ Lỗi kết nối hệ thống Nebula!</p>`;
+      listEl.innerHTML = `<div style="color:var(--danger); text-align:center; padding:50px;"><i class="fas fa-exclamation-triangle fa-2x"></i><p>⚠️ Lỗi đồng bộ Nebula!</p></div>`;
     }
   }
 
-  function editQuestion(qId) {
-    const question = listQuestions.find(item => item.id == qId);
+  function editQuestion(index) {
+    const question = listQuestions[index];
     if (question) {
-      // Lưu câu hỏi vào local để trang add-question.html đọc được
       localStorage.setItem("editQuestionData", JSON.stringify(question));
       location.href = "add-question.html";
     }
   }
 
   function goToAdd() {
-    // Xóa dữ liệu cũ nếu có để đảm bảo là thêm mới
     localStorage.removeItem("editQuestionData");
     location.href = "add-question.html";
   }
@@ -271,52 +331,48 @@
   function zoomImg(src) {
     Swal.fire({
       imageUrl: src,
-      background: 'rgba(10, 15, 28, 0.95)',
+      background: 'rgba(10, 15, 28, 0.96)',
+      backdrop: 'rgba(0,0,0,0.85)',
       showConfirmButton: false,
       showCloseButton: true,
-      backdrop: `rgba(0,0,0,0.8)`,
-      customClass: { popup: 'animate__animated animate__zoomIn' }
+      customClass: { popup: 'animated zoomIn faster' }
     });
   }
 
   async function deleteQuestion(qId, btn) {
     const res = await Swal.fire({
       title: 'XÓA CÂU HỎI?',
-      text: "Dữ liệu sẽ bị xóa khỏi mạng lưới vĩnh viễn!",
+      text: "Thao tác này không thể hoàn tác!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ff5252',
-      confirmButtonText: 'XÓA NGAY',
+      cancelButtonColor: 'rgba(255,255,255,0.1)',
+      confirmButtonText: 'XÓA',
       cancelButtonText: 'HỦY',
-      background: '#0f172a',
-      color: '#fff'
+      background: '#0a0f1c', color: '#fff'
     });
 
     if (!res.isConfirmed) return;
 
-    const originalContent = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.innerHTML = '<i class="fas fa-dharmachakra fa-spin"></i>';
     btn.disabled = true;
 
     try {
-      const response = await fetch(API, {
+      await fetch(API, {
         method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
         body: JSON.stringify({ action: "deleteQuestion", qId: qId })
       });
-      const result = await response.json();
-
-      if (result.status === "ok") {
-        btn.closest('.q-card').style.transform = 'translateX(-100%)';
-        btn.closest('.q-card').style.opacity = '0';
-        setTimeout(loadQuestions, 400);
-      }
+      
+      Swal.fire({ icon: 'success', title: 'ĐÃ XÓA', timer: 1200, showConfirmButton: false, background: '#0a0f1c', color: '#fff' });
+      setTimeout(loadQuestions, 1300);
     } catch (err) {
-      Swal.fire('LỖI', 'Không thể can thiệp vào dữ liệu!', 'error');
-      btn.innerHTML = originalContent;
+      Swal.fire({ icon: 'error', title: 'LỖI', background: '#0a0f1c', color: '#fff' });
+      btn.innerHTML = '<i class="fas fa-trash"></i>';
       btn.disabled = false;
     }
   }
 </script>
-
 </body>
 </html>

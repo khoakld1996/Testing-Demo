@@ -1,5 +1,5 @@
 // ===== API GOOGLE SCRIPT =====
-const API = "https://script.google.com/macros/s/AKfycbx1W9ScwVxvLm01sbxjiMdZoFn430UzKiTnenHnxO0Vpnhlqv5BypwY0sY64byPufhB/exec";
+const API = "https://script.google.com/macros/s/AKfycbyMNDhpE9eNmQfEJizQtjfvAoTfmc7C0WgOWNb9g82txlzLxC_EwKE8IIWvGxEYH5pk/exec";
 
 // ================= GLOBAL =================
 let questions = [];
