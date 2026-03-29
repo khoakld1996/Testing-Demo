@@ -3,250 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lịch Sử Bài Làm | Quiz Online</title>
+  <title>Lịch Sử Bài Làm | Nebula Quiz</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     :root {
-      --primary: #4facfe; 
-      --accent: #00ffcc; 
-      --bg: #0f172a;
-      --card: rgba(30, 41, 59, 0.8); 
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --success: #2ecc71; 
-      --error: #ff4757;
-      --text-muted: #94a3b8;
+      --primary: #4facfe; --accent: #00ffcc; --bg: #0b0f1a;
+      --card: rgba(30, 41, 59, 0.7); --glass-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
     body {
       min-height: 100vh;
-      background: radial-gradient(circle at top right, #1e293b, #0f172a);
-      color: white;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
+      background-size: cover; background-blend-mode: overlay;
+      color: var(--text); padding: 20px;
     }
 
-    .container { width: 100%; max-width: 800px; animation: fadeInPage 0.5s ease; }
-    @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
+    .container { width: 100%; max-width: 850px; margin: 0 auto; }
     
     .header-box {
-      width: 100%; 
-      background: var(--card); 
-      backdrop-filter: blur(12px);
-      padding: 25px; 
-      border-radius: 20px; 
-      border: 1px solid var(--glass-border);
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      margin-bottom: 25px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      background: var(--card); backdrop-filter: blur(15px);
+      padding: 25px; border-radius: 20px; border: 1px solid var(--glass-border);
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
-    /* NÚT QUAY LẠI TRANG CHỌN BÀI (SELECT) */
     .btn-select {
-      padding: 12px 24px; 
-      background: linear-gradient(135deg, #00c6ff, #0072ff);
-      color: white; 
-      border: none; 
-      border-radius: 12px; 
-      cursor: pointer; 
-      text-decoration: none; 
-      font-weight: bold;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 15px rgba(0, 114, 255, 0.3);
+      padding: 12px 24px; background: linear-gradient(135deg, var(--primary), #00f2fe);
+      color: #0b0f1a; border: none; border-radius: 12px; 
+      cursor: pointer; text-decoration: none; font-weight: bold;
+      display: flex; align-items: center; gap: 8px; transition: 0.3s;
     }
-    .btn-select:hover { 
-        transform: translateY(-2px); 
-        box-shadow: 0 6px 20px rgba(0, 114, 255, 0.5); 
-    }
+    .btn-select:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
     .history-item {
-      background: var(--card); 
-      border-radius: 20px; 
-      border: 1px solid var(--glass-border);
-      margin-bottom: 15px; 
-      overflow: hidden; 
-      transition: all 0.3s ease;
+      background: var(--card); border-radius: 15px; border: 1px solid var(--glass-border);
+      margin-bottom: 12px; overflow: hidden; transition: 0.3s;
     }
-    
+
     .item-summary {
-      padding: 20px; 
-      cursor: pointer; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center;
-    }
-    .item-summary:hover { background: rgba(255,255,255,0.05); }
-    
-    .test-info h4 { color: var(--accent); margin-bottom: 6px; font-size: 1.2rem; }
-    .test-info small { color: var(--text-muted); display: block; font-size: 0.85rem; }
-
-    .score-badge {
-      text-align: center;
-      padding: 8px 15px;
-      background: rgba(0,0,0,0.3);
-      border-radius: 12px;
-      border: 1px solid var(--primary);
-    }
-    .score-val { display: block; font-size: 1.3rem; font-weight: 800; color: var(--primary); }
-
-    .item-details {
-      max-height: 0; 
-      overflow: hidden; 
-      transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      background: rgba(15, 23, 42, 0.6);
-    }
-    .item-details.active { max-height: 20000px; border-top: 1px solid var(--glass-border); }
-
-    .filter-bar {
-      padding: 12px 25px;
-      background: rgba(255,255,255,0.03);
-      display: flex;
-      justify-content: flex-end;
+      padding: 18px 25px; display: grid; grid-template-columns: 2fr 1fr 1fr;
+      align-items: center; cursor: pointer;
     }
 
-    .review-content { padding: 20px; }
+    .test-name { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
+    .test-time { color: #94a3b8; font-size: 0.8rem; margin-top: 4px; }
+    .score-box { text-align: center; font-size: 1.3rem; font-weight: 800; color: #fff; }
+    .correct-box { text-align: right; color: #94a3b8; font-size: 0.9rem; }
 
-    .review-card {
-      background: rgba(255,255,255,0.03); 
-      padding: 15px; 
-      border-radius: 12px;
-      margin-bottom: 15px; 
-      border-left: 5px solid transparent;
-    }
-    .review-card.correct { border-left-color: var(--success); }
-    .review-card.incorrect { border-left-color: var(--error); }
+    .loader { text-align: center; padding: 50px; }
+    .fa-spin { font-size: 2.5rem; color: var(--primary); margin-bottom: 15px; }
 
-    .q-header { font-weight: 600; margin-bottom: 10px; color: #f1f5f9; }
-    
-    .ans-box { 
-      font-size: 0.9rem; 
-      padding: 10px; 
-      border-radius: 8px; 
-      margin-top: 8px;
-      display: flex;
-      gap: 10px;
-    }
-    .user-ans-box { background: rgba(255,255,255,0.05); color: #cbd5e1; }
-    .correct-ans-box { background: rgba(46, 204, 113, 0.1); color: var(--success); font-weight: 600; }
-
-    .no-data { text-align: center; padding: 80px 20px; color: var(--text-muted); }
+    .no-data { text-align: center; padding: 100px 20px; opacity: 0.6; }
     
     @media (max-width: 600px) {
-      .header-box { flex-direction: column; text-align: center; gap: 15px; }
-      .btn-select { width: 100%; justify-content: center; }
+      .item-summary { grid-template-columns: 1fr; gap: 10px; text-align: center; }
+      .correct-box { text-align: center; }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="header-box">
-      <div>
-        <h2 style="background: linear-gradient(to right, #fff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Lịch Sử Bài Làm</h2>
-        <p id="studentDisplay" style="font-size: 0.85rem; color: var(--accent); font-weight: 500;"></p>
-      </div>
-      <!-- QUAN TRỌNG: Trỏ về trang select.html của bạn -->
-      <a href="select.html" class="btn-select">
-        📝 Làm bài tiếp
-      </a>
+<div class="container">
+  <div class="header-box">
+    <div>
+      <h2 style="color: #fff;">Lịch Sử Bài Làm</h2>
+      <p id="studentDisplay" style="color: var(--primary); font-size: 0.9rem;"></p>
     </div>
-
-    <div id="historyList"></div>
+    <a href="select.html" class="btn-select">
+      <i class="fas fa-edit"></i> Làm bài tiếp
+    </a>
   </div>
 
+  <div id="historyList">
+    <div class="loader">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>Đang quét dữ liệu từ vệ tinh...</p>
+    </div>
+  </div>
+</div>
+
 <script>
+  // LINK API được dán tại đây
+  const API_URL = "https://script.google.com/macros/s/AKfycbzTvaNTz9Iz-2QXZ_R-Js36Bqf50J0vZUhVcdlSVvPtesmdODd0i4aF89SUnCtKkYqb/exec";
+
   window.onload = () => {
     const name = localStorage.getItem("studentName") || "Học sinh";
-    const school = localStorage.getItem("schoolName") || "";
-    document.getElementById("studentDisplay").innerText = `Học sinh: ${name} ${school ? '• ' + school : ''}`;
-    renderHistory();
+    const school = localStorage.getItem("studentClass") || localStorage.getItem("schoolName") || "";
+    document.getElementById("studentDisplay").innerText = `🚀 Tên Học Sinh: ${name} ${school ? ' | ' + school : ''}`;
+    
+    fetchHistoryFromSheets(name);
   };
 
-  function renderHistory() {
-    const history = JSON.parse(localStorage.getItem("quizHistory") || "[]");
+  async function fetchHistoryFromSheets(studentName) {
     const container = document.getElementById("historyList");
+    
+    try {
+      // Gọi API lấy dữ liệu (Action getResults bạn cần thêm vào Apps Script)
+      const response = await fetch(`${API_URL}?action=getResults`);
+      const allData = await response.json();
 
-    if (history.length === 0) {
-      container.innerHTML = `<div class="no-data"><p>Chưa có dữ liệu bài làm.</p></div>`;
-      return;
-    }
+      // Lọc dữ liệu của học sinh hiện tại
+      const myHistory = allData.filter(row => row.student === studentName);
 
-    container.innerHTML = ""; 
-    // Hiện bài mới nhất lên đầu danh sách
-    [...history].reverse().forEach((record, index) => {
-      const realIndex = history.length - 1 - index;
-      const item = document.createElement("div");
-      item.className = "history-item";
-      
-      let html = `
-        <div class="item-summary" onclick="toggleDetails(${realIndex})">
-          <div class="test-info">
-            <h4>${record.testName}</h4>
-            <small>📅 ${record.date} | ✅ Đúng: ${record.correctText}</small>
-          </div>
-          <div class="score-badge">
-            <span class="score-val">${record.score}</span>
-            <span style="font-size: 0.6rem; text-transform: uppercase;">Điểm</span>
-          </div>
-        </div>
-        <div class="item-details" id="details-${realIndex}">
-          <div class="filter-bar">
-             <label style="cursor:pointer; font-size: 0.8rem;">
-                <input type="checkbox" onchange="filterWrong(this, ${realIndex})"> Chỉ hiện câu sai ❌
-             </label>
-          </div>
-          <div class="review-content">
-      `;
+      if (myHistory.length === 0) {
+        container.innerHTML = `<div class="no-data"><i class="fas fa-ghost fa-3x"></i><p style="margin-top:15px">Chưa có dữ liệu bài làm trên hệ thống.</p></div>`;
+        return;
+      }
 
-      record.review.forEach((q, i) => {
-        const statusClass = q.isRight ? "correct" : "incorrect";
-        const icon = q.isRight ? "✅" : "❌";
-        let correctTxt = q.type === "mcq" ? q.details.items.filter(it => it.isCorrect).map(it => it.text).join(", ") : 
-                         (q.type === "tf" ? (q.details.correct === "true" ? "Đúng" : "Sai") : q.details.items);
-
-        html += `
-          <div class="review-card ${statusClass}">
-            <div class="q-header">Câu ${i+1}: ${q.question}</div>
-            <div class="ans-box user-ans-box">
-              <span>${icon} Bạn chọn: <b>${formatUserAns(q)}</b></span>
+      // Hiển thị danh sách (Bài mới nhất lên đầu)
+      container.innerHTML = "";
+      myHistory.reverse().forEach(record => {
+        const item = document.createElement("div");
+        item.className = "history-item";
+        item.innerHTML = `
+          <div class="item-summary">
+            <div>
+              <div class="test-name">${record.testName}</div>
+              <div class="test-time"><i class="far fa-calendar-alt"></i> ${record.time}</div>
             </div>
-            ${!q.isRight ? `<div class="ans-box correct-ans-box"><span>💡 Đáp án: ${correctTxt}</span></div>` : ''}
+            <div class="score-box">${record.score} <small style="font-size:0.7rem">ĐIỂM</small></div>
+            <div class="correct-box">
+               <span style="color: var(--accent)"><i class="fas fa-check-circle"></i> ${record.total}</span>
+            </div>
           </div>
         `;
+        container.appendChild(item);
       });
 
-      html += `</div></div>`;
-      item.innerHTML = html;
-      container.appendChild(item);
-    });
-  }
-
-  function formatUserAns(q) {
-    if (!q.userAns) return "Bỏ trống";
-    if (q.type === "mcq") return q.userAns.map(idx => q.details.items[idx].text).join(", ");
-    if (q.type === "tf") return q.userAns === "true" ? "Đúng" : "Sai";
-    return q.userAns;
-  }
-
-  function toggleDetails(index) {
-    const el = document.getElementById(`details-${index}`);
-    const isActive = el.classList.contains("active");
-    document.querySelectorAll('.item-details').forEach(d => d.classList.remove('active'));
-    if (!isActive) el.classList.add("active");
-  }
-
-  function filterWrong(checkbox, index) {
-    const container = document.getElementById(`details-${index}`);
-    const cards = container.querySelectorAll('.review-card');
-    cards.forEach(card => card.style.display = (checkbox.checked && card.classList.contains('correct')) ? 'none' : 'block');
+    } catch (error) {
+      console.error("Lỗi:", error);
+      container.innerHTML = `<div class="no-data"><p style="color: #ff4757">Không thể kết nối với máy chủ dữ liệu.</p></div>`;
+    }
   }
 </script>
+
 </body>
 </html>

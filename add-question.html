@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nebula - Thiết Kế Câu Hỏi</title>
+  <title>Nebula - Thiết Kế & Đồng Bộ Câu Hỏi</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -14,90 +14,66 @@
       --glass: rgba(10, 15, 28, 0.9); --border: rgba(255, 255, 255, 0.1);
       --text: #ffffff;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    
     body {
       min-height: 100vh;
       background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                  url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center;
+                  url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center;
       background-size: cover; background-attachment: fixed; color: var(--text);
       display: flex; justify-content: center; padding: 40px 20px;
     }
-
-    .container { width: 100%; max-width: 900px; }
+    .container { width: 100%; max-width: 950px; }
     .glass-panel {
       background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border);
       border-radius: 30px; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     }
-
     .nav-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
     }
-
     .btn-nav {
       width: 42px; height: 42px; border-radius: 12px; border: 1px solid var(--border);
       background: rgba(255,255,255,0.05); color: #fff; cursor: pointer; transition: 0.3s;
       display: flex; align-items: center; justify-content: center;
     }
     .btn-nav:hover { background: var(--primary); transform: translateY(-2px); }
-
     h2 { 
       font-size: 1.6rem; text-align: center; margin-bottom: 25px; letter-spacing: 2px;
       background: linear-gradient(to right, #90caf9, #00e5ff);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;
     }
-
-    .setup-box {
-      background: rgba(124, 77, 255, 0.1); border: 1px solid rgba(124, 77, 255, 0.2);
+    .setup-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px; background: rgba(68, 138, 255, 0.1); border: 1px solid rgba(68, 138, 255, 0.2);
       padding: 20px; border-radius: 20px; margin-bottom: 25px;
-      display: flex; align-items: center; gap: 15px;
     }
-
     .form-group { margin-bottom: 25px; }
     label { display: block; margin-bottom: 10px; font-size: 0.75rem; color: #90caf9; text-transform: uppercase; font-weight: 700; }
-
     .input-control {
       width: 100%; padding: 15px 20px; border-radius: 16px; border: 1px solid var(--border);
       background: rgba(0, 0, 0, 0.4); color: white; outline: none; transition: 0.3s;
     }
-    .input-control:focus { border-color: var(--primary); box-shadow: 0 0 15px rgba(68, 138, 255, 0.2); }
-
-    .media-wrapper {
-      display: flex; gap: 15px; align-items: center; background: rgba(255,255,255,0.03);
-      padding: 15px; border-radius: 18px; border: 1px solid var(--border);
+    .input-control:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(68, 138, 255, 0.3); }
+    .ans-row {
+      display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
+      background: rgba(255, 255, 255, 0.04); padding: 12px; border-radius: 16px;
+    }
+    .btn-add {
+      background: rgba(68, 138, 255, 0.1); color: var(--primary); padding: 8px 15px;
+      border-radius: 10px; border: 1px dashed var(--primary); cursor: pointer; font-weight: 700;
+    }
+    .btn-save {
+      width: 100%; padding: 20px; border-radius: 20px; border: none; margin-top: 30px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white; font-weight: 800; cursor: pointer; transition: 0.4s;
+      text-transform: uppercase; letter-spacing: 2px;
     }
     .preview-box {
       width: 80px; height: 80px; border-radius: 12px; border: 2px solid var(--primary);
       overflow: hidden; display: none; position: relative; flex-shrink: 0;
     }
     .preview-box img { width: 100%; height: 100%; object-fit: cover; }
-    .btn-del-img { position: absolute; top: 2px; right: 2px; background: #ff5252; color: white; border: none; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; cursor: pointer; }
-
-    .ans-row {
-      display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
-      background: rgba(255, 255, 255, 0.04); padding: 12px; border-radius: 16px;
-      border: 1px solid transparent; transition: 0.3s;
-    }
-    .ans-row:hover { border-color: rgba(255,255,255,0.15); }
-
-    .btn-add {
-      background: rgba(68, 138, 255, 0.1); color: var(--primary); padding: 8px 15px;
-      border-radius: 10px; border: 1px dashed var(--primary); cursor: pointer; font-weight: 700;
-    }
-
-    .btn-save {
-      width: 100%; padding: 20px; border-radius: 20px; border: none; margin-top: 30px;
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      color: white; font-weight: 800; cursor: pointer; transition: 0.4s;
-      text-transform: uppercase; letter-spacing: 2px;
-      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-    }
-    .btn-save:hover { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 15px 30px rgba(0,0,0,0.4); }
-    
-    input[type="file"] { display: none; }
-    input[type="radio"], input[type="checkbox"] { min-width: 22px; min-height: 22px; cursor: pointer; accent-color: var(--secondary); }
+    .badge-info { font-size: 0.7rem; color: #00e676; margin-top: 5px; display: block; font-style: italic; }
   </style>
 </head>
 <body>
@@ -105,37 +81,50 @@
 <div class="container animate__animated animate__fadeIn">
   <div class="glass-panel">
     <div class="nav-header">
-      <button class="btn-nav" onclick="location.href='question-list.html'" title="Quay lại"><i class="fas fa-arrow-left"></i></button>
-      <div id="testInfo" style="font-weight: 800; color: #90caf9; font-size: 0.9rem; text-align: center;">BÀI THI: ĐANG TẢI...</div>
-      <button class="btn-nav" onclick="location.href='dashboard.html'" title="Về Dashboard"><i class="fas fa-home"></i></button>
+      <button class="btn-nav" onclick="location.href='question-list.html'"><i class="fas fa-arrow-left"></i></button>
+      <div id="testInfo" style="font-weight: 800; color: #90caf9; font-size: 0.9rem;">BÀI THI: ĐANG TẢI...</div>
+      <button class="btn-nav" onclick="location.href='dashboard.html'"><i class="fas fa-home"></i></button>
     </div>
 
-    <h2 id="pageTitle"><i class="fas fa-atom"></i> THIẾT KẾ CÂU HỎI</h2>
+    <h2 id="pageTitle"><i class="fas fa-sync-alt"></i> THIẾT KẾ & ĐỒNG BỘ</h2>
 
-    <div class="setup-box">
-      <div style="flex: 1;">
-        <label><i class="fas fa-clock"></i> Thời gian (Phút)</label>
+    <div class="setup-grid">
+      <div>
+        <label><i class="fas fa-clock"></i> Thời gian toàn bài (Phút)</label>
         <input type="number" id="testTime" class="input-control" value="15" min="1">
       </div>
-      <div style="flex: 2; font-size: 0.8rem; opacity: 0.7; color: #90caf9;">
-        * Thời gian làm bài chung cho cả đề thi này.
+      <div>
+        <label><i class="fas fa-star"></i> Chế độ điểm</label>
+        <select id="scoreMode" class="input-control" onchange="toggleScoreUI()">
+          <option value="equal">Chia đều tổng điểm</option>
+          <option value="custom">Tùy chỉnh từng câu</option>
+        </select>
+      </div>
+      <div id="boxTotalScore">
+        <label><i class="fas fa-bullseye"></i> Tổng điểm bài thi</label>
+        <input type="number" id="totalScore" class="input-control" value="10" min="1" oninput="calculatePreviewPoints()">
+        <span id="scorePreview" class="badge-info">Đang tính toán...</span>
+      </div>
+      <div id="boxPoint" style="display: none;">
+        <label><i class="fas fa-check-double"></i> Điểm câu này</label>
+        <input type="number" id="qPoint" class="input-control" value="1" step="0.1" min="0">
       </div>
     </div>
     
     <div class="form-group">
       <label>Nội dung câu hỏi</label>
-      <textarea id="qText" class="input-control" rows="3" placeholder="Nhập câu hỏi tại đây..."></textarea>
+      <textarea id="qText" class="input-control" rows="3" placeholder="Nhập câu hỏi..."></textarea>
     </div>
 
     <div class="form-group">
       <label>Hình ảnh minh họa</label>
-      <div class="media-wrapper">
+      <div style="display:flex; gap:15px; align-items: center; background: rgba(255,255,255,0.03); padding:15px; border-radius:18px;">
         <div id="qPrevBox" class="preview-box">
           <img id="qPrevImg" src="">
-          <button class="btn-del-img" onclick="clearMedia()">×</button>
+          <button style="position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer" onclick="clearMedia()">×</button>
         </div>
-        <input type="text" id="qUrl" class="input-control" style="flex:1" placeholder="Dán link ảnh (HTTPS)..." oninput="handleLinkInput(this.value)">
-        <label class="btn-nav" title="Tải ảnh lên"><i class="fas fa-upload"></i><input type="file" id="fileInput" accept="image/*" onchange="handleFile(this)"></label>
+        <input type="text" id="qUrl" class="input-control" style="flex:1" placeholder="Link ảnh HTTPS..." oninput="handleLinkInput(this.value)">
+        <label class="btn-nav"><i class="fas fa-upload"></i><input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)"></label>
         <input type="hidden" id="qData">
       </div>
     </div>
@@ -143,11 +132,12 @@
     <div class="form-group">
       <label>Dạng câu hỏi</label>
       <select id="qType" class="input-control" onchange="renderEditor()">
-        <option value="multiple">Trắc nghiệm (Một hoặc nhiều đáp án)</option>
+        <option value="single">Trắc nghiệm (1 đáp án)</option>
+        <option value="multiple">Trắc nghiệm (Nhiều đáp án)</option>
         <option value="tf">Đúng / Sai</option>
         <option value="matching">Ghép nối vế</option>
         <option value="ordering">Sắp xếp thứ tự</option>
-        <option value="fill">Điền khuyết (Tự luận ngắn)</option>
+        <option value="fill">Điền khuyết</option>
       </select>
     </div>
 
@@ -159,89 +149,68 @@
       <div id="ansList"></div>
     </div>
 
-    <button id="saveBtn" class="btn-save" onclick="saveData()">LƯU VÀO HỆ THỐNG</button>
+    <button id="saveBtn" class="btn-save" onclick="saveData()">LƯU & ĐỒNG BỘ TOÀN BÀI</button>
   </div>
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyMNDhpE9eNmQfEJizQtjfvAoTfmc7C0WgOWNb9g82txlzLxC_EwKE8IIWvGxEYH5pk/exec";
-
+const API_URL = "https://script.google.com/macros/s/AKfycbzTvaNTz9Iz-2QXZ_R-Js36Bqf50J0vZUhVcdlSVvPtesmdODd0i4aF89SUnCtKkYqb/exec";
 let isEditMode = false;
 let originalQuestionId = ""; 
+let currentQuestionCount = 0;
 
-window.onload = () => {
+window.onload = async () => {
   const testData = JSON.parse(localStorage.getItem("currentTest"));
   if (testData) {
     document.getElementById("testInfo").innerText = "BÀI THI: " + testData.name.toUpperCase();
     if(testData.time) document.getElementById("testTime").value = testData.time;
+    if(testData.totalScore) document.getElementById("totalScore").value = testData.totalScore;
+    await fetchQuestionStats(testData.id);
   }
 
-  const editData = JSON.parse(localStorage.getItem("editQuestionData") || "null");
-  if (editData) {
+  const editDataString = localStorage.getItem("editQuestionData");
+  if (editDataString && editDataString !== "null") {
+    const editData = JSON.parse(editDataString);
     isEditMode = true;
     originalQuestionId = editData.id || editData.question; 
     document.getElementById("pageTitle").innerHTML = '<i class="fas fa-edit"></i> CHỈNH SỬA CÂU HỎI';
     fillEditData(editData);
-    // Lưu ý: Không xóa editQuestionData ngay lập tức để đề phòng F5 trang
   } else {
     renderEditor();
   }
 };
 
-function fillEditData(data) {
-  document.getElementById("qText").value = data.question;
-  document.getElementById("qType").value = data.type;
-  
-  if(data.image && data.image.length > 10) {
-      updatePreview(data.image);
-      document.getElementById("qUrl").value = data.image;
-  }
-  
-  // Render khung trước
-  renderEditor();
-
+async function fetchQuestionStats(testId) {
   try {
-    const ansObj = typeof data.answer === 'string' ? JSON.parse(data.answer) : data.answer;
-    const list = document.getElementById("ansList");
-    
-    if (data.type === "tf") {
-      setTimeout(() => { if(document.getElementById("tfCorrect")) document.getElementById("tfCorrect").value = ansObj.correct || "Đúng"; }, 50);
-    } else if (data.type === "fill") {
-      setTimeout(() => { if(document.getElementById("fillAns")) document.getElementById("fillAns").value = ansObj.correct || ""; }, 50);
-    } else {
-      list.innerHTML = ""; // Xóa các dòng mặc định
-      if(ansObj.items && Array.isArray(ansObj.items)) {
-        ansObj.items.forEach(item => addRow(item));
-      }
+    const resp = await fetch(`${API_URL}?action=getQuestions&testId=${testId}`);
+    const data = await resp.json();
+    currentQuestionCount = Array.isArray(data) ? data.length : 0;
+    if(currentQuestionCount > 0 && !isEditMode) {
+        const sample = data[0];
+        if(sample.testTime) document.getElementById("testTime").value = sample.testTime;
+        if(sample.scoreMode) {
+            document.getElementById("scoreMode").value = sample.scoreMode;
+            toggleScoreUI();
+            if(sample.totalScore) document.getElementById("totalScore").value = sample.totalScore;
+        }
     }
-  } catch(e) { 
-    console.error("Lỗi đổ dữ liệu đáp án:", e); 
-    addRow(); 
-  }
+    calculatePreviewPoints();
+  } catch (e) { console.error("Lỗi tải thông số bài thi:", e); }
 }
 
-function renderEditor() {
-  const type = document.getElementById("qType").value;
-  const list = document.getElementById("ansList");
-  const addBtn = document.getElementById("addBtn");
-  list.innerHTML = "";
-  addBtn.style.display = (["tf", "fill"].includes(type)) ? "none" : "block";
+function calculatePreviewPoints() {
+  const total = parseFloat(document.getElementById("totalScore").value) || 0;
+  const isAdding = isEditMode ? 0 : 1;
+  const totalQ = currentQuestionCount + isAdding;
+  const perQ = totalQ > 0 ? (total / totalQ).toFixed(2) : total;
+  document.getElementById("scorePreview").innerHTML = 
+    `<i class="fas fa-info-circle"></i> Bài có ${totalQ} câu. Dự kiến: ~ <b>${perQ}</b> điểm/câu.`;
+}
 
-  if (type === "tf") {
-    list.innerHTML = `
-      <div class="ans-row">
-        <label style="color:#fff; margin-right:15px; text-transform:none;">Kết quả đúng hệ thống:</label>
-        <select id="tfCorrect" class="input-control">
-          <option value="Đúng">ĐÚNG</option>
-          <option value="Sai">SAI</option>
-        </select>
-      </div>`;
-  } else if (type === "fill") {
-    list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Nhập đáp án chính xác để hệ thống chấm điểm...">`;
-  } else {
-    // Nếu không phải edit mode thì mới tự add 2 dòng trống
-    if (!isEditMode) { addRow(); addRow(); }
-  }
+function toggleScoreUI() {
+  const mode = document.getElementById("scoreMode").value;
+  document.getElementById("boxTotalScore").style.display = (mode === "equal") ? "block" : "none";
+  document.getElementById("boxPoint").style.display = (mode === "custom") ? "block" : "none";
 }
 
 function addRow(data = null) {
@@ -250,12 +219,14 @@ function addRow(data = null) {
   const div = document.createElement("div");
   div.className = "ans-row animate__animated animate__fadeInUp";
   
-  if (type === "multiple") {
-    const isChecked = (data && data.isCorrect) ? "checked" : "";
-    const textVal = data ? (typeof data === 'object' ? data.text : data) : "";
+  // FIX LỖI: Kiểm tra kịch bản data là Object (single/multiple/matching) hoặc String (ordering)
+  const isChecked = (data && data.isCorrect === true) ? "checked" : "";
+
+  if (type === "single" || type === "multiple") {
+    const inputType = (type === "single") ? "radio" : "checkbox";
     div.innerHTML = `
-      <input type="checkbox" class="is-correct" ${isChecked}>
-      <input type="text" class="ans-text input-control" placeholder="Nội dung đáp án..." value="${textVal}">
+      <input type="${inputType}" name="ansMark" class="is-correct" ${isChecked}>
+      <input type="text" class="ans-text input-control" placeholder="Đáp án..." value="${data?.text || ''}">
       <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
   } else if (type === "matching") {
     div.innerHTML = `
@@ -263,39 +234,59 @@ function addRow(data = null) {
       <input type="text" class="r-val input-control" placeholder="Vế Phải" value="${data?.right || ''}">
       <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
   } else if (type === "ordering") {
+    // Với ordering, data thường là một String đơn giản
+    const orderVal = (typeof data === 'string') ? data : (data?.text || '');
     div.innerHTML = `
-      <span style="color:var(--primary); font-weight:bold;">#</span>
-      <input type="text" class="ord-val input-control" placeholder="Bước tiếp theo..." value="${data || ''}">
+      <input type="text" class="ord-val input-control" placeholder="Thứ tự..." value="${orderVal}">
       <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
   }
   list.appendChild(div);
 }
 
-function handleFile(input) {
-  const file = input.files[0];
-  if (file) {
-    if (file.size > 800 * 1024) return Swal.fire("Lỗi", "Ảnh quá lớn (>800KB).", "warning");
-    const reader = new FileReader();
-    reader.onload = (e) => updatePreview(e.target.result);
-    reader.readAsDataURL(file);
+function renderEditor() {
+  if (isEditMode) return; // Nếu đang edit thì không render đè mặc định
+  const type = document.getElementById("qType").value;
+  const list = document.getElementById("ansList");
+  list.innerHTML = "";
+  document.getElementById("addBtn").style.display = (["tf", "fill"].includes(type)) ? "none" : "block";
+  if (type === "tf") {
+    list.innerHTML = `<div class="ans-row"><select id="tfCorrect" class="input-control"><option value="Đúng">ĐÚNG</option><option value="Sai">SAI</option></select></div>`;
+  } else if (type === "fill") {
+    list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Đáp án đúng...">`;
+  } else {
+    addRow(); addRow();
   }
 }
 
-function handleLinkInput(val) {
-  if(val.trim().startsWith('http')) updatePreview(val.trim());
-}
+function fillEditData(data) {
+  document.getElementById("qText").value = data.question || "";
+  document.getElementById("qType").value = data.type || "single";
+  if(data.image) updatePreview(data.image);
+  if(data.points) document.getElementById("qPoint").value = data.points;
+  
+  const list = document.getElementById("ansList");
+  list.innerHTML = "";
+  document.getElementById("addBtn").style.display = (["tf", "fill"].includes(data.type)) ? "none" : "block";
 
-function updatePreview(src) {
-  document.getElementById('qPrevBox').style.display = 'block';
-  document.getElementById('qPrevImg').src = src;
-  document.getElementById('qData').value = src;
-}
-
-function clearMedia() {
-  document.getElementById('qPrevBox').style.display = 'none';
-  document.getElementById('qData').value = '';
-  document.getElementById('qUrl').value = '';
-  document.getElementById('fileInput').value = '';
+  try {
+    const ansObj = typeof data.answer === 'string' ? JSON.parse(data.answer) : data.answer;
+    
+    if (data.type === "tf") {
+      list.innerHTML = `<div class="ans-row"><select id="tfCorrect" class="input-control"><option value="Đúng">ĐÚNG</option><option value="Sai">SAI</option></select></div>`;
+      document.getElementById("tfCorrect").value = ansObj.correct || "Đúng";
+    } else if (data.type === "fill") {
+      list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Đáp án đúng..." value="${ansObj.correct || ''}">`;
+    } else {
+      if(ansObj && ansObj.items && Array.isArray(ansObj.items)) {
+        ansObj.items.forEach(item => addRow(item));
+      } else {
+        addRow(); addRow();
+      }
+    }
+  } catch(e) {
+    console.error("Lỗi parse đáp án:", e);
+    addRow(); addRow();
+  }
 }
 
 async function saveData() {
@@ -304,10 +295,12 @@ async function saveData() {
   const type = document.getElementById("qType").value;
   const question = document.getElementById("qText").value.trim();
 
-  if (!question) return Swal.fire("Lỗi", "Nội dung câu hỏi trống!", "error");
+  if (!question) return Swal.fire("Lỗi", "Nhập câu hỏi!", "error");
   
-  let payloadAnswers = { items: [] };
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG ĐỒNG BỘ...';
 
+  let payloadAnswers = { items: [] };
   if (type === "tf") {
     payloadAnswers.correct = document.getElementById("tfCorrect").value;
   } else if (type === "fill") {
@@ -315,10 +308,10 @@ async function saveData() {
   } else {
     const rows = document.querySelectorAll(".ans-row");
     rows.forEach(row => {
-      if (type === "multiple") {
-        payloadAnswers.items.push({
-          text: row.querySelector(".ans-text").value,
-          isCorrect: row.querySelector(".is-correct").checked
+      if (type === "single" || type === "multiple") {
+        payloadAnswers.items.push({ 
+          text: row.querySelector(".ans-text").value, 
+          isCorrect: row.querySelector(".is-correct").checked 
         });
       } else if (type === "matching") {
         payloadAnswers.items.push({ 
@@ -326,41 +319,57 @@ async function saveData() {
           right: row.querySelector(".r-val").value 
         });
       } else if (type === "ordering") {
-        payloadAnswers.items.push(row.querySelector(".ord-val").value);
+        // Lưu dưới dạng object để đồng bộ cấu hình addRow
+        payloadAnswers.items.push({ text: row.querySelector(".ord-val").value });
       }
     });
   }
-
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG LƯU...';
 
   const finalData = {
     action: "saveQuestion",
     testId: testData.id,
     testTime: document.getElementById("testTime").value,
+    scoreMode: document.getElementById("scoreMode").value,
+    totalScore: document.getElementById("totalScore").value,
+    points: document.getElementById("qPoint").value,
     type: type,
     question: question,
     oldQuestion: isEditMode ? originalQuestionId : "", 
-    image: document.getElementById("qData").value,
+    image: document.getElementById("qData").value || document.getElementById("qUrl").value,
     answer: JSON.stringify(payloadAnswers)
   };
 
   try {
-    await fetch(API_URL, {
-      method: "POST",
-      mode: "no-cors", 
-      body: JSON.stringify(finalData)
-    });
-
-    Swal.fire({ icon: 'success', title: 'THÀNH CÔNG', timer: 1200, showConfirmButton: false });
+    await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(finalData) });
+    Swal.fire({ icon: 'success', title: 'ĐÃ ĐỒNG BỘ', text: 'Thành công!', timer: 1200, showConfirmButton: false });
     localStorage.removeItem("editQuestionData");
     setTimeout(() => { location.href = 'question-list.html'; }, 1300);
-
   } catch (err) {
-    Swal.fire("Lỗi", "Không thể kết nối máy chủ!", "error");
+    Swal.fire("Lỗi", "Lỗi kết nối!", "error");
     btn.disabled = false;
-    btn.innerHTML = "LƯU VÀO HỆ THỐNG";
+    btn.innerText = "LƯU VÀ ĐỒNG BỘ TOÀN BÀI";
   }
+}
+
+function handleFile(input) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = (e) => updatePreview(e.target.result);
+    reader.readAsDataURL(file);
+  }
+}
+function handleLinkInput(val) { if(val.length > 10) updatePreview(val); }
+function updatePreview(src) {
+  document.getElementById('qPrevBox').style.display = 'block';
+  document.getElementById('qPrevImg').src = src;
+  document.getElementById('qData').value = src;
+}
+function clearMedia() {
+  document.getElementById('qPrevBox').style.display = 'none';
+  document.getElementById('qData').value = '';
+  document.getElementById('qUrl').value = '';
+  document.getElementById('fileInput').value = '';
 }
 </script>
 </body>

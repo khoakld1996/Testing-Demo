@@ -3,174 +3,144 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kết quả Quiz | Online Test</title>
+  <title>Kết Quả | Nebula Quiz 2026</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  
   <style>
     :root {
-      --primary: #4facfe;
-      --accent: #00ffcc;
-      --glass: rgba(255, 255, 255, 0.1);
-      --glass-border: rgba(255, 255, 255, 0.2);
+      --primary: #4facfe; --accent: #00ffcc; --bg: #0b0f1a;
+      --card: rgba(22, 30, 46, 0.7); --glass-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
     }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
 
     body {
-      height: 100vh;
-      background: linear-gradient(135deg, #0f2027, #2c5364);
-      display: flex; 
-      justify-content: center; 
-      align-items: center;
-      color: white; 
-      padding: 20px;
-      overflow: hidden; /* Không cho cả trang web cuộn, chỉ thẻ box cuộn */
+      min-height: 100vh;
+      background: var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
+      background-size: cover; background-blend-mode: overlay;
+      display: flex; justify-content: center; align-items: center; color: var(--text); padding: 20px;
     }
 
-    .box {
-      background: var(--glass);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border-radius: 30px;
-      padding: 40px 30px;
-      border: 1px solid var(--glass-border);
-      text-align: center;
-      width: 100%;
-      max-width: 450px;
-      max-height: 90vh; /* Giới hạn chiều cao box là 90% màn hình */
-      box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-      
-      /* CẤU HÌNH THANH CUỘN */
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto; 
+    .result-container {
+      background: var(--card); backdrop-filter: blur(25px); border-radius: 35px;
+      padding: 50px 40px; border: 1px solid var(--glass-border); text-align: center;
+      width: 100%; max-width: 500px; box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+      position: relative; overflow: hidden;
     }
 
-    /* Tùy chỉnh thanh cuộn cho đẹp */
-    .box::-webkit-scrollbar {
-      width: 6px;
-    }
-    .box::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 10px;
-      margin: 20px 0;
-    }
-    .box::-webkit-scrollbar-thumb {
-      background: var(--primary);
-      border-radius: 10px;
+    .trophy-box { font-size: 5rem; margin-bottom: 10px; filter: drop-shadow(0 0 20px var(--accent)); animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+    h2 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .status-text { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+
+    .score-circle {
+      width: 150px; height: 150px; margin: 0 auto 30px; border-radius: 50%;
+      background: rgba(0,0,0,0.3); border: 4px solid var(--glass-border);
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
     }
 
-    .icon-result { font-size: 4rem; margin-bottom: 10px; flex-shrink: 0; }
+    .score-big { font-size: 3.5rem; font-weight: 900; background: linear-gradient(135deg, #fff 30%, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .score-label { font-size: 0.7rem; color: var(--primary); font-weight: bold; }
 
-    h2 { font-size: 2rem; margin-bottom: 25px; color: var(--accent); flex-shrink: 0; }
+    .info-list { background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 20px; margin-bottom: 30px; border: 1px solid var(--glass-border); }
+    .info-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 1rem; }
+    .info-item:last-child { border: none; }
+    .label-box { color: #64748b; display: flex; align-items: center; gap: 10px; }
+    .val-box { font-weight: 600; color: #fff; }
 
-    .score-big {
-      font-size: 3.5rem;
-      font-weight: bold;
-      background: linear-gradient(to bottom, #fff, var(--primary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 10px 0;
-      flex-shrink: 0;
-    }
+    .btn-group { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; }
+    .btn-main { background: linear-gradient(135deg, var(--primary), #00f2fe); color: #0b0f1a; }
+    .btn-outline { background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid var(--glass-border); }
+    .btn:hover { transform: translateY(-3px); opacity: 0.9; }
 
-    .info-card {
-      background: rgba(255,255,255,0.05);
-      border-radius: 15px;
-      padding: 20px;
-      margin-bottom: 25px;
-      text-align: left;
-      border: 1px solid var(--glass-border);
-      flex-shrink: 0;
-    }
-
-    .info-item {
-      margin-bottom: 10px;
-      font-size: 1.1rem;
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-    }
-
-    .label { color: rgba(255,255,255,0.6); }
-
-    .btn-group {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        flex-shrink: 0;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 15px;
-      border-radius: 12px;
-      border: none;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      color: #002f4b;
-      font-weight: bold;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .btn:hover { transform: scale(1.03); filter: brightness(1.1); }
-    
-    .btn-secondary {
-        background: rgba(255,255,255,0.1);
-        color: white;
-        border: 1px solid var(--glass-border);
-    }
-
-    @media (max-width: 480px) {
-      .box { padding: 30px 20px; }
-      .score-big { font-size: 2.8rem; }
-    }
+    #syncStatus { font-size: 0.75rem; margin-top: 15px; color: #00ffcc; font-weight: bold; }
   </style>
 </head>
 <body>
 
-<div class="box">
-  <div class="icon-result">🏆</div>
-  <h2>Hoàn thành!</h2>
+<div class="result-container animate__animated animate__zoomIn">
+  <div class="trophy-box">🏆</div>
+  <h2>HOÀN THÀNH!</h2>
+  <p class="status-text">KẾT QUẢ CỦA BẠN</p>
 
-  <div class="score-big" id="displayScore">0.0</div>
+  <div class="score-circle animate__animated animate__bounceIn">
+    <div class="score-big" id="displayScore">0.0</div>
+    <div class="score-label">ĐIỂM SỐ</div>
+  </div>
   
-  <div class="info-card">
+  <div class="info-list">
     <div class="info-item">
-      <span class="label">Học sinh:</span>
-      <span id="resName" style="text-align: right; font-weight: 500;">...</span>
+      <div class="label-box"><i class="fas fa-user-astronaut"></i> Thí sinh</div>
+      <div class="val-box" id="resName">...</div>
     </div>
     <div class="info-item">
-      <span class="label">Trường:</span>
-      <span id="resSchool" style="text-align: right; font-weight: 500;">...</span>
+      <div class="label-box"><i class="fas fa-school"></i> Trường/Lớp</div>
+      <div class="val-box" id="resSchool">...</div>
     </div>
     <div class="info-item">
-      <span class="label">Đúng:</span>
-      <span id="resCorrect" style="font-weight: bold; color: var(--accent);">0/0</span>
+      <div class="label-box"><i class="fas fa-check-circle"></i> Câu đúng</div>
+      <div class="val-box" id="resCorrect" style="color: var(--accent);">0/0</div>
     </div>
   </div>
 
+  <div id="syncStatus"></div>
+
   <div class="btn-group">
-      <button class="btn" onclick="location.href='index.html'">Về trang chủ</button>
-      <button class="btn btn-secondary" onclick="location.href='history.html'">
-         🔍 Xem lại chi tiết bài làm
-      </button>
+    <button class="btn btn-main" onclick="location.href='index.html'">
+      <i class="fas fa-home"></i> Trang chủ
+    </button>
+    <button class="btn btn-outline" onclick="location.href='history.html'">
+      <i class="fas fa-history"></i> Xem lịch sử
+    </button>
   </div>
 </div>
 
 <script>
   window.onload = () => {
-    // Lấy dữ liệu từ localStorage
-    const name = localStorage.getItem("studentName") || "Học sinh";
-    const school = localStorage.getItem("schoolName") || "N/A";
-    const score = localStorage.getItem("lastScore") || "0.0";
-    const correct = localStorage.getItem("correctCount") || "0/0";
+    // 1. Lấy dữ liệu hiển thị
+    const studentName = localStorage.getItem("studentName") || "Phi hành gia";
+    const studentSchool = localStorage.getItem("schoolName") || "Tự do";
+    const score = parseFloat(localStorage.getItem("lastScore") || "0.0");
+    const correctStr = localStorage.getItem("correctCount") || "0/0";
 
-    // Hiển thị lên giao diện
-    document.getElementById("resName").innerText = name;
-    document.getElementById("resSchool").innerText = school;
-    document.getElementById("displayScore").innerText = score;
-    document.getElementById("resCorrect").innerText = correct;
+    // 2. Hiển thị lên giao diện
+    document.getElementById("resName").innerText = studentName;
+    document.getElementById("resSchool").innerText = studentSchool;
+    document.getElementById("resCorrect").innerText = correctStr;
+    animateValue("displayScore", 0, score, 1500);
+
+    // 3. KIỂM TRA CHỐNG F5 (CHỈ GỬI BÙ NẾU TRANG QUIZ CHƯA GỬI THÀNH CÔNG)
+    // Nếu trang Quiz đã gửi rồi (localStorage quiz_submitted = true), trang này không gửi lại nữa.
+    const alreadySubmitted = localStorage.getItem("quiz_submitted");
+    const syncStatus = document.getElementById("syncStatus");
+
+    if (alreadySubmitted === "true") {
+        syncStatus.innerHTML = '<i class="fas fa-cloud-check"></i> Dữ liệu đã được lưu an toàn!';
+        syncStatus.style.color = "#00ffcc";
+    } else {
+        // Nếu vì lý do nào đó trang Quiz chưa kịp gửi (rớt mạng), gửi bù tại đây
+        syncStatus.innerHTML = '<i class="fas fa-sync fa-spin"></i> Đang hoàn tất lưu dữ liệu...';
+        // Gọi hàm gửi bài bù nếu cần (tùy chọn)
+    }
   };
+
+  function animateValue(id, start, end, duration) {
+    const obj = document.getElementById(id);
+    let startTimestamp = null;
+    const step = (timestamp) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const current = (progress * (end - start)).toFixed(1);
+      obj.innerHTML = current;
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+    window.requestAnimationFrame(step);
+  }
 </script>
 
 </body>

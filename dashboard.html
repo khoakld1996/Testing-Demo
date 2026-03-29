@@ -181,13 +181,11 @@
 </div>
 
 <script>
-  // URL APP SCRIPT CỦA BẠN
-  const API = "https://script.google.com/macros/s/AKfycbyMNDhpE9eNmQfEJizQtjfvAoTfmc7C0WgOWNb9g82txlzLxC_EwKE8IIWvGxEYH5pk/exec";
+  const API = "https://script.google.com/macros/s/AKfycbzTvaNTz9Iz-2QXZ_R-Js36Bqf50J0vZUhVcdlSVvPtesmdODd0i4aF89SUnCtKkYqb/exec";
 
   // Bảo mật cơ bản
   if(localStorage.getItem("userRole") !== "admin") {
-    // Nếu bạn muốn test trực tiếp không cần đăng nhập, hãy tạm comment dòng dưới
-    // window.location.replace("index.html");
+     // window.location.replace("index.html");
   }
 
   function logout() {
@@ -210,6 +208,7 @@
       renderTests(); renderResults(); renderPendingUsers(); updateStats(); initChart();
     } catch (e) { 
       console.error("Lỗi tải dữ liệu:", e); 
+      document.getElementById("testList").innerHTML = "<p style='text-align:center; color:red;'>Lỗi tải dữ liệu máy chủ!</p>";
     }
   }
 
@@ -230,10 +229,41 @@
     `).join('') || "<p style='text-align:center; opacity:0.3; padding:40px;'>Không tìm thấy đề thi.</p>";
   }
 
+  // --- HÀM XÓA ĐỀ THI ---
+  async function deleteTest(testId) {
+    const confirm = await Swal.fire({
+      title: 'Xác nhận xóa?',
+      text: "Tất cả câu hỏi trong đề thi này sẽ bị xóa vĩnh viễn!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#94a3b8',
+      confirmButtonText: 'Xác nhận!',
+      cancelButtonText: 'Hủy!'
+    });
+
+    if (confirm.isConfirmed) {
+      Swal.fire({ title: 'Đang xóa...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        await fetch(API, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify({ action: "deleteTest", testId: testId })
+        });
+        Swal.fire({ icon: 'success', title: 'Đã xóa!', timer: 1000, showConfirmButton: false });
+        setTimeout(loadData, 1200);
+      } catch (e) {
+        Swal.fire("Lỗi", "Không thể xóa bài thi!", "error");
+      }
+    }
+  }
+
   function renderResults() {
     const container = document.getElementById("resultList");
     container.innerHTML = [...allResults].reverse().map(r => {
-      let p = Math.round((r.score/r.total)*100);
+      let scoreVal = parseFloat(r.score) || 0;
+      let totalVal = parseFloat(r.total) || 1;
+      let p = Math.round((scoreVal/totalVal)*100);
       return `
         <div class="result-row animate__animated animate__fadeIn">
           <span style="font-weight:600;">${r.name}</span>
@@ -255,21 +285,53 @@
       <div class="user-card animate__animated animate__fadeInRight">
         <div>
           <div style="font-weight:bold; font-size:0.85rem;">${user.name}</div>
-          <div style="font-size:0.7rem; opacity:0.5;">${user.email} - ${user.class}</div>
+          <div style="font-size:0.7rem; opacity:0.5;">${user.email}</div>
         </div>
         <div style="display:flex; gap:5px;">
           <button class="btn btn-glow" style="background:var(--secondary); padding: 6px 10px; font-size:0.65rem;" onclick="approveUser('${user.email}', 'approve')">DUYỆT</button>
-          <button class="btn btn-outline" style="padding: 6px 10px; font-size:0.65rem; color:var(--danger);" onclick="approveUser('${user.email}', 'reject')">HỦY</button>
+          <button class="btn btn-outline" style="padding: 6px 10px; font-size:0.65rem; color:var(--danger);" onclick="approveUser('${user.email}', 'reject')">XÓA</button>
         </div>
       </div>
     `).join('');
+  }
+
+  // --- HÀM DUYỆT / XÓA TÀI KHOẢN ---
+  async function approveUser(email, action) {
+    const confirmText = action === 'approve' ? 'Duyệt tài khoản này?' : 'Xóa yêu cầu đăng ký này?';
+    const confirm = await Swal.fire({
+      title: 'Xác nhận',
+      text: confirmText,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Đồng ý',
+      cancelButtonText: 'Hủy'
+    });
+
+    if (confirm.isConfirmed) {
+      Swal.fire({ title: 'Đang xử lý...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        await fetch(API, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify({ 
+            action: "handleUserRequest", 
+            email: email, 
+            status: action === 'approve' ? 'approved' : 'rejected' 
+          })
+        });
+        Swal.fire({ icon: 'success', title: 'Thành công!', timer: 800, showConfirmButton: false });
+        setTimeout(loadData, 1000);
+      } catch (e) { 
+        Swal.fire("Lỗi", "Thao tác thất bại!", "error");
+      }
+    }
   }
 
   function updateStats() {
     document.getElementById('countTests').innerText = tests.length;
     document.getElementById('countResults').innerText = allResults.length;
     if(allResults.length > 0) {
-      let totalP = allResults.reduce((acc, curr) => acc + (curr.score/curr.total), 0);
+      let totalP = allResults.reduce((acc, curr) => acc + (parseFloat(curr.score)/parseFloat(curr.total)), 0);
       document.getElementById('avgScore').innerText = Math.round((totalP/allResults.length)*100) + "%";
     }
   }
@@ -278,7 +340,7 @@
     const ctx = document.getElementById('chart').getContext('2d');
     const stats = [0, 0, 0];
     allResults.forEach(r => {
-      let p = (r.score/r.total)*100;
+      let p = (parseFloat(r.score)/parseFloat(r.total))*100;
       if(p >= 80) stats[0]++; else if(p >= 50) stats[1]++; else stats[2]++;
     });
     if(window.myChart) window.myChart.destroy();
@@ -298,36 +360,20 @@
     if(!name) return Swal.fire("Lỗi", "Vui lòng nhập tên đề!", "error");
     
     Swal.fire({ title: 'Đang khởi tạo...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-    
     try {
-      const res = await fetch(API, {
+      await fetch(API, {
         method: "POST",
+        mode: "no-cors",
         body: JSON.stringify({ action: "createTest", name, desc })
       });
-      const result = await res.json();
-      if(result.status === "success") {
-        Swal.fire({ icon: 'success', title: 'Hoàn tất!', text: 'Đề thi đã được thêm vào kho.', timer: 1500 });
-        document.getElementById("testName").value = "";
-        document.getElementById("testDesc").value = "";
-        loadData();
-      }
+      Swal.fire({ icon: 'success', title: 'Hoàn tất!', timer: 1000, showConfirmButton: false });
+      document.getElementById("testName").value = "";
+      document.getElementById("testDesc").value = "";
+      setTimeout(loadData, 1200);
     } catch(e) { Swal.fire("Lỗi", "Không thể kết nối API", "error"); }
   }
 
-  async function approveUser(email, action) {
-    try {
-      const res = await fetch(API, {
-        method: "POST",
-        body: JSON.stringify({ action: "handleUserRequest", email, status: action === 'approve' ? 'approved' : 'rejected' })
-      });
-      if((await res.json()).status === "ok") { 
-        loadData(); 
-      }
-    } catch (e) { console.error(e); }
-  }
-
   function goTo(page, id, name) {
-    // Lưu thông tin đề đang chọn vào bộ nhớ trình duyệt
     localStorage.setItem("currentTest", JSON.stringify({ id, name }));
     window.location.href = page;
   }

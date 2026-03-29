@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Xác nhận thông tin | Quiz Online</title>
   
-  <!-- Thư viện Icon, Popup & Hiệu ứng -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -140,6 +139,11 @@
       transition: 0.3s;
     }
     .btn-home:hover { color: white; }
+    
+    .loading-input {
+      opacity: 0.6;
+      cursor: wait;
+    }
   </style>
 </head>
 <body>
@@ -154,7 +158,7 @@
         <label>Họ và tên thí sinh</label>
         <div class="input-wrapper">
           <i class="fas fa-user-edit"></i>
-          <input type="text" id="username" placeholder="Đang tải tên..." autocomplete="off">
+          <input type="text" id="username_display" placeholder="Đang tải dữ liệu..." autocomplete="off">
         </div>
       </div>
 
@@ -162,11 +166,11 @@
         <label>Tên trường / Đơn vị</label>
         <div class="input-wrapper">
           <i class="fas fa-school"></i>
-          <input type="text" id="school" placeholder="Ví dụ: THPT Nguyễn Du..." autocomplete="off">
+          <input type="text" id="school" placeholder="Đang tải dữ liệu..." autocomplete="off">
         </div>
       </div>
 
-      <button class="btn-next" onclick="startSelection()">
+      <button class="btn-next" id="btnContinue" onclick="startSelection()">
         TIẾP TỤC CHỌN BÀI <i class="fas fa-chevron-right"></i>
       </button>
 
@@ -177,55 +181,81 @@
   </div>
 
   <script>
-    // CHỈNH SỬA: Tự động lấy tên từ trang Login truyền qua
-    window.onload = () => {
-      // 1. Lấy tên từ localStorage (Đã được lưu ở login.html)
-      const savedName = localStorage.getItem("studentName") || localStorage.getItem("quiz_user_name");
-      const savedSchool = localStorage.getItem("schoolName");
-      
-      if (savedName) {
-        document.getElementById("username").value = savedName;
+    // URL WEB APP CỦA BẠN
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTvaNTz9Iz-2QXZ_R-Js36Bqf50J0vZUhVcdlSVvPtesmdODd0i4aF89SUnCtKkYqb/exec"; 
+
+    window.onload = async () => {
+      // Lấy username từ localStorage đã lưu ở trang Login
+      const loggedInUser = localStorage.getItem("username"); 
+
+      if (!loggedInUser) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Lỗi xác thực!',
+            text: 'Không tìm thấy phiên đăng nhập. Vui lòng quay lại trang đăng nhập.',
+            confirmButtonColor: '#4facfe'
+        }).then(() => { window.location.href = 'login.html?role=student'; });
+        return;
       }
 
-      if (savedSchool) {
-        document.getElementById("school").value = savedSchool;
+      const nameInput = document.getElementById("username_display");
+      const schoolInput = document.getElementById("school");
+      nameInput.classList.add("loading-input");
+      schoolInput.classList.add("loading-input");
+
+      try {
+        // Gửi yêu cầu lấy thông tin chi tiết dựa trên username
+        const response = await fetch(`${SCRIPT_URL}?action=getUserInfo&username=${loggedInUser}`);
+        const data = await response.json();
+
+        nameInput.classList.remove("loading-input");
+        schoolInput.classList.remove("loading-input");
+
+        if (data.status === "success") {
+          nameInput.value = data.name || "";
+          schoolInput.value = data.school || "";
+          
+          localStorage.setItem("studentName", data.name);
+          localStorage.setItem("schoolName", data.school);
+        } else {
+          nameInput.placeholder = "Không tìm thấy dữ liệu...";
+          schoolInput.placeholder = "Vui lòng nhập thủ công...";
+        }
+      } catch (err) {
+        console.error("Lỗi kết nối API:", err);
+        nameInput.classList.remove("loading-input");
+        schoolInput.classList.remove("loading-input");
+        nameInput.placeholder = "Lỗi kết nối máy chủ...";
       }
     };
 
     function startSelection() {
-      const name = document.getElementById("username").value.trim();
+      const name = document.getElementById("username_display").value.trim();
       const school = document.getElementById("school").value.trim();
 
       if (!name || !school) {
         Swal.fire({
           icon: 'warning',
           title: 'Thiếu thông tin!',
-          text: 'Vui lòng điền đầy đủ Tên và Trường để tiếp tục nhé! 😊',
-          background: 'rgba(30, 39, 46, 0.95)',
-          color: '#fff',
+          text: 'Vui lòng kiểm tra lại Tên và Trường nhé!',
           confirmButtonColor: '#4facfe'
         });
         return;
       }
 
-      // Lưu lại thông tin (phòng trường hợp học sinh sửa tên)
       localStorage.setItem("studentName", name);
       localStorage.setItem("schoolName", school);
       
-      // Hiệu ứng chuyển cảnh đẹp
       Swal.fire({
-        title: 'Đang khởi tạo...',
-        timer: 1000,
-        timerProgressBar: true,
-        background: 'rgba(30, 39, 46, 0.95)',
-        color: '#fff',
+        title: 'Đang chuẩn bị...',
+        timer: 800,
+        showConfirmButton: false,
         didOpen: () => { Swal.showLoading(); }
       }).then(() => {
         window.location.href = "select.html";
       });
     }
 
-    // Nhấn Enter để gửi
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') startSelection();
     });

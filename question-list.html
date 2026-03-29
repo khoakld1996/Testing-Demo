@@ -27,7 +27,6 @@
 
     body {
       min-height: 100vh;
-      /* SỬA LẠI NỀN VŨ TRỤ CŨ HUYỀN ẢO */
       background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), 
                   url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
       background-size: cover;
@@ -41,7 +40,6 @@
 
     .container { width: 100%; max-width: 1000px; }
 
-    /* PANEL CHÍNH - HIỆU ỨNG KÍNH MỜ */
     .glass-panel {
       background: var(--glass);
       backdrop-filter: blur(25px);
@@ -54,13 +52,11 @@
       overflow: hidden;
     }
 
-    /* THANH GRADIENT TRÊN CÙNG */
     .glass-panel::before {
       content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
       background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
     }
 
-    /* HEADER */
     .header {
       display: flex;
       justify-content: space-between;
@@ -82,14 +78,12 @@
       gap: 15px;
     }
 
-    /* DANH SÁCH CÂU HỎI */
     #questionList {
       max-height: 58vh;
       overflow-y: auto;
       padding-right: 15px;
     }
 
-    /* THẺ CÂU HỎI */
     .q-card {
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid var(--glass-border);
@@ -109,7 +103,6 @@
       box-shadow: 0 15px 30px rgba(0,0,0,0.3);
     }
 
-    /* HÌNH ẢNH THU NHỎ */
     .q-thumb-container {
       width: 90px; height: 90px;
       border-radius: 18px;
@@ -118,7 +111,6 @@
       flex-shrink: 0;
     }
     .q-thumb { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: 0.3s; }
-    .q-thumb:hover { transform: scale(1.1); }
     
     .no-thumb {
       width: 90px; height: 90px;
@@ -129,7 +121,6 @@
       border: 1px dashed rgba(255,255,255,0.1);
     }
 
-    /* NỘI DUNG CHÍNH */
     .q-main { flex-grow: 1; overflow: hidden; }
     .q-text {
       display: block;
@@ -143,7 +134,6 @@
       text-overflow: ellipsis;
     }
 
-    /* TAGS LOẠI CÂU HỎI */
     .badge-group { display: flex; gap: 10px; flex-wrap: wrap; }
     .tag {
       font-size: 0.7rem;
@@ -161,7 +151,6 @@
     .tag-tf { background: rgba(0, 229, 255, 0.1); color: #00e5ff; border-color: rgba(0, 229, 255, 0.3); }
     .tag-other { background: rgba(124, 77, 255, 0.1); color: #b388ff; border-color: rgba(124, 77, 255, 0.3); }
 
-    /* NÚT ĐIỀU KHIỂN CHỨC NĂNG */
     .action-controls { display: flex; gap: 12px; }
     .btn-icon {
       width: 44px; height: 44px;
@@ -173,12 +162,11 @@
       font-size: 1.1rem;
     }
     .btn-edit { background: rgba(255, 177, 66, 0.1); color: var(--warning); border-color: rgba(255, 177, 66, 0.3); }
-    .btn-edit:hover { background: var(--warning); color: #000; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 177, 66, 0.3); }
+    .btn-edit:hover { background: var(--warning); color: #000; transform: translateY(-3px); }
     
     .btn-del { background: rgba(255, 82, 82, 0.1); color: var(--danger); border-color: rgba(255, 82, 82, 0.3); }
-    .btn-del:hover { background: var(--danger); color: #fff; transform: translateY(-3px); box-shadow: 0 5px 15px rgba(255, 82, 82, 0.3); }
+    .btn-del:hover { background: var(--danger); color: #fff; transform: translateY(-3px); }
 
-    /* NÚT HÀNH ĐỘNG DƯỚI CÙNG */
     .footer-actions {
       margin-top: 45px;
       display: grid;
@@ -202,28 +190,14 @@
       font-size: 0.9rem;
     }
 
-    .btn-primary {
-      background: linear-gradient(135deg, var(--primary), var(--accent));
-      box-shadow: 0 10px 25px rgba(68, 138, 255, 0.3);
-    }
-    .btn-primary:hover { transform: translateY(-4px); box-shadow: 0 15px 35px rgba(68, 138, 255, 0.5); filter: brightness(1.1); }
+    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--accent)); }
+    .btn-secondary { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); }
 
-    .btn-secondary {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid var(--glass-border);
-    }
-    .btn-secondary:hover { background: rgba(255, 255, 255, 0.12); transform: translateY(-2px); }
-
-    /* THANH CUỘN CHUYÊN NGHIỆP */
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
-
-    /* TRẠNG THÁI ĐANG TẢI */
     .loading-state { text-align: center; padding: 70px; }
     .loading-state i { font-size: 3.5rem; margin-bottom: 25px; color: var(--secondary); text-shadow: 0 0 25px var(--primary); }
-    .loading-state p { font-weight: 300; letter-spacing: 1px; opacity: 0.7; }
+
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
   </style>
 </head>
 
@@ -233,7 +207,7 @@
     
     <div class="header">
       <h2 id="testTitle"><i class="fas fa-satellite-dish fa-spin"></i> KẾT NỐI NEBULA...</h2>
-      <button class="btn-icon" style="background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="location.href='dashboard.html'" title="Về trang chủ"><i class="fas fa-th-large"></i></button>
+      <button class="btn-icon" style="background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="location.href='dashboard.html'"><i class="fas fa-th-large"></i></button>
     </div>
 
     <div id="questionList">
@@ -248,16 +222,14 @@
       <button onclick="goToAdd()" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Thêm câu hỏi mới</button>
     </div>
     
-    <div style="text-align: center; margin-top: 40px; opacity: 0.15; font-size: 0.75rem; letter-spacing: 6px; text-transform: uppercase;">
-      Nebula Quantum Interface • Version 2.8
+    <div style="text-align: center; margin-top: 40px; opacity: 0.15; font-size: 0.75rem; letter-spacing: 6px;">
+      NEBULA QUANTUM INTERFACE • VERSION 2.8
     </div>
   </div>
 </div>
 
 <script>
-  // Cập nhật URL API của bạn tại đây
-  const API = "https://script.google.com/macros/s/AKfycbyMNDhpE9eNmQfEJizQtjfvAoTfmc7C0WgOWNb9g82txlzLxC_EwKE8IIWvGxEYH5pk/exec";
-  
+  const API = "https://script.google.com/macros/s/AKfycbzTvaNTz9Iz-2QXZ_R-Js36Bqf50J0vZUhVcdlSVvPtesmdODd0i4aF89SUnCtKkYqb/exec";
   const currentTest = JSON.parse(localStorage.getItem("currentTest") || "{}");
   let listQuestions = [];
 
@@ -277,24 +249,19 @@
         listEl.innerHTML = `
           <div style="text-align:center; padding:70px; opacity:0.3; border: 2px dashed rgba(255,255,255,0.05); border-radius: 30px; margin: 20px 0;">
             <i class="fas fa-ghost fa-4x" style="margin-bottom:25px;"></i>
-            <p style="font-size: 1.1rem;">Chưa có thực thể dữ liệu nào được khởi tạo trong không gian này.</p>
+            <p>Không gian dữ liệu trống.</p>
           </div>`;
         return;
       }
 
       listEl.innerHTML = listQuestions.map((q, i) => {
         const hasImg = q.image && q.image.length > 20;
-        
-        let typeInfo = { name: "Trắc nghiệm", class: "tag-mcq", icon: "fa-list-ul" };
-        if(q.type === 'tf') typeInfo = { name: "Đúng/Sai", class: "tag-tf", icon: "fa-check-double" };
-        else if(q.type === 'matching') typeInfo = { name: "Ghép nối", class: "tag-other", icon: "fa-project-diagram" };
-        else if(q.type === 'ordering') typeInfo = { name: "Sắp xếp", class: "tag-other", icon: "fa-sort-amount-down" };
-        else if(q.type === 'fill') typeInfo = { name: "Điền khuyết", class: "tag-other", icon: "fa-pen-nib" };
+        let typeInfo = getTypeInfo(q.type);
 
         return `
-          <div class="q-card animate__animated animate__fadeInUp" style="animation-delay: ${i * 0.1}s">
+          <div class="q-card animate__animated animate__fadeInUp" style="animation-delay: ${i * 0.05}s">
             ${hasImg ? 
-              `<div class="q-thumb-container"><img src="${q.image}" class="q-thumb" onclick="zoomImg('${q.image}')" title="Bấm để phóng to"></div>` : 
+              `<div class="q-thumb-container"><img src="${q.image}" class="q-thumb" onclick="zoomImg('${q.image}')"></div>` : 
               `<div class="no-thumb"><i class="fas fa-atom fa-2x"></i></div>`}
             
             <div class="q-main">
@@ -305,22 +272,82 @@
             </div>
 
             <div class="action-controls">
-              <button class="btn-icon btn-edit" onclick="editQuestion(${i})" title="Chỉnh sửa"><i class="fas fa-edit"></i></button>
-              <button class="btn-icon btn-del" onclick="deleteQuestion('${q.question}', this)" title="Xóa"><i class="fas fa-trash"></i></button>
+              <button class="btn-icon btn-edit" onclick="editQuestion(${i})"><i class="fas fa-edit"></i></button>
+              <button class="btn-icon btn-del" onclick="deleteQuestion('${q.question}', this)"><i class="fas fa-trash"></i></button>
             </div>
           </div>`;
       }).join('');
     } catch (err) {
-      listEl.innerHTML = `<div style="color:var(--danger); text-align:center; padding:50px;"><i class="fas fa-exclamation-triangle fa-2x"></i><p>⚠️ Lỗi đồng bộ Nebula!</p></div>`;
+      listEl.innerHTML = `<div style="color:var(--danger); text-align:center; padding:50px;"><p>⚠️ Lỗi kết nối Nebula!</p></div>`;
+    }
+  }
+
+  function getTypeInfo(type) {
+    switch(type) {
+      case 'tf': return { name: "Đúng/Sai", class: "tag-tf", icon: "fa-check-double" };
+      case 'matching': return { name: "Ghép nối", class: "tag-other", icon: "fa-project-diagram" };
+      case 'ordering': return { name: "Sắp xếp", class: "tag-other", icon: "fa-sort-amount-down" };
+      case 'fill': return { name: "Điền khuyết", class: "tag-other", icon: "fa-pen-nib" };
+      default: return { name: "Trắc nghiệm", class: "tag-mcq", icon: "fa-list-ul" };
+    }
+  }
+
+  async function deleteQuestion(questionText, btn) {
+    const result = await Swal.fire({
+      title: 'XÁC NHẬN XÓA?',
+      text: "Thao tác này sẽ xóa vĩnh viễn thực thể dữ liệu!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ff5252',
+      cancelButtonColor: 'rgba(255,255,255,0.1)',
+      confirmButtonText: 'XÓA NGAY',
+      cancelButtonText: 'HỦY',
+      background: '#0a0f1c', 
+      color: '#fff'
+    });
+
+    if (!result.isConfirmed) return;
+
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.disabled = true;
+
+    try {
+      const payload = {
+        action: "deleteQuestion",
+        testId: currentTest.id,
+        question: questionText
+      };
+
+      await fetch(API, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(payload)
+      });
+      
+      Swal.fire({ 
+        icon: 'success', 
+        title: 'ĐANG ĐỒNG BỘ', 
+        text: 'Dữ liệu đã được yêu cầu xóa khỏi Nebula.',
+        timer: 1500, 
+        showConfirmButton: false, 
+        background: '#0a0f1c', 
+        color: '#fff' 
+      });
+
+      setTimeout(loadQuestions, 2000);
+
+    } catch (err) {
+      Swal.fire({ icon: 'error', title: 'LỖI', text: 'Kết nối bị ngắt quãng.', background: '#0a0f1c', color: '#fff' });
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
     }
   }
 
   function editQuestion(index) {
-    const question = listQuestions[index];
-    if (question) {
-      localStorage.setItem("editQuestionData", JSON.stringify(question));
-      location.href = "add-question.html";
-    }
+    localStorage.setItem("editQuestionData", JSON.stringify(listQuestions[index]));
+    location.href = "add-question.html";
   }
 
   function goToAdd() {
@@ -334,44 +361,8 @@
       background: 'rgba(10, 15, 28, 0.96)',
       backdrop: 'rgba(0,0,0,0.85)',
       showConfirmButton: false,
-      showCloseButton: true,
-      customClass: { popup: 'animated zoomIn faster' }
+      showCloseButton: true
     });
-  }
-
-  async function deleteQuestion(qId, btn) {
-    const res = await Swal.fire({
-      title: 'XÓA CÂU HỎI?',
-      text: "Thao tác này không thể hoàn tác!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ff5252',
-      cancelButtonColor: 'rgba(255,255,255,0.1)',
-      confirmButtonText: 'XÓA',
-      cancelButtonText: 'HỦY',
-      background: '#0a0f1c', color: '#fff'
-    });
-
-    if (!res.isConfirmed) return;
-
-    btn.innerHTML = '<i class="fas fa-dharmachakra fa-spin"></i>';
-    btn.disabled = true;
-
-    try {
-      await fetch(API, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify({ action: "deleteQuestion", qId: qId })
-      });
-      
-      Swal.fire({ icon: 'success', title: 'ĐÃ XÓA', timer: 1200, showConfirmButton: false, background: '#0a0f1c', color: '#fff' });
-      setTimeout(loadQuestions, 1300);
-    } catch (err) {
-      Swal.fire({ icon: 'error', title: 'LỖI', background: '#0a0f1c', color: '#fff' });
-      btn.innerHTML = '<i class="fas fa-trash"></i>';
-      btn.disabled = false;
-    }
   }
 </script>
 </body>
