@@ -134,8 +134,9 @@
 </div>
 
 <script>
-  // URL WEB APP CỦA BẠN
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymrHeUnc8umtlHD_jxQbIi5st9Reua96bimU5rGr_xZDk6_3fTPSZ2XGQsH6Y6sumn/exec";
+  // URL WEB APP (Đảm bảo đây là bản Deploy mới nhất)
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyX7PCWMwmKw86Iv3fsGX8vwTMYOCovEupXgxbzKLP7kSwMIoiVOfiQ1c60IR3tc4Hr/exec";
+  
   const params = new URLSearchParams(window.location.search);
   const roleFromUrl = params.get('role') || 'admin'; 
   
@@ -150,12 +151,17 @@
     } else {
       header.innerHTML = '<i class="fas fa-user-shield"></i> QUẢN TRỊ VIÊN';
     }
+    // Focus vào ô tài khoản khi load trang
+    document.getElementById('user').focus();
   };
 
-  document.addEventListener('keydown', (e) => {
+  // --- LẮNG NGHE PHÍM ENTER ---
+  document.addEventListener('keydown', function(e) {
     if (e.key === 'Enter') {
-      e.preventDefault();
-      if(!isSubmitting) handleAction(isRegisterMode ? 'register' : 'login');
+      e.preventDefault(); // Tránh reload trang ngoài ý muốn
+      if (!isSubmitting) {
+        handleAction(isRegisterMode ? 'register' : 'login');
+      }
     }
   });
 
@@ -165,68 +171,81 @@
     document.getElementById('loginForm').classList.toggle('hidden', showReg);
     document.getElementById('registerForm').classList.toggle('hidden', !showReg);
     document.getElementById('formHeader').innerHTML = showReg ? '<i class="fas fa-edit"></i> ĐĂNG KÝ MỚI' : (roleFromUrl === 'student' ? '<i class="fas fa-user-graduate"></i> HỌC SINH' : '<i class="fas fa-user-shield"></i> QUẢN TRỊ VIÊN');
+    
+    // Focus tự động khi chuyển form
+    if(showReg) {
+        document.getElementById('regFullName').focus();
+    } else {
+        document.getElementById('user').focus();
+    }
   }
 
   async function handleAction(action) {
     if (isSubmitting) return;
 
-    let payload = { action: action, role: roleFromUrl };
-    if (action === 'login') {
-      payload.user = document.getElementById('user').value.trim();
-      payload.pass = document.getElementById('pass').value.trim();
-    } else {
-      payload.name = document.getElementById('regFullName').value.trim();
-      payload.class = document.getElementById('regClass').value.trim();
-      payload.school = document.getElementById('regSchool').value.trim();
-      payload.user = document.getElementById('regUser').value.trim();
-      payload.pass = document.getElementById('regPass').value.trim();
-    }
+    // Lấy dữ liệu từ giao diện
+    const userVal = action === 'login' ? document.getElementById('user').value.trim() : document.getElementById('regUser').value.trim();
+    const passVal = action === 'login' ? document.getElementById('pass').value.trim() : document.getElementById('regPass').value.trim();
 
-    if (!payload.user || !payload.pass || (action === 'register' && (!payload.name || !payload.class || !payload.school))) {
+    if (!userVal || !passVal) {
       Swal.fire({ icon: 'warning', title: 'Thiếu dữ liệu!', text: 'Vui lòng điền đầy đủ thông tin ✍️' });
       return;
     }
 
+    // Hiệu ứng Loading
     isSubmitting = true;
     const currentBtn = action === 'login' ? document.getElementById('btnLogin') : document.getElementById('btnReg');
     currentBtn.disabled = true;
+    const originalText = currentBtn.innerHTML;
     currentBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG XỬ LÝ...';
 
-    Swal.fire({
-      title: 'Đang kết nối...',
-      allowOutsideClick: false,
-      didOpen: () => { Swal.showLoading(); }
-    });
-
     try {
-      const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const formData = new URLSearchParams();
+      formData.append("action", action);
+      formData.append("user", userVal);
+      formData.append("pass", passVal);
+      formData.append("role", roleFromUrl);
+
+      if (action === 'register') {
+        formData.append("name", document.getElementById('regFullName').value.trim());
+        formData.append("class", document.getElementById('regClass').value.trim());
+        formData.append("school", document.getElementById('regSchool').value.trim());
+      }
+
+      const response = await fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
       const result = await response.json();
 
       if (result.status === "success") {
         if (action === 'login') {
-          // LƯU CÁC THÔNG TIN QUAN TRỌNG VÀO TRÌNH DUYỆT
           localStorage.setItem('userRole', result.role || 'student');
           localStorage.setItem('studentName', result.name);
-          localStorage.setItem('username', payload.user); // ĐÂY LÀ DÒNG FIX LỖI "HẾT PHIÊN"
+          localStorage.setItem('username', userVal); 
 
-          Swal.fire({ icon: 'success', title: 'Chào mừng!', text: result.name, timer: 1500, showConfirmButton: false });
+          Swal.fire({ icon: 'success', title: 'Chào mừng!', text: 'Xin chào ' + result.name, timer: 1500, showConfirmButton: false });
           setTimeout(() => { 
             window.location.href = result.role === 'admin' ? "dashboard.html" : "name.html"; 
           }, 1500);
         } else {
-          Swal.fire({ icon: 'success', title: 'Thành công!', text: 'Vui lòng chờ quản trị viên duyệt tài khoản.' }).then(() => toggleForm(false));
+          Swal.fire({ icon: 'success', title: 'Thành công!', text: 'Yêu cầu đăng ký đã được gửi. Vui lòng chờ admin duyệt.' }).then(() => toggleForm(false));
         }
+      } else if (result.status === "pending") {
+        Swal.fire({ icon: 'info', title: 'Chờ duyệt', text: 'Tài khoản của bạn đang chờ quản trị viên kích hoạt.' });
       } else {
-        Swal.fire({ icon: 'error', title: 'Lỗi', text: result.message || 'Thao tác thất bại!' });
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: result.message || 'Sai tài khoản hoặc mật khẩu' });
         document.getElementById('mainBox').classList.add('shake');
         setTimeout(() => document.getElementById('mainBox').classList.remove('shake'), 400);
       }
     } catch (error) {
-      Swal.fire({ icon: 'error', title: 'Lỗi mạng', text: 'Không thể kết nối máy chủ!' });
+      console.error(error);
+      Swal.fire({ icon: 'error', title: 'Lỗi mạng', text: 'Không thể kết nối máy chủ Nebula!' });
     } finally {
       isSubmitting = false;
       currentBtn.disabled = false;
-      currentBtn.innerHTML = action === 'login' ? 'Đăng nhập <i class="fas fa-sign-in-alt"></i>' : 'Gửi yêu cầu <i class="fas fa-paper-plane"></i>';
+      currentBtn.innerHTML = originalText;
     }
   }
 </script>
