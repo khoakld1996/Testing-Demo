@@ -3,275 +3,265 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nebula | Chọn bài thi</title>
+  <title>Nebula Quiz | Hệ Thống Chọn Bài Thi</title>
   
-  <!-- Thư viện hỗ trợ -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     :root { 
-      --primary: #4facfe; 
-      --secondary: #00f2fe;
-      --accent: #00ffcc; 
-      --glass: rgba(255, 255, 255, 0.08); 
-      --glass-border: rgba(255, 255, 255, 0.12); 
+      --primary: #4facfe; --secondary: #00f2fe; --accent: #00ffcc; 
+      --glass: rgba(15, 23, 42, 0.6); --glass-border: rgba(255, 255, 255, 0.1); 
       --bg-dark: #0f172a;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
     body { 
       min-height: 100vh; 
-      background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
+      background: #0f172a url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
+      background-attachment: fixed;
       display: flex; justify-content: center; align-items: center; 
-      color: white; padding: 20px;
-      position: relative;
-      overflow-x: hidden;
+      color: white; padding: 20px; position: relative; overflow-x: hidden;
     }
 
     body::before {
       content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(30, 41, 59, 0.8));
-      z-index: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(79, 172, 254, 0.15), rgba(15, 23, 42, 0.95)); z-index: 0;
     }
 
-    /* Top Navigation */
+    /* --- NAVIGATION --- */
     .top-nav {
-      position: absolute; top: 30px; left: 0; right: 0; padding: 0 40px;
+      position: fixed; top: 0; left: 0; right: 0; padding: 20px 40px;
       display: flex; justify-content: space-between; align-items: center; z-index: 100;
+      backdrop-filter: blur(10px); background: rgba(15, 23, 42, 0.5);
+      border-bottom: 1px solid var(--glass-border);
     }
 
-    .brand { font-weight: 900; font-size: 1.5rem; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; }
+    .brand { font-weight: 800; font-size: 1.4rem; letter-spacing: 1px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+    .brand span { color: #fff; font-weight: 300; }
+
+    .user-profile { display: flex; align-items: center; gap: 15px; }
+    .user-info-top { text-align: right; line-height: 1.2; }
+    .user-name-top { display: block; font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+    .user-class-top { font-size: 0.75rem; opacity: 0.6; }
 
     .btn-logout {
-      background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.2);
-      color: #ff4757; padding: 10px 20px; border-radius: 14px; cursor: pointer;
-      font-weight: 700; display: flex; align-items: center; gap: 10px; transition: 0.3s;
-      backdrop-filter: blur(10px);
+      background: rgba(255, 71, 87, 0.15); border: 1px solid rgba(255, 71, 87, 0.3);
+      color: #ff4757; width: 40px; height: 40px; border-radius: 12px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: 0.3s;
     }
+    .btn-logout:hover { background: #ff4757; color: white; transform: rotate(90deg); }
 
-    .btn-logout:hover {
-      background: #ff4757; color: white; transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4);
-    }
-
-    /* Main Container */
-    .container { position: relative; z-index: 10; width: 100%; max-width: 550px; }
+    /* --- MAIN CONTAINER --- */
+    .container { position: relative; z-index: 10; width: 100%; max-width: 600px; margin-top: 80px; }
 
     .box { 
-      background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-      border-radius: 40px; padding: 50px 40px; border: 1px solid var(--glass-border); 
-      text-align: center; box-shadow: 0 40px 100px rgba(0,0,0,0.6);
-      animation: zoomIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+      background: var(--glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      border-radius: 35px; padding: 40px; border: 1px solid var(--glass-border); 
+      box-shadow: 0 50px 100px rgba(0,0,0,0.5);
     }
 
     h2 { 
-      font-size: 2rem; margin-bottom: 8px; font-weight: 900;
+      font-size: 1.8rem; margin-bottom: 5px; font-weight: 800; text-align: center;
       background: linear-gradient(to right, #fff, var(--primary));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      display: flex; align-items: center; justify-content: center; gap: 15px;
     }
 
-    .welcome-text { 
-      color: rgba(255, 255, 255, 0.5); margin-bottom: 35px; font-size: 1rem;
+    .welcome-text { text-align: center; color: rgba(255, 255, 255, 0.5); margin-bottom: 30px; font-size: 0.95rem; }
+
+    /* --- SEARCH & FILTER --- */
+    .filter-section { margin-bottom: 25px; }
+    
+    .search-bar { position: relative; margin-bottom: 15px; }
+    .search-bar input {
+      width: 100%; background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border);
+      padding: 14px 20px 14px 45px; border-radius: 18px; color: white; font-size: 0.95rem;
+      outline: none; transition: 0.3s;
     }
+    .search-bar input:focus { border-color: var(--primary); background: rgba(255,255,255,0.12); box-shadow: 0 0 20px rgba(79, 172, 254, 0.2); }
+    .search-bar i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--primary); }
 
-    .welcome-text b { color: var(--accent); }
-
-    /* Test List Styling */
+    /* --- TEST LIST --- */
     #testList { 
       display: flex; flex-direction: column; gap: 15px; 
-      max-height: 380px; overflow-y: auto; padding-right: 8px;
+      max-height: 400px; overflow-y: auto; padding-right: 5px;
     }
-
-    #testList::-webkit-scrollbar { width: 4px; }
-    #testList::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+    #testList::-webkit-scrollbar { width: 5px; }
+    #testList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
     .test-card { 
       background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); 
-      padding: 18px 22px; border-radius: 20px; text-align: left; cursor: pointer; 
-      transition: all 0.3s ease;
+      padding: 20px; border-radius: 22px; cursor: pointer; 
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
       display: flex; justify-content: space-between; align-items: center;
-      position: relative;
+      position: relative; overflow: hidden;
     }
 
     .test-card:hover { 
-      background: rgba(255, 255, 255, 0.08); 
-      border-color: var(--primary);
-      transform: scale(1.02);
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.08); border-color: var(--primary);
+      transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
     }
 
-    .test-info { display: flex; flex-direction: column; gap: 4px; }
+    .test-info { flex: 1; }
+    .test-name { font-weight: 700; color: #fff; font-size: 1.1rem; display: block; margin-bottom: 6px; }
+    .test-meta { display: flex; flex-wrap: wrap; gap: 15px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.5); }
+    .test-meta span i { color: var(--primary); margin-right: 5px; }
 
-    .test-name { 
-      font-weight: 700; color: #fff; font-size: 1.15rem; 
+    .play-btn {
+      width: 45px; height: 45px; border-radius: 15px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+      transition: 0.3s; box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
     }
 
-    .test-meta { display: flex; gap: 12px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.4); }
-    .test-meta span { display: flex; align-items: center; gap: 5px; }
-
-    .play-icon {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: rgba(79, 172, 254, 0.1); color: var(--primary);
-      display: flex; align-items: center; justify-content: center;
-      transition: 0.3s; font-size: 0.9rem;
-    }
-
-    .test-card:hover .play-icon { 
-      background: var(--primary); color: white; 
-      box-shadow: 0 0 15px var(--primary);
-    }
-
-    /* Footer buttons */
-    .footer-actions { margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 20px; }
-
-    .btn-back { 
-      background: none; border: none; color: rgba(255,255,255,0.4); 
-      cursor: pointer; font-size: 0.85rem; transition: 0.3s;
-      display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
-    }
-    
+    .footer-actions { margin-top: 30px; text-align: center; }
+    .btn-back { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
     .btn-back:hover { color: var(--primary); }
 
-    .loading-status { padding: 30px 0; color: var(--primary); }
+    /* Skeleton Loading */
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 15px; height: 80px; margin-bottom: 15px; }
+    @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   </style>
 </head>
 <body>
 
-  <div class="top-nav animate__animated animate__fadeIn">
-    <div class="brand">Nebula <span style="color:#fff"> Quiz</span></div>
-    <button class="btn-logout" onclick="handleLogout()">
-      <i class="fas fa-power-off"></i> Thoát
-    </button>
-  </div>
+  <nav class="top-nav animate__animated animate__fadeInDown">
+    <div class="brand"><i class="fas fa-meteor"></i> NEBULA <span>QUIZ</span></div>
+    <div class="user-profile">
+      <div class="user-info-top">
+        <span class="user-name-top" id="topNavName">Đang tải...</span>
+        <span class="user-class-top" id="topNavClass">Lớp: ...</span>
+      </div>
+      <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+    </div>
+  </nav>
 
   <div class="container">
     <div class="box">
-      <h2 class="animate__animated animate__fadeInDown">
-        <i class="fas fa-rocket"></i> CHỌN BÀI THI
-      </h2>
-      <p class="welcome-text" id="welcomeMsg">Đang chuẩn bị hệ thống...</p>
+      <h2 class="animate__animated animate__fadeIn"><i class="fas fa-rocket"></i> HỆ THỐNG THI</h2>
+      <p class="welcome-text" id="welcomeMsg">Đang kết nối Nebula Server...</p>
 
-      <div id="testList">
-        <div class="loading-status">
-          <i class="fas fa-spinner fa-spin fa-2x"></i>
-          <p style="margin-top:10px; font-size: 0.9rem;">Đang tải danh sách bài thi...</p>
+      <div class="filter-section">
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchInput" placeholder="Tìm tên đề thi..." oninput="renderTests()">
         </div>
       </div>
 
+      <div id="testList">
+        <div class="skeleton"></div>
+        <div class="skeleton"></div>
+      </div>
+
       <div class="footer-actions">
-        <a href="name.html" class="btn-back">
-          <i class="fas fa-chevron-left"></i> Quay lại thông tin cá nhân
-        </a>
+        <a href="profile.html" class="btn-back"><i class="fas fa-arrow-left"></i> Hồ sơ cá nhân</a>
       </div>
     </div>
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf4LJfPW0pXSpegPOg03WxmtaebP6WnTwo3If2tLPr8NltxPyqd5LgtCtHgnq8Pxi4/exec"; 
+    // URL script của bạn
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWmPOYaxnzgxJG8sCuUvVvxRiWApSdArOq3bSBdI0BsRKOEAsUSCLP_VV6fCnQpE5r/exec";
+    
+    let allTests = [];
 
-    // Hiển thị lời chào từ localStorage
-    const studentName = localStorage.getItem("studentName") || "Học sinh";
-    document.getElementById("welcomeMsg").innerHTML = `Chào <b>${studentName}</b>, hãy chọn thử thách!`;
+    // Khởi tạo thông tin người dùng từ localStorage
+    function initUser() {
+      const name = localStorage.getItem("studentName") || "Học sinh";
+      const userClass = localStorage.getItem("studentClass") || "Tự do";
+      document.getElementById("topNavName").innerText = name;
+      document.getElementById("topNavClass").innerText = `Lớp: ${userClass}`;
+      document.getElementById("welcomeMsg").innerHTML = `Sẵn sàng chưa <b>${name}</b>?`;
+    }
 
+    // Lấy danh sách bài thi từ AppScript (Hành động: getTests)
     async function fetchTests() {
-      const listContainer = document.getElementById("testList");
       try {
         const response = await fetch(`${SCRIPT_URL}?action=getTests`);
-        const tests = await response.json();
-        
-        listContainer.innerHTML = "";
-        
-        if (!tests || tests.length === 0) {
-          listContainer.innerHTML = `
-            <div style="padding: 30px 0; opacity: 0.5;">
-              <i class="fas fa-inbox fa-3x"></i>
-              <p style="margin-top:10px">Hiện chưa có bài thi nào được mở.</p>
-            </div>`;
-          return;
-        }
-
-        tests.forEach((test, index) => {
-          const card = document.createElement("div");
-          card.className = `test-card animate__animated animate__fadeInUp`;
-          card.style.animationDelay = `${index * 0.1}s`;
-          
-          card.innerHTML = `
-            <div class="test-info">
-              <span class="test-name">${test.name}</span>
-              <div class="test-meta">
-                <span><i class="far fa-clock"></i> ${test.duration || 45} phút</span>
-                <span><i class="fas fa-star" style="color:#ffcc00"></i> Sẵn Sàng</span>
-              </div>
-            </div>
-            <div class="play-icon">
-              <i class="fas fa-play"></i>
-            </div>
-          `;
-
-          card.onclick = () => confirmLaunch(test);
-          listContainer.appendChild(card);
-        });
-
-      } catch (error) {
-        listContainer.innerHTML = `<div style="color: #ff4757; padding: 30px 0;"><p>Lỗi kết nối máy chủ!</p></div>`;
+        allTests = await response.json();
+        renderTests();
+      } catch (err) {
+        document.getElementById("testList").innerHTML = `<p style="text-align:center;color:#ff4757">Lỗi tải dữ liệu!</p>`;
       }
     }
 
-    function confirmLaunch(test) {
-      Swal.fire({
-        title: 'Bắt đầu bài thi?',
-        html: `
-          <div style="text-align: left; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 12px; font-size: 0.95rem;">
-            <p style="margin-bottom: 8px;"><i class="fas fa-file-signature" style="color:var(--primary)"></i> <b>Đề bài:</b> ${test.name}</p>
-            <p style="margin-bottom: 8px;"><i class="fas fa-stopwatch" style="color:var(--primary)"></i> <b>Thời gian:</b> ${test.duration || 45} phút</p>
-            <p style="color: #ff9f43; font-size: 0.85rem;"><i class="fas fa-exclamation-triangle"></i> <i>Lưu ý: Không tải lại trang sau khi bắt đầu.</i></p>
+    // Hiển thị danh sách (có lọc tìm kiếm)
+    function renderTests() {
+      const list = document.getElementById("testList");
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      list.innerHTML = "";
+
+      const filtered = allTests.filter(t => t.name.toLowerCase().includes(search));
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<p style="text-align:center; opacity:0.5; padding:20px;">Không tìm thấy đề thi nào</p>`;
+        return;
+      }
+
+      filtered.forEach((test, i) => {
+        const card = document.createElement("div");
+        card.className = "test-card animate__animated animate__fadeInUp";
+        card.style.animationDelay = `${i * 0.1}s`;
+        card.innerHTML = `
+          <div class="test-info">
+            <span class="test-name">${test.name}</span>
+            <div class="test-meta">
+              <span><i class="far fa-clock"></i> ${test.duration}p</span>
+              <span><i class="fas fa-list-ol"></i> ${test.qCount} câu</span>
+              <span><i class="fas fa-star"></i> Max: ${test.maxScore}đ</span>
+            </div>
           </div>
-        `,
+          <div class="play-btn"><i class="fas fa-chevron-right"></i></div>
+        `;
+        card.onclick = () => confirmLaunch(test);
+        list.appendChild(card);
+      });
+    }
+
+    // Xác nhận vào thi
+    function confirmLaunch(test) {
+      if (test.qCount === 0) {
+        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Đề thi này chưa có câu hỏi!', background: '#131c2f', color: '#fff' });
+        return;
+      }
+
+      Swal.fire({
+        title: 'BẮT ĐẦU THI?',
+        html: `<div style="text-align:left; font-size:0.9rem; opacity:0.8">
+                <p>Bài thi: <b>${test.name}</b></p>
+                <p>Thời gian: <b>${test.duration} phút</b></p>
+                <p>Số câu hỏi: <b>${test.qCount} câu</b></p>
+               </div>`,
         icon: 'question',
         showCancelButton: true,
+        confirmButtonText: 'VÀO THI',
+        cancelButtonText: 'HỦY',
         confirmButtonColor: '#4facfe',
-        cancelButtonColor: '#334155',
-        confirmButtonText: 'BẮT ĐẦU NGAY',
-        cancelButtonText: 'ĐỂ SAU',
-        background: '#1e293b',
-        color: '#fff',
-        customClass: {
-          popup: 'animate__animated animate__zoomIn'
-        }
-      }).then((result) => {
-        if (result.isConfirmed) {
+        background: '#131c2f',
+        color: '#fff'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          // Lưu thông tin bài thi hiện tại để trang Quiz sử dụng
           localStorage.setItem("currentTestId", test.id);
           localStorage.setItem("currentTestName", test.name);
-          localStorage.setItem("currentTestDuration", test.duration || 45);
-          
-          Swal.fire({
-            title: 'ĐANG TẢI ĐỀ...',
-            timer: 1000,
-            showConfirmButton: false,
-            background: '#1e293b',
-            color: '#fff',
-            didOpen: () => { Swal.showLoading(); }
-          }).then(() => {
-            window.location.href = "quiz.html";
-          });
+          localStorage.setItem("currentTestDuration", test.duration);
+          window.location.href = "quiz.html";
         }
       });
     }
 
     function handleLogout() {
       Swal.fire({
-        title: 'Đăng xuất?',
-        text: "Bạn sẽ thoát khỏi hệ thống Nebula.",
+        title: 'Bạn muốn đăng xuất?',
+        text: "Tất cả phiên làm việc sẽ bị kết thúc.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ff4757',
         confirmButtonText: 'ĐĂNG XUẤT',
-        background: '#1e293b',
-        color: '#fff',
+        background: '#131c2f', color: '#fff'
       }).then((result) => {
         if (result.isConfirmed) {
           localStorage.clear();
@@ -280,8 +270,11 @@
       });
     }
 
-    // Khởi chạy khi trang load
-    fetchTests();
+    // Khởi chạy khi tải trang
+   window.onload = () => {
+      initUser();
+      fetchTests();
+    };
   </script>
 </body>
 </html>

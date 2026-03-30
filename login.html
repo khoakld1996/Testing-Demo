@@ -14,7 +14,26 @@
       --primary: #4facfe; --secondary: #00f2fe; --accent: #00ffcc;
       --glass-bg: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.15);
       --text-main: #ffffff;
+      --swal-bg: rgba(15, 25, 45, 0.9);
     }
+
+    /* TÙY CHỈNH POPUP SWEETALERT2 CHO GIỐNG GIAO DIỆN NEBULA */
+    .swal2-popup {
+      background: var(--swal-bg) !important;
+      backdrop-filter: blur(20px) !important;
+      border: 1px solid var(--glass-border) !important;
+      border-radius: 25px !important;
+      color: #fff !important;
+    }
+    .swal2-title { color: #fff !important; font-weight: 800 !important; text-transform: uppercase; }
+    .swal2-html-container { color: rgba(255,255,255,0.8) !important; }
+    .swal2-confirm {
+      background: linear-gradient(135deg, var(--primary), #0072ff) !important;
+      border-radius: 12px !important;
+      font-weight: 700 !important;
+      padding: 12px 30px !important;
+    }
+    .swal2-timer-progress-bar { background: var(--accent) !important; }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
@@ -134,14 +153,24 @@
 </div>
 
 <script>
-  // URL WEB APP (Đảm bảo đây là bản Deploy mới nhất)
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyf4LJfPW0pXSpegPOg03WxmtaebP6WnTwo3If2tLPr8NltxPyqd5LgtCtHgnq8Pxi4/exec";
-  
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWmPOYaxnzgxJG8sCuUvVvxRiWApSdArOq3bSBdI0BsRKOEAsUSCLP_VV6fCnQpE5r/exec";
   const params = new URLSearchParams(window.location.search);
   const roleFromUrl = params.get('role') || 'admin'; 
   
   let isRegisterMode = false;
   let isSubmitting = false;
+
+  // Cấu hình Popup Toast mặc định
+  const Toast = Swal.mixin({
+    toast: false,
+    position: 'center',
+    showConfirmButton: true,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+  });
 
   window.onload = () => {
     const header = document.getElementById('formHeader');
@@ -151,17 +180,13 @@
     } else {
       header.innerHTML = '<i class="fas fa-user-shield"></i> QUẢN TRỊ VIÊN';
     }
-    // Focus vào ô tài khoản khi load trang
     document.getElementById('user').focus();
   };
 
-  // --- LẮNG NGHE PHÍM ENTER ---
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault(); // Tránh reload trang ngoài ý muốn
-      if (!isSubmitting) {
-        handleAction(isRegisterMode ? 'register' : 'login');
-      }
+    if (e.key === 'Enter' && !isSubmitting) {
+      e.preventDefault();
+      handleAction(isRegisterMode ? 'register' : 'login');
     }
   });
 
@@ -171,28 +196,26 @@
     document.getElementById('loginForm').classList.toggle('hidden', showReg);
     document.getElementById('registerForm').classList.toggle('hidden', !showReg);
     document.getElementById('formHeader').innerHTML = showReg ? '<i class="fas fa-edit"></i> ĐĂNG KÝ MỚI' : (roleFromUrl === 'student' ? '<i class="fas fa-user-graduate"></i> HỌC SINH' : '<i class="fas fa-user-shield"></i> QUẢN TRỊ VIÊN');
-    
-    // Focus tự động khi chuyển form
-    if(showReg) {
-        document.getElementById('regFullName').focus();
-    } else {
-        document.getElementById('user').focus();
-    }
+    if(showReg) document.getElementById('regFullName').focus();
+    else document.getElementById('user').focus();
   }
 
   async function handleAction(action) {
     if (isSubmitting) return;
 
-    // Lấy dữ liệu từ giao diện
     const userVal = action === 'login' ? document.getElementById('user').value.trim() : document.getElementById('regUser').value.trim();
     const passVal = action === 'login' ? document.getElementById('pass').value.trim() : document.getElementById('regPass').value.trim();
 
     if (!userVal || !passVal) {
-      Swal.fire({ icon: 'warning', title: 'Thiếu dữ liệu!', text: 'Vui lòng điền đầy đủ thông tin ✍️' });
+      Swal.fire({
+        icon: 'warning',
+        title: 'Thiếu thông tin!',
+        text: 'Vui lòng nhập đầy đủ các trường yêu cầu ✨',
+        showClass: { popup: 'animate__animated animate__headShake' }
+      });
       return;
     }
 
-    // Hiệu ứng Loading
     isSubmitting = true;
     const currentBtn = action === 'login' ? document.getElementById('btnLogin') : document.getElementById('btnReg');
     currentBtn.disabled = true;
@@ -212,11 +235,7 @@
         formData.append("school", document.getElementById('regSchool').value.trim());
       }
 
-      const response = await fetch(SCRIPT_URL, {
-        method: 'POST',
-        body: formData
-      });
-
+      const response = await fetch(SCRIPT_URL, { method: 'POST', body: formData });
       const result = await response.json();
 
       if (result.status === "success") {
@@ -225,23 +244,48 @@
           localStorage.setItem('studentName', result.name);
           localStorage.setItem('username', userVal); 
 
-          Swal.fire({ icon: 'success', title: 'Chào mừng!', text: 'Xin chào ' + result.name, timer: 1500, showConfirmButton: false });
+          Swal.fire({
+            icon: 'success',
+            title: 'CHÀO MỪNG TRỞ LẠI!',
+            html: `Hệ thống Nebula xin chào học sinh: <b style="color:var(--primary)">${result.name}</b>`,
+            timer: 2000,
+            showConfirmButton: false,
+            timerProgressBar: true,
+            showClass: { popup: 'animate__animated animate__zoomIn' }
+          });
+
           setTimeout(() => { 
             window.location.href = result.role === 'admin' ? "dashboard.html" : "name.html"; 
-          }, 1500);
+          }, 2000);
         } else {
-          Swal.fire({ icon: 'success', title: 'Thành công!', text: 'Yêu cầu đăng ký đã được gửi. Vui lòng chờ admin duyệt.' }).then(() => toggleForm(false));
+          Swal.fire({
+            icon: 'success',
+            title: 'GỬI THÀNH CÔNG!',
+            text: 'Yêu cầu của bạn đã được gửi. Hãy kiên nhẫn đợi quản trị viên phê duyệt nhé!',
+            confirmButtonText: 'ĐÃ HIỂU'
+          }).then(() => toggleForm(false));
         }
       } else if (result.status === "pending") {
-        Swal.fire({ icon: 'info', title: 'Chờ duyệt', text: 'Tài khoản của bạn đang chờ quản trị viên kích hoạt.' });
+        Swal.fire({
+          icon: 'info',
+          title: 'ĐANG CHỜ DUYỆT',
+          text: 'Tài khoản của bạn đã có trên hệ thống nhưng chưa được kích hoạt bởi quản trị viên.',
+          confirmButtonText: 'ĐÃ HIỂU'
+        });
       } else {
-        Swal.fire({ icon: 'error', title: 'Lỗi', text: result.message || 'Sai tài khoản hoặc mật khẩu' });
+        Swal.fire({
+          icon: 'error',
+          title: 'TRUY CẬP THẤT BẠI',
+          text: result.message || 'Thông tin đăng nhập không chính xác. Vui lòng kiểm tra lại!',
+          confirmButtonText: 'THỬ LẠI',
+          showClass: { popup: 'animate__animated animate__shakeX' }
+        });
         document.getElementById('mainBox').classList.add('shake');
         setTimeout(() => document.getElementById('mainBox').classList.remove('shake'), 400);
       }
     } catch (error) {
       console.error(error);
-      Swal.fire({ icon: 'error', title: 'Lỗi mạng', text: 'Không thể kết nối máy chủ Nebula!' });
+      Swal.fire({ icon: 'error', title: 'LỖI KẾT NỐI', text: 'Không thể liên lạc với máy chủ Nebula!' });
     } finally {
       isSubmitting = false;
       currentBtn.disabled = false;

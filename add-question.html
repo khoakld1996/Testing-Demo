@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nebula - Thiết Kế & Đồng Bộ Câu Hỏi</title>
+  
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -12,14 +13,14 @@
     :root {
       --primary: #448aff; --secondary: #00e676; --accent: #7c4dff;
       --glass: rgba(10, 15, 28, 0.9); --border: rgba(255, 255, 255, 0.1);
-      --text: #ffffff;
+      --text: #ffffff; --input-bg: rgba(0, 0, 0, 0.4);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
     body {
       min-height: 100vh;
-      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
-                  url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center;
-      background-size: cover; background-attachment: fixed; color: var(--text);
+      background: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), 
+                  url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
+      background-size: cover; color: var(--text);
       display: flex; justify-content: center; padding: 40px 20px;
     }
     .container { width: 100%; max-width: 950px; }
@@ -27,6 +28,8 @@
       background: var(--glass); backdrop-filter: blur(25px); border: 1px solid var(--border);
       border-radius: 30px; padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
     }
+
+    /* Header Navigation */
     .nav-header {
       display: flex; justify-content: space-between; align-items: center;
       margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
@@ -37,124 +40,162 @@
       display: flex; align-items: center; justify-content: center;
     }
     .btn-nav:hover { background: var(--primary); transform: translateY(-2px); }
+    
     h2 { 
       font-size: 1.6rem; text-align: center; margin-bottom: 25px; letter-spacing: 2px;
       background: linear-gradient(to right, #90caf9, #00e5ff);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800;
     }
+
+    /* Grid Settings */
     .setup-grid {
       display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 15px; background: rgba(68, 138, 255, 0.1); border: 1px solid rgba(68, 138, 255, 0.2);
       padding: 20px; border-radius: 20px; margin-bottom: 25px;
     }
+
     .form-group { margin-bottom: 25px; }
-    label { display: block; margin-bottom: 10px; font-size: 0.75rem; color: #90caf9; text-transform: uppercase; font-weight: 700; }
+    label { display: block; margin-bottom: 10px; font-size: 0.75rem; color: #90caf9; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; }
+    
     .input-control {
       width: 100%; padding: 15px 20px; border-radius: 16px; border: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.4); color: white; outline: none; transition: 0.3s;
+      background: var(--input-bg); color: white; outline: none; transition: 0.3s;
     }
+    .input-control:focus { border-color: var(--primary); background: rgba(0,0,0,0.6); box-shadow: 0 0 15px rgba(68, 138, 255, 0.2); }
+
+    /* Dynamic Rows */
     .ans-row {
       display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
       background: rgba(255, 255, 255, 0.04); padding: 12px; border-radius: 16px;
+      border: 1px solid transparent; transition: 0.3s;
     }
+    .ans-row:hover { border-color: rgba(68, 138, 255, 0.3); background: rgba(255, 255, 255, 0.07); }
+
     .btn-add {
-      background: rgba(68, 138, 255, 0.1); color: var(--primary); padding: 8px 15px;
-      border-radius: 10px; border: 1px dashed var(--primary); cursor: pointer; font-weight: 700;
+      background: rgba(68, 138, 255, 0.1); color: var(--primary); padding: 8px 18px;
+      border-radius: 12px; border: 1px dashed var(--primary); cursor: pointer; font-weight: 700;
+      transition: 0.3s;
     }
+    .btn-add:hover { background: var(--primary); color: white; }
+
     .btn-save {
       width: 100%; padding: 20px; border-radius: 20px; border: none; margin-top: 30px;
       background: linear-gradient(135deg, var(--primary), var(--accent));
       color: white; font-weight: 800; cursor: pointer; transition: 0.4s;
       text-transform: uppercase; letter-spacing: 2px;
     }
+    .btn-save:hover { filter: brightness(1.2); transform: scale(1.01); box-shadow: 0 15px 30px rgba(68, 138, 255, 0.4); }
+
+    /* Media Preview */
     .preview-box {
-      width: 80px; height: 80px; border-radius: 12px; border: 2px solid var(--primary);
+      width: 100px; height: 100px; border-radius: 15px; border: 2px solid var(--primary);
       overflow: hidden; display: none; position: relative; flex-shrink: 0;
+      animation: zoomIn 0.3s ease;
     }
     .preview-box img { width: 100%; height: 100%; object-fit: cover; }
-    .badge-info { font-size: 0.75rem; color: #00e676; margin-top: 8px; display: block; }
+    .btn-clear-img {
+      position: absolute; top: 5px; right: 5px; background: rgba(255, 0, 0, 0.7);
+      border: none; color: white; width: 22px; height: 22px; border-radius: 50%; cursor: pointer;
+    }
+
+    .correct-area {
+      margin-top: 20px; padding: 20px; border-radius: 20px;
+      background: rgba(0, 230, 118, 0.05); border: 1px solid rgba(0, 230, 118, 0.2);
+    }
+    .badge-info { font-size: 0.75rem; color: #00e676; margin-top: 8px; display: block; font-style: italic; }
   </style>
 </head>
 <body>
 
 <div class="container animate__animated animate__fadeIn">
   <div class="glass-panel">
+    <!-- Điều hướng -->
     <div class="nav-header">
-      <button class="btn-nav" onclick="location.href='question-list.html'"><i class="fas fa-arrow-left"></i></button>
-      <div id="testInfo" style="font-weight: 800; color: #90caf9; font-size: 0.9rem;">BÀI THI: ĐANG TẢI...</div>
-      <button class="btn-nav" onclick="location.href='dashboard.html'"><i class="fas fa-home"></i></button>
+      <button class="btn-nav" title="Quay lại" onclick="location.href='question-list.html'"><i class="fas fa-arrow-left"></i></button>
+      <div id="testInfo" style="font-weight: 800; color: #90caf9;">BÀI THI: ĐANG TẢI...</div>
+      <button class="btn-nav" title="Trang chủ" onclick="location.href='dashboard.html'"><i class="fas fa-home"></i></button>
     </div>
 
-    <h2 id="pageTitle"><i class="fas fa-sync-alt"></i> THIẾT KẾ & ĐỒNG BỘ</h2>
+    <h2 id="pageTitle"><i class="fas fa-atom"></i> THIẾT KẾ CÂU HỎI NEBULA</h2>
 
+    <!-- Thiết lập chung -->
     <div class="setup-grid">
       <div>
-        <label><i class="fas fa-clock"></i> Thời gian toàn bài (Phút)</label>
-        <input type="number" id="testTime" class="input-control" value="15" min="1">
+        <label><i class="fas fa-hourglass-half"></i> Thời gian (Phút)</label>
+        <input type="number" id="testTime" class="input-control" value="15">
       </div>
       <div>
-        <label><i class="fas fa-star"></i> Chế độ điểm</label>
+        <label><i class="fas fa-chart-pie"></i> Cách tính điểm</label>
         <select id="scoreMode" class="input-control" onchange="toggleScoreUI()">
           <option value="equal">Chia đều tổng điểm</option>
-          <option value="custom">Tùy chỉnh từng câu</option>
+          <option value="custom">Tùy chỉnh điểm riêng</option>
         </select>
       </div>
       <div id="boxTotalScore">
-        <label><i class="fas fa-bullseye"></i> Tổng điểm bài thi</label>
-        <input type="number" id="totalScore" class="input-control" value="10" min="1" oninput="calculatePreviewPoints()">
-        <span id="scorePreview" class="badge-info">Đang tính toán...</span>
+        <label>Tổng điểm bài thi</label>
+        <input type="number" id="totalScore" class="input-control" value="10" oninput="calculatePreviewPoints()">
+        <span id="scorePreview" class="badge-info"></span>
       </div>
       <div id="boxPoint" style="display: none;">
-        <label><i class="fas fa-check-double"></i> Điểm câu này</label>
-        <input type="number" id="qPoint" class="input-control" value="1" step="0.1" min="0">
+        <label>Điểm cho câu này</label>
+        <input type="number" id="qPoint" class="input-control" value="1" step="0.1">
       </div>
     </div>
     
+    <!-- Nội dung câu hỏi -->
     <div class="form-group">
       <label>Nội dung câu hỏi</label>
-      <textarea id="qText" class="input-control" rows="3" placeholder="Nhập câu hỏi..."></textarea>
+      <textarea id="qText" class="input-control" rows="3" placeholder="Nhập câu hỏi tại đây..."></textarea>
     </div>
 
+    <!-- Media (Ảnh) -->
     <div class="form-group">
-      <label>Hình ảnh minh họa</label>
-      <div style="display:flex; gap:15px; align-items: center; background: rgba(255,255,255,0.03); padding:15px; border-radius:18px;">
+      <label>Ảnh minh họa (Tùy chọn)</label>
+      <div style="display:flex; gap:15px; align-items: center; background: rgba(255,255,255,0.03); padding:15px; border-radius:20px; border: 1px dashed var(--border);">
         <div id="qPrevBox" class="preview-box">
           <img id="qPrevImg" src="">
-          <button style="position:absolute; top:0; right:0; background:red; color:white; border:none; border-radius:50%; width:20px; height:20px; cursor:pointer" onclick="clearMedia()">×</button>
+          <button class="btn-clear-img" onclick="clearMedia()">×</button>
         </div>
-        <input type="text" id="qUrl" class="input-control" style="flex:1" placeholder="Link ảnh HTTPS..." oninput="handleLinkInput(this.value)">
-        <label class="btn-nav"><i class="fas fa-upload"></i><input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)"></label>
+        <input type="text" id="qUrl" class="input-control" style="flex:1" placeholder="Dán link ảnh (https://...)" oninput="handleLinkInput(this.value)">
+        <label class="btn-nav" title="Tải ảnh lên"><i class="fas fa-camera"></i><input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)"></label>
         <input type="hidden" id="qData">
       </div>
     </div>
 
+    <!-- Loại câu hỏi -->
     <div class="form-group">
       <label>Dạng câu hỏi</label>
       <select id="qType" class="input-control" onchange="renderEditor()">
-        <option value="single">Trắc nghiệm (1 đáp án)</option>
-        <option value="multiple">Trắc nghiệm (Nhiều đáp án)</option>
-        <option value="tf">Đúng / Sai</option>
-        <option value="matching">Ghép nối vế</option>
-        <option value="ordering">Sắp xếp thứ tự</option>
-        <option value="fill">Điền khuyết</option>
+        <option value="single">Một đáp án đúng (Radio)</option>
+        <option value="multiple">Nhiều đáp án đúng (Checkbox)</option>
+        <option value="tf">Đúng / Sai (True-False)</option>
+        <option value="matching">Ghép cặp tương ứng</option>
+        <option value="ordering">Sắp xếp theo thứ tự</option>
+        <option value="fill">Điền khuyết / Tự luận ngắn</option>
       </select>
     </div>
 
+    <!-- Đáp án -->
     <div id="answerArea">
       <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-        <label style="margin:0;">Cấu hình đáp án</label>
-        <button id="addBtn" class="btn-add" onclick="addRow()">+ Thêm dòng</button>
+        <label id="ansLabel" style="margin:0;">Thiết lập đáp án</label>
+        <button id="addBtn" class="btn-add" onclick="addRow()">+ Thêm phương án</button>
       </div>
       <div id="ansList"></div>
     </div>
 
-    <button id="saveBtn" class="btn-save" onclick="saveData()">LƯU & ĐỒNG BỘ TOÀN BÀI</button>
+    <!-- Output Cột K -->
+    <div class="correct-area animate__animated animate__fadeIn">
+      <label style="color: var(--secondary);"><i class="fas fa-fingerprint"></i> Dữ liệu chấm điểm </label>
+      <input type="text" id="finalCorrect" class="input-control" readonly style="border-color: var(--secondary); color: var(--secondary); font-weight: bold; background: rgba(0,230,118,0.05);" placeholder="Hệ thống sẽ tự tạo mã chấm điểm...">
+    </div>
+
+    <button id="saveBtn" class="btn-save" onclick="saveData()">ĐỒNG BỘ LÊN CLOUD HỆ THỐNG</button>
   </div>
 </div>
 
 <script>
-// --- PHẦN CẤU HÌNH ---
-const API_URL = "https://script.google.com/macros/s/AKfycbyf4LJfPW0pXSpegPOg03WxmtaebP6WnTwo3If2tLPr8NltxPyqd5LgtCtHgnq8Pxi4/exec"; // Sẽ thay sau khi gửi Code.gs
+const API_URL = "https://script.google.com/macros/s/AKfycbxWmPOYaxnzgxJG8sCuUvVvxRiWApSdArOq3bSBdI0BsRKOEAsUSCLP_VV6fCnQpE5r/exec"; 
 let isEditMode = false;
 let originalQuestionText = ""; 
 let currentQuestionCount = 0;
@@ -162,136 +203,125 @@ let currentQuestionCount = 0;
 window.onload = async () => {
     const testData = JSON.parse(localStorage.getItem("currentTest"));
     if (!testData) return location.href = 'dashboard.html';
-    
     document.getElementById("testInfo").innerText = "BÀI THI: " + testData.name.toUpperCase();
     
-    // Kiểm tra xem là Sửa hay Thêm mới
     const editDataString = localStorage.getItem("editQuestionData");
     if (editDataString && editDataString !== "null") {
         isEditMode = true;
         const editData = JSON.parse(editDataString);
         originalQuestionText = editData.question;
-        document.getElementById("pageTitle").innerHTML = '<i class="fas fa-edit"></i> CHỈNH SỬA CÂU HỎI';
+        document.getElementById("pageTitle").innerHTML = '<i class="fas fa-pen-nib"></i> CẬP NHẬT CÂU HỎI';
         fillEditData(editData);
     } else {
         renderEditor();
     }
-
-    // Lấy số câu hiện có để tính điểm
     await fetchQuestionStats(testData.id);
 };
 
-async function fetchQuestionStats(testId) {
-    try {
-        const resp = await fetch(`${API_URL}?action=getQuestions&testId=${testId}`);
-        const data = await resp.json();
-        currentQuestionCount = Array.isArray(data) ? data.filter(q => q.question.trim() !== "").length : 0;
-        
-        if(currentQuestionCount > 0) {
-            const sample = data[0];
-            document.getElementById("testTime").value = sample.testTime || 15;
-            document.getElementById("scoreMode").value = sample.scoreMode || "equal";
-            document.getElementById("totalScore").value = sample.totalScore || 10;
-            toggleScoreUI();
-        }
-        calculatePreviewPoints();
-    } catch (e) { console.error("Lỗi tải thông số:", e); }
-}
-
-function calculatePreviewPoints() {
-    const total = parseFloat(document.getElementById("totalScore").value) || 0;
-    // Nếu đang SỬA, số câu giữ nguyên. Nếu THÊM MỚI, số câu = hiện tại + 1
-    let totalInFuture = isEditMode ? currentQuestionCount : (currentQuestionCount + 1);
-    if (totalInFuture <= 0) totalInFuture = 1;
-
-    const perQ = (total / totalInFuture).toFixed(2);
-    const label = isEditMode ? "Số câu hiện tại" : "Số câu sau khi thêm";
-    
-    document.getElementById("scorePreview").innerHTML = 
-        `<i class="fas fa-info-circle"></i> ${label}: <b>${totalInFuture}</b>. Dự kiến: ~ <b>${perQ}</b> điểm/câu.`;
-}
-
-function toggleScoreUI() {
-    const mode = document.getElementById("scoreMode").value;
-    document.getElementById("boxTotalScore").style.display = (mode === "equal") ? "block" : "none";
-    document.getElementById("boxPoint").style.display = (mode === "custom") ? "block" : "none";
-}
-
+// Khởi tạo Editor dựa trên loại câu hỏi
 function renderEditor() {
-    if (isEditMode) return;
     const type = document.getElementById("qType").value;
     const list = document.getElementById("ansList");
     list.innerHTML = "";
+    
     document.getElementById("addBtn").style.display = (["tf", "fill"].includes(type)) ? "none" : "block";
     
     if (type === "tf") {
-        list.innerHTML = `<div class="ans-row"><select id="tfCorrect" class="input-control"><option value="Đúng">ĐÚNG</option><option value="Sai">SAI</option></select></div>`;
+        list.innerHTML = `
+            <div class="ans-row">
+                <i class="fas fa-question-circle" style="color:var(--primary)"></i>
+                <select id="tfCorrect" class="input-control" onchange="updateCorrectStr()">
+                    <option value="Đúng">LỰA CHỌN: ĐÚNG (TRUE)</option>
+                    <option value="Sai">LỰA CHỌN: SAI (FALSE)</option>
+                </select>
+            </div>`;
     } else if (type === "fill") {
-        list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Đáp án đúng...">`;
+        list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Nhập đáp án đúng chính xác..." oninput="updateCorrectStr()">`;
     } else {
-        addRow(); addRow();
+        addRow(); addRow(); 
     }
+    updateCorrectStr();
 }
 
+// Thêm dòng đáp án mới
 function addRow(data = null) {
     const type = document.getElementById("qType").value;
     const list = document.getElementById("ansList");
     const div = document.createElement("div");
-    div.className = "ans-row animate__animated animate__fadeInUp";
+    div.className = "ans-row animate__animated animate__fadeInRight";
     
+    let html = "";
     if (type === "single" || type === "multiple") {
         const inputType = (type === "single") ? "radio" : "checkbox";
-        div.innerHTML = `
-            <input type="${inputType}" name="ansMark" class="is-correct" ${data?.isCorrect ? 'checked' : ''}>
-            <input type="text" class="ans-text input-control" placeholder="Đáp án..." value="${data?.text || ''}">
-            <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+        html = `
+            <input type="${inputType}" name="ansMark" class="is-correct" ${data?.isCorrect ? 'checked' : ''} onchange="updateCorrectStr()">
+            <input type="text" class="ans-text input-control" placeholder="Nội dung đáp án..." value="${data?.text || ''}" oninput="updateCorrectStr()">`;
     } else if (type === "matching") {
-        div.innerHTML = `
-            <input type="text" class="l-val input-control" placeholder="Vế Trái" value="${data?.left || ''}">
-            <input type="text" class="r-val input-control" placeholder="Vế Phải" value="${data?.right || ''}">
-            <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+        html = `
+            <input type="text" class="l-val input-control" placeholder="Vế A" value="${data?.left || ''}" oninput="updateCorrectStr()">
+            <i class="fas fa-arrows-alt-h" style="color:var(--primary)"></i>
+            <input type="text" class="r-val input-control" placeholder="Vế B" value="${data?.right || ''}" oninput="updateCorrectStr()">`;
     } else if (type === "ordering") {
-        div.innerHTML = `
-            <input type="text" class="ord-val input-control" placeholder="Thứ tự..." value="${data?.text || ''}">
-            <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+        html = `
+            <span style="color:var(--primary); font-weight:bold;">#</span>
+            <input type="text" class="ord-val input-control" placeholder="Bước thực hiện..." value="${data?.text || ''}" oninput="updateCorrectStr()">`;
     }
+    
+    div.innerHTML = html + `<i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer; margin-left:10px;" onclick="this.parentElement.remove(); updateCorrectStr();"></i>`;
     list.appendChild(div);
 }
 
-function fillEditData(data) {
-    document.getElementById("qText").value = data.question || "";
-    document.getElementById("qType").value = data.type || "single";
-    if(data.image) updatePreview(data.image);
-    
-    const list = document.getElementById("ansList");
-    list.innerHTML = "";
-    const ansObj = typeof data.answer === 'string' ? JSON.parse(data.answer) : data.answer;
+// Xử lý Cột K (Đáp án chấm điểm)
+function updateCorrectStr() {
+    const type = document.getElementById("qType").value;
+    let result = "";
 
-    if (data.type === "tf") {
-        list.innerHTML = `<div class="ans-row"><select id="tfCorrect" class="input-control"><option value="Đúng">ĐÚNG</option><option value="Sai">SAI</option></select></div>`;
-        document.getElementById("tfCorrect").value = ansObj.correct || "Đúng";
-    } else if (data.type === "fill") {
-        list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Đáp án đúng..." value="${ansObj.correct || ''}">`;
-    } else if (ansObj.items) {
-        ansObj.items.forEach(it => addRow(it));
+    if (type === "tf") {
+        result = document.getElementById("tfCorrect").value;
+    } else if (type === "fill") {
+        result = document.getElementById("fillAns").value;
+    } else {
+        let parts = [];
+        document.querySelectorAll(".ans-row").forEach(row => {
+            if (type === "single" || type === "multiple") {
+                if (row.querySelector(".is-correct").checked) {
+                    const txt = row.querySelector(".ans-text").value.trim();
+                    if(txt) parts.push(txt);
+                }
+            } else if (type === "matching") {
+                const l = row.querySelector(".l-val").value.trim();
+                const r = row.querySelector(".r-val").value.trim();
+                if(l && r) parts.push(`${l}-${r}`);
+            } else if (type === "ordering") {
+                const txt = row.querySelector(".ord-val").value.trim();
+                if(txt) parts.push(txt);
+            }
+        });
+        result = parts.join("|");
     }
+    document.getElementById("finalCorrect").value = result;
 }
 
+// Lưu dữ liệu
 async function saveData() {
     const btn = document.getElementById("saveBtn");
     const testData = JSON.parse(localStorage.getItem("currentTest"));
     const question = document.getElementById("qText").value.trim();
-    if (!question) return Swal.fire("Lỗi", "Nhập câu hỏi!", "error");
+    const correct = document.getElementById("finalCorrect").value.trim();
+
+    if (!question) return Swal.fire("Lỗi", "Câu hỏi không được bỏ trống!", "error");
+    if (!correct && document.getElementById("qType").value !== "fill") {
+        return Swal.fire("Chưa chọn đáp án", "Vui lòng thiết lập ít nhất 1 đáp án đúng!", "warning");
+    }
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG ĐỒNG BỘ...';
+    btn.innerHTML = '<i class="fas fa-meteor fa-spin"></i> ĐANG ĐẨY DỮ LIỆU...';
 
+    // Đóng gói Answer JSON (Cột E)
     const type = document.getElementById("qType").value;
     let payloadAnswers = { items: [] };
-
-    if (type === "tf") payloadAnswers.correct = document.getElementById("tfCorrect").value;
-    else if (type === "fill") payloadAnswers.correct = document.getElementById("fillAns").value;
-    else {
+    
+    if (!["tf", "fill"].includes(type)) {
         document.querySelectorAll(".ans-row").forEach(row => {
             if (type === "single" || type === "multiple") 
                 payloadAnswers.items.push({ text: row.querySelector(".ans-text").value, isCorrect: row.querySelector(".is-correct").checked });
@@ -313,39 +343,99 @@ async function saveData() {
         question: question,
         oldQuestion: isEditMode ? originalQuestionText : "",
         image: document.getElementById("qData").value || document.getElementById("qUrl").value,
-        answer: JSON.stringify(payloadAnswers)
+        answer: JSON.stringify(payloadAnswers),
+        correct: correct
     };
 
     try {
         await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(finalData) });
-        Swal.fire({ icon: 'success', title: 'ĐÃ ĐỒNG BỘ', timer: 1200, showConfirmButton: false });
+        Swal.fire({ icon: 'success', title: 'THÀNH CÔNG', text: 'Câu hỏi đã được đồng bộ hóa!', timer: 2000, showConfirmButton: false });
         localStorage.removeItem("editQuestionData");
-        setTimeout(() => location.href = 'question-list.html', 1300);
+        setTimeout(() => location.href = 'question-list.html', 2100);
     } catch (err) {
-        Swal.fire("Lỗi", "Lỗi kết nối!", "error");
+        Swal.fire("Lỗi kết nối", "Hệ thống Cloud bận, vui lòng thử lại!", "error");
         btn.disabled = false;
-        btn.innerText = "LƯU & ĐỒNG BỘ TOÀN BÀI";
+        btn.innerText = "THỬ LẠI NGAY";
     }
 }
 
-// Media Helpers
+/* --- Các hàm hỗ trợ --- */
+
+function fillEditData(data) {
+    document.getElementById("qText").value = data.question || "";
+    document.getElementById("qType").value = data.type || "single";
+    if(data.image) updatePreview(data.image);
+    
+    const list = document.getElementById("ansList");
+    list.innerHTML = "";
+    
+    let ansObj = { items: [] };
+    try { ansObj = (typeof data.answer === 'string') ? JSON.parse(data.answer) : data.answer; } catch(e){}
+
+    if (data.type === "tf") {
+        renderEditor();
+        document.getElementById("tfCorrect").value = data.correct || "Đúng";
+    } else if (data.type === "fill") {
+        renderEditor();
+        document.getElementById("fillAns").value = data.correct || "";
+    } else if (ansObj && ansObj.items) {
+        ansObj.items.forEach(it => addRow(it));
+    }
+    updateCorrectStr();
+}
+
+async function fetchQuestionStats(testId) {
+    try {
+        const resp = await fetch(`${API_URL}?action=getQuestions&testId=${testId}`);
+        const data = await resp.json();
+        currentQuestionCount = Array.isArray(data) ? data.length : 0;
+        if(currentQuestionCount > 0) {
+            const s = data[0];
+            document.getElementById("testTime").value = s.testTime || 15;
+            document.getElementById("scoreMode").value = s.scoreMode || "equal";
+            document.getElementById("totalScore").value = s.totalScore || 10;
+        }
+        calculatePreviewPoints();
+    } catch (e) {}
+}
+
+function calculatePreviewPoints() {
+    const total = parseFloat(document.getElementById("totalScore").value) || 0;
+    let count = isEditMode ? currentQuestionCount : (currentQuestionCount + 1);
+    document.getElementById("scorePreview").innerText = `Dự kiến: ${(total / (count || 1)).toFixed(2)} điểm/câu`;
+}
+
+function toggleScoreUI() {
+    const mode = document.getElementById("scoreMode").value;
+    document.getElementById("boxTotalScore").style.display = (mode === "equal") ? "block" : "none";
+    document.getElementById("boxPoint").style.display = (mode === "custom") ? "block" : "none";
+}
+
 function handleFile(input) {
     const file = input.files[0];
     if (file) {
         const reader = new FileReader();
-        reader.onload = (e) => updatePreview(e.target.result);
+        reader.onload = (e) => {
+            updatePreview(e.target.result);
+            document.getElementById("qUrl").value = "Local File Uploaded";
+        };
         reader.readAsDataURL(file);
     }
 }
+
 function handleLinkInput(val) { if(val.length > 10) updatePreview(val); }
+
 function updatePreview(src) {
     document.getElementById('qPrevBox').style.display = 'block';
     document.getElementById('qPrevImg').src = src;
     document.getElementById('qData').value = src;
 }
+
 function clearMedia() {
     document.getElementById('qPrevBox').style.display = 'none';
     document.getElementById('qData').value = '';
+    document.getElementById('qUrl').value = '';
+    document.getElementById('fileInput').value = '';
 }
 </script>
 </body>
