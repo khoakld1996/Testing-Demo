@@ -84,7 +84,7 @@
 
   <div class="quiz-header">
     <div>
-      <h3 id="quizTitle" style="color:var(--accent);">Đang tải...</h3>
+      <h3 id="quizTitle" style="color:var(--accent);">Đang tải câu hỏi...</h3>
       <small id="studentInfo"></small>
     </div>
     <div id="timer">⏱️ 00:00</div>
@@ -111,7 +111,9 @@
   </div>
 
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbyX7PCWMwmKw86Iv3fsGX8vwTMYOCovEupXgxbzKLP7kSwMIoiVOfiQ1c60IR3tc4Hr/exec"; 
+  // THAY URL WEB APP CỦA BẠN VÀO ĐÂY
+  const API = "https://script.google.com/macros/s/AKfycbyf4LJfPW0pXSpegPOg03WxmtaebP6WnTwo3If2tLPr8NltxPyqd5LgtCtHgnq8Pxi4/exec"; 
+  
   let questions = [], currentIdx = 0, timeLeft = 0, timerInterval;
   let isSubmitting = false; 
 
@@ -140,12 +142,10 @@
       questions = data.map(q => {
         let details = {};
         try {
-            // Xử lý nếu answer là chuỗi JSON hoặc object
             details = (typeof q.answer === 'string') ? JSON.parse(q.answer) : q.answer;
         } catch (e) {
-            console.error("Lỗi parse JSON câu hỏi:", q);
-            // Fallback nếu không phải JSON (trắc nghiệm đơn giản)
-            details = { items: [] }; 
+            console.error("Lỗi parse JSON:", q.answer);
+            details = {}; 
         }
         return { ...q, details };
       });
@@ -158,7 +158,7 @@
       showQuestion(0);
       startTimer();
     } catch (e) {
-      Swal.fire("Lỗi", "Không thể tải câu hỏi. Hãy kiểm tra lại Apps Script!", "error");
+      Swal.fire("Lỗi", "Không thể tải câu hỏi. Kiểm tra Apps Script hoặc Internet!", "error");
     }
   }
 
@@ -177,18 +177,30 @@
 
       const type = (q.type || "mcq").toLowerCase();
 
-      if (type.startsWith("mcq")) {
+      // --- XỬ LÝ TRẮC NGHIỆM (TỰ ĐỘNG NHẬN DIỆN DỮ LIỆU) ---
+      if (type.startsWith("mcq") || type === "single") {
         const isMulti = type === "mcq-multi";
         html += `<div class="options-grid">`;
-        (q.details.items || []).forEach((opt, i) => {
+        
+        let options = [];
+        if (q.details.items) {
+          // Kiểu dữ liệu mảng: {"items": [{"text":"..."},...]}
+          options = q.details.items.map((opt, i) => ({ val: i, text: opt.text }));
+        } else {
+          // Kiểu dữ liệu Key-Value: {"A":"...", "B":"..."}
+          options = Object.keys(q.details).map(key => ({ val: key, text: q.details[key] }));
+        }
+
+        options.forEach(opt => {
           html += `<label class="option-label">
-                    <input type="${isMulti ? 'checkbox' : 'radio'}" name="ans${idx}" value="${i}" 
+                    <input type="${isMulti ? 'checkbox' : 'radio'}" name="ans${idx}" value="${opt.val}" 
                            onchange="markAsDone(${idx}); updateUI(this, ${isMulti});">
-                    <span>${opt.text}</span>
+                    <span><b>${opt.val}.</b> ${opt.text}</span>
                   </label>`;
         });
         html += `</div>`;
       } 
+      // --- ĐÚNG / SAI ---
       else if (type === "tf") {
         html += `<div class="options-grid">`;
         ["Đúng", "Sai"].forEach(val => {
@@ -199,26 +211,31 @@
         });
         html += `</div>`;
       } 
+      // --- ĐIỀN VÀO CHỖ TRỐNG ---
       else if (type === "fill") {
         html += `<input type="text" class="input-fill" id="fill${idx}" placeholder="Nhập đáp án..." oninput="if(this.value.trim()){markAsDone(${idx})}">`;
       }
+      // --- SẮP XẾP ---
       else if (type === "ordering") {
         html += `<div class="drag-list" id="sortList${idx}">`;
-        shuffle(q.details.items || []).forEach((item) => {
+        const orderItems = q.details.items || Object.values(q.details);
+        shuffle(orderItems).forEach((item) => {
           html += `<div class="drag-item" data-val="${item}"><i class="fas fa-grip-vertical"></i> ${item}</div>`;
         });
         html += `</div>`;
       }
+      // --- NỐI ĐÁP ÁN ---
       else if (type === "matching") {
         html += `<div class="matching-container">`;
-        (q.details.items || []).forEach((item, i) => {
+        const matchItems = q.details.items || [];
+        matchItems.forEach((item, i) => {
           html += `<div class="matching-row">
                     <div class="match-left">${item.left}</div>
                     <div class="match-right-zone" id="zone_${idx}_${i}"></div>
                   </div>`;
         });
         html += `<div class="match-pool" id="pool${idx}">`;
-        shuffle((q.details.items || []).map(it => it.right)).forEach(text => {
+        shuffle(matchItems.map(it => it.right)).forEach(text => {
           html += `<div class="drag-item" data-val="${text}">${text}</div>`;
         });
         html += `</div></div>`;
@@ -226,17 +243,20 @@
 
       card.innerHTML = html + `</div>`;
       content.appendChild(card);
-      setTimeout(() => initDragDrop(idx, type, q.details.items?.length), 100);
+      
+      // Kích hoạt kéo thả sau khi render
+      const itemCount = q.details.items ? q.details.items.length : Object.keys(q.details).length;
+      setTimeout(() => initDragDrop(idx, type, itemCount), 100);
     });
   }
 
   function initDragDrop(qIdx, type, count) {
     if (type === 'ordering') {
-        new Sortable(document.getElementById(`sortList${qIdx}`), {
-            animation: 150, ghostClass: 'sortable-ghost', onEnd: () => markAsDone(qIdx)
-        });
+        const el = document.getElementById(`sortList${qIdx}`);
+        if(el) new Sortable(el, { animation: 150, ghostClass: 'sortable-ghost', onEnd: () => markAsDone(qIdx) });
     } else if (type === 'matching') {
         const pool = document.getElementById(`pool${qIdx}`);
+        if(!pool) return;
         new Sortable(pool, { group: `match${qIdx}`, animation: 150 });
         for(let i=0; i<count; i++) {
             const zone = document.getElementById(`zone_${qIdx}_${i}`);
@@ -307,8 +327,8 @@
     const done = document.querySelectorAll(".q-num.done").length;
     Swal.fire({
       title: "Nộp bài?",
-      text: done < questions.length ? `Bạn mới làm ${done}/${questions.length} câu. Vẫn nộp chứ?` : "Bạn đã làm xong tất cả!",
-      icon: "warning",
+      text: `Bạn đã hoàn thành ${done}/${questions.length} câu hỏi.`,
+      icon: "question",
       showCancelButton: true,
       confirmButtonText: "Nộp bài",
       confirmButtonColor: "#ef4444"
@@ -319,31 +339,26 @@
     if (isSubmitting) return;
     isSubmitting = true;
     clearInterval(timerInterval);
-    Swal.fire({ title: 'Đang lưu kết quả...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title: 'Đang gửi kết quả...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     let scoreCount = 0;
     questions.forEach((q, i) => {
       let isCorrect = false;
       const type = q.type.toLowerCase();
       try {
-        if (type.startsWith("mcq")) {
-          const user = Array.from(document.querySelectorAll(`input[name="ans${i}"]:checked`)).map(el => parseInt(el.value));
-          const correct = q.details.items.map((it, idx) => it.isCorrect ? idx : null).filter(v => v !== null);
-          isCorrect = JSON.stringify(user.sort()) === JSON.stringify(correct.sort());
-        } else if (type === "tf") {
+        if (type === "mcq" || type === "single") {
           const user = document.querySelector(`input[name="ans${i}"]:checked`)?.value;
-          isCorrect = (user === q.details.correct);
+          isCorrect = (user == q.correct); // q.correct là cột đáp án đúng từ Sheet
+        } 
+        else if (type === "mcq-multi") {
+          const user = Array.from(document.querySelectorAll(`input[name="ans${i}"]:checked`)).map(el => el.value).sort().join(",");
+          isCorrect = (user == q.correct.toString().split(",").sort().join(","));
+        }
+        else if (type === "tf") {
+          const user = document.querySelector(`input[name="ans${i}"]:checked`)?.value;
+          isCorrect = (user === q.correct);
         } else if (type === "fill") {
-          isCorrect = (document.getElementById(`fill${i}`).value.trim().toLowerCase() === q.details.correct.toLowerCase());
-        } else if (type === "ordering") {
-          const userVal = Array.from(document.getElementById(`sortList${i}`).children).map(el => el.dataset.val.trim()).join(",");
-          const correctVal = q.details.items.map(it => it.trim()).join(",");
-          isCorrect = (userVal === correctVal);
-        } else if (type === "matching") {
-          isCorrect = q.details.items.every((it, j) => {
-            const zone = document.getElementById(`zone_${i}_${j}`);
-            return zone?.children.length > 0 && zone.children[0].dataset.val.trim() === it.right.trim();
-          });
+          isCorrect = (document.getElementById(`fill${i}`).value.trim().toLowerCase() === q.correct.toString().toLowerCase());
         }
       } catch (e) { console.error("Lỗi chấm câu " + i, e); }
       if (isCorrect) scoreCount++;
@@ -365,7 +380,7 @@
       localStorage.setItem("correctCount", dataSubmit.total);
       window.location.replace("result.html");
     } catch (e) {
-      Swal.fire("Lỗi", "Không thể lưu kết quả. Hãy chụp màn hình điểm số!", "error");
+      Swal.fire("Lỗi", "Không thể gửi kết quả tự động. Hãy chụp màn hình lại!", "error");
     }
   }
 </script>

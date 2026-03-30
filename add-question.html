@@ -53,7 +53,6 @@
       width: 100%; padding: 15px 20px; border-radius: 16px; border: 1px solid var(--border);
       background: rgba(0, 0, 0, 0.4); color: white; outline: none; transition: 0.3s;
     }
-    .input-control:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(68, 138, 255, 0.3); }
     .ans-row {
       display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
       background: rgba(255, 255, 255, 0.04); padding: 12px; border-radius: 16px;
@@ -73,7 +72,7 @@
       overflow: hidden; display: none; position: relative; flex-shrink: 0;
     }
     .preview-box img { width: 100%; height: 100%; object-fit: cover; }
-    .badge-info { font-size: 0.7rem; color: #00e676; margin-top: 5px; display: block; font-style: italic; }
+    .badge-info { font-size: 0.75rem; color: #00e676; margin-top: 8px; display: block; }
   </style>
 </head>
 <body>
@@ -154,222 +153,199 @@
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyX7PCWMwmKw86Iv3fsGX8vwTMYOCovEupXgxbzKLP7kSwMIoiVOfiQ1c60IR3tc4Hr/exec";
+// --- PHẦN CẤU HÌNH ---
+const API_URL = "https://script.google.com/macros/s/AKfycbyf4LJfPW0pXSpegPOg03WxmtaebP6WnTwo3If2tLPr8NltxPyqd5LgtCtHgnq8Pxi4/exec"; // Sẽ thay sau khi gửi Code.gs
 let isEditMode = false;
-let originalQuestionId = ""; 
+let originalQuestionText = ""; 
 let currentQuestionCount = 0;
 
 window.onload = async () => {
-  const testData = JSON.parse(localStorage.getItem("currentTest"));
-  if (testData) {
+    const testData = JSON.parse(localStorage.getItem("currentTest"));
+    if (!testData) return location.href = 'dashboard.html';
+    
     document.getElementById("testInfo").innerText = "BÀI THI: " + testData.name.toUpperCase();
-    if(testData.time) document.getElementById("testTime").value = testData.time;
-    if(testData.totalScore) document.getElementById("totalScore").value = testData.totalScore;
-    await fetchQuestionStats(testData.id);
-  }
+    
+    // Kiểm tra xem là Sửa hay Thêm mới
+    const editDataString = localStorage.getItem("editQuestionData");
+    if (editDataString && editDataString !== "null") {
+        isEditMode = true;
+        const editData = JSON.parse(editDataString);
+        originalQuestionText = editData.question;
+        document.getElementById("pageTitle").innerHTML = '<i class="fas fa-edit"></i> CHỈNH SỬA CÂU HỎI';
+        fillEditData(editData);
+    } else {
+        renderEditor();
+    }
 
-  const editDataString = localStorage.getItem("editQuestionData");
-  if (editDataString && editDataString !== "null") {
-    const editData = JSON.parse(editDataString);
-    isEditMode = true;
-    originalQuestionId = editData.id || editData.question; 
-    document.getElementById("pageTitle").innerHTML = '<i class="fas fa-edit"></i> CHỈNH SỬA CÂU HỎI';
-    fillEditData(editData);
-  } else {
-    renderEditor();
-  }
+    // Lấy số câu hiện có để tính điểm
+    await fetchQuestionStats(testData.id);
 };
 
 async function fetchQuestionStats(testId) {
-  try {
-    const resp = await fetch(`${API_URL}?action=getQuestions&testId=${testId}`);
-    const data = await resp.json();
-    currentQuestionCount = Array.isArray(data) ? data.length : 0;
-    if(currentQuestionCount > 0 && !isEditMode) {
-        const sample = data[0];
-        if(sample.testTime) document.getElementById("testTime").value = sample.testTime;
-        if(sample.scoreMode) {
-            document.getElementById("scoreMode").value = sample.scoreMode;
+    try {
+        const resp = await fetch(`${API_URL}?action=getQuestions&testId=${testId}`);
+        const data = await resp.json();
+        currentQuestionCount = Array.isArray(data) ? data.filter(q => q.question.trim() !== "").length : 0;
+        
+        if(currentQuestionCount > 0) {
+            const sample = data[0];
+            document.getElementById("testTime").value = sample.testTime || 15;
+            document.getElementById("scoreMode").value = sample.scoreMode || "equal";
+            document.getElementById("totalScore").value = sample.totalScore || 10;
             toggleScoreUI();
-            if(sample.totalScore) document.getElementById("totalScore").value = sample.totalScore;
         }
-    }
-    calculatePreviewPoints();
-  } catch (e) { console.error("Lỗi tải thông số bài thi:", e); }
+        calculatePreviewPoints();
+    } catch (e) { console.error("Lỗi tải thông số:", e); }
 }
 
 function calculatePreviewPoints() {
-  const total = parseFloat(document.getElementById("totalScore").value) || 0;
-  const isAdding = isEditMode ? 0 : 1;
-  const totalQ = currentQuestionCount + isAdding;
-  const perQ = totalQ > 0 ? (total / totalQ).toFixed(2) : total;
-  document.getElementById("scorePreview").innerHTML = 
-    `<i class="fas fa-info-circle"></i> Bài có ${totalQ} câu. Dự kiến: ~ <b>${perQ}</b> điểm/câu.`;
+    const total = parseFloat(document.getElementById("totalScore").value) || 0;
+    // Nếu đang SỬA, số câu giữ nguyên. Nếu THÊM MỚI, số câu = hiện tại + 1
+    let totalInFuture = isEditMode ? currentQuestionCount : (currentQuestionCount + 1);
+    if (totalInFuture <= 0) totalInFuture = 1;
+
+    const perQ = (total / totalInFuture).toFixed(2);
+    const label = isEditMode ? "Số câu hiện tại" : "Số câu sau khi thêm";
+    
+    document.getElementById("scorePreview").innerHTML = 
+        `<i class="fas fa-info-circle"></i> ${label}: <b>${totalInFuture}</b>. Dự kiến: ~ <b>${perQ}</b> điểm/câu.`;
 }
 
 function toggleScoreUI() {
-  const mode = document.getElementById("scoreMode").value;
-  document.getElementById("boxTotalScore").style.display = (mode === "equal") ? "block" : "none";
-  document.getElementById("boxPoint").style.display = (mode === "custom") ? "block" : "none";
-}
-
-function addRow(data = null) {
-  const type = document.getElementById("qType").value;
-  const list = document.getElementById("ansList");
-  const div = document.createElement("div");
-  div.className = "ans-row animate__animated animate__fadeInUp";
-  
-  // FIX LỖI: Kiểm tra kịch bản data là Object (single/multiple/matching) hoặc String (ordering)
-  const isChecked = (data && data.isCorrect === true) ? "checked" : "";
-
-  if (type === "single" || type === "multiple") {
-    const inputType = (type === "single") ? "radio" : "checkbox";
-    div.innerHTML = `
-      <input type="${inputType}" name="ansMark" class="is-correct" ${isChecked}>
-      <input type="text" class="ans-text input-control" placeholder="Đáp án..." value="${data?.text || ''}">
-      <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
-  } else if (type === "matching") {
-    div.innerHTML = `
-      <input type="text" class="l-val input-control" placeholder="Vế Trái" value="${data?.left || ''}">
-      <input type="text" class="r-val input-control" placeholder="Vế Phải" value="${data?.right || ''}">
-      <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
-  } else if (type === "ordering") {
-    // Với ordering, data thường là một String đơn giản
-    const orderVal = (typeof data === 'string') ? data : (data?.text || '');
-    div.innerHTML = `
-      <input type="text" class="ord-val input-control" placeholder="Thứ tự..." value="${orderVal}">
-      <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
-  }
-  list.appendChild(div);
+    const mode = document.getElementById("scoreMode").value;
+    document.getElementById("boxTotalScore").style.display = (mode === "equal") ? "block" : "none";
+    document.getElementById("boxPoint").style.display = (mode === "custom") ? "block" : "none";
 }
 
 function renderEditor() {
-  if (isEditMode) return; // Nếu đang edit thì không render đè mặc định
-  const type = document.getElementById("qType").value;
-  const list = document.getElementById("ansList");
-  list.innerHTML = "";
-  document.getElementById("addBtn").style.display = (["tf", "fill"].includes(type)) ? "none" : "block";
-  if (type === "tf") {
-    list.innerHTML = `<div class="ans-row"><select id="tfCorrect" class="input-control"><option value="Đúng">ĐÚNG</option><option value="Sai">SAI</option></select></div>`;
-  } else if (type === "fill") {
-    list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Đáp án đúng...">`;
-  } else {
-    addRow(); addRow();
-  }
+    if (isEditMode) return;
+    const type = document.getElementById("qType").value;
+    const list = document.getElementById("ansList");
+    list.innerHTML = "";
+    document.getElementById("addBtn").style.display = (["tf", "fill"].includes(type)) ? "none" : "block";
+    
+    if (type === "tf") {
+        list.innerHTML = `<div class="ans-row"><select id="tfCorrect" class="input-control"><option value="Đúng">ĐÚNG</option><option value="Sai">SAI</option></select></div>`;
+    } else if (type === "fill") {
+        list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Đáp án đúng...">`;
+    } else {
+        addRow(); addRow();
+    }
+}
+
+function addRow(data = null) {
+    const type = document.getElementById("qType").value;
+    const list = document.getElementById("ansList");
+    const div = document.createElement("div");
+    div.className = "ans-row animate__animated animate__fadeInUp";
+    
+    if (type === "single" || type === "multiple") {
+        const inputType = (type === "single") ? "radio" : "checkbox";
+        div.innerHTML = `
+            <input type="${inputType}" name="ansMark" class="is-correct" ${data?.isCorrect ? 'checked' : ''}>
+            <input type="text" class="ans-text input-control" placeholder="Đáp án..." value="${data?.text || ''}">
+            <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+    } else if (type === "matching") {
+        div.innerHTML = `
+            <input type="text" class="l-val input-control" placeholder="Vế Trái" value="${data?.left || ''}">
+            <input type="text" class="r-val input-control" placeholder="Vế Phải" value="${data?.right || ''}">
+            <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+    } else if (type === "ordering") {
+        div.innerHTML = `
+            <input type="text" class="ord-val input-control" placeholder="Thứ tự..." value="${data?.text || ''}">
+            <i class="fas fa-trash-alt" style="color:#ff5252; cursor:pointer;" onclick="this.parentElement.remove()"></i>`;
+    }
+    list.appendChild(div);
 }
 
 function fillEditData(data) {
-  document.getElementById("qText").value = data.question || "";
-  document.getElementById("qType").value = data.type || "single";
-  if(data.image) updatePreview(data.image);
-  if(data.points) document.getElementById("qPoint").value = data.points;
-  
-  const list = document.getElementById("ansList");
-  list.innerHTML = "";
-  document.getElementById("addBtn").style.display = (["tf", "fill"].includes(data.type)) ? "none" : "block";
-
-  try {
-    const ansObj = typeof data.answer === 'string' ? JSON.parse(data.answer) : data.answer;
+    document.getElementById("qText").value = data.question || "";
+    document.getElementById("qType").value = data.type || "single";
+    if(data.image) updatePreview(data.image);
     
+    const list = document.getElementById("ansList");
+    list.innerHTML = "";
+    const ansObj = typeof data.answer === 'string' ? JSON.parse(data.answer) : data.answer;
+
     if (data.type === "tf") {
-      list.innerHTML = `<div class="ans-row"><select id="tfCorrect" class="input-control"><option value="Đúng">ĐÚNG</option><option value="Sai">SAI</option></select></div>`;
-      document.getElementById("tfCorrect").value = ansObj.correct || "Đúng";
+        list.innerHTML = `<div class="ans-row"><select id="tfCorrect" class="input-control"><option value="Đúng">ĐÚNG</option><option value="Sai">SAI</option></select></div>`;
+        document.getElementById("tfCorrect").value = ansObj.correct || "Đúng";
     } else if (data.type === "fill") {
-      list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Đáp án đúng..." value="${ansObj.correct || ''}">`;
-    } else {
-      if(ansObj && ansObj.items && Array.isArray(ansObj.items)) {
-        ansObj.items.forEach(item => addRow(item));
-      } else {
-        addRow(); addRow();
-      }
+        list.innerHTML = `<input type="text" id="fillAns" class="input-control" placeholder="Đáp án đúng..." value="${ansObj.correct || ''}">`;
+    } else if (ansObj.items) {
+        ansObj.items.forEach(it => addRow(it));
     }
-  } catch(e) {
-    console.error("Lỗi parse đáp án:", e);
-    addRow(); addRow();
-  }
 }
 
 async function saveData() {
-  const btn = document.getElementById("saveBtn");
-  const testData = JSON.parse(localStorage.getItem("currentTest"));
-  const type = document.getElementById("qType").value;
-  const question = document.getElementById("qText").value.trim();
+    const btn = document.getElementById("saveBtn");
+    const testData = JSON.parse(localStorage.getItem("currentTest"));
+    const question = document.getElementById("qText").value.trim();
+    if (!question) return Swal.fire("Lỗi", "Nhập câu hỏi!", "error");
 
-  if (!question) return Swal.fire("Lỗi", "Nhập câu hỏi!", "error");
-  
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG ĐỒNG BỘ...';
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ĐANG ĐỒNG BỘ...';
 
-  let payloadAnswers = { items: [] };
-  if (type === "tf") {
-    payloadAnswers.correct = document.getElementById("tfCorrect").value;
-  } else if (type === "fill") {
-    payloadAnswers.correct = document.getElementById("fillAns").value;
-  } else {
-    const rows = document.querySelectorAll(".ans-row");
-    rows.forEach(row => {
-      if (type === "single" || type === "multiple") {
-        payloadAnswers.items.push({ 
-          text: row.querySelector(".ans-text").value, 
-          isCorrect: row.querySelector(".is-correct").checked 
+    const type = document.getElementById("qType").value;
+    let payloadAnswers = { items: [] };
+
+    if (type === "tf") payloadAnswers.correct = document.getElementById("tfCorrect").value;
+    else if (type === "fill") payloadAnswers.correct = document.getElementById("fillAns").value;
+    else {
+        document.querySelectorAll(".ans-row").forEach(row => {
+            if (type === "single" || type === "multiple") 
+                payloadAnswers.items.push({ text: row.querySelector(".ans-text").value, isCorrect: row.querySelector(".is-correct").checked });
+            else if (type === "matching") 
+                payloadAnswers.items.push({ left: row.querySelector(".l-val").value, right: row.querySelector(".r-val").value });
+            else if (type === "ordering") 
+                payloadAnswers.items.push({ text: row.querySelector(".ord-val").value });
         });
-      } else if (type === "matching") {
-        payloadAnswers.items.push({ 
-          left: row.querySelector(".l-val").value, 
-          right: row.querySelector(".r-val").value 
-        });
-      } else if (type === "ordering") {
-        // Lưu dưới dạng object để đồng bộ cấu hình addRow
-        payloadAnswers.items.push({ text: row.querySelector(".ord-val").value });
-      }
-    });
-  }
+    }
 
-  const finalData = {
-    action: "saveQuestion",
-    testId: testData.id,
-    testTime: document.getElementById("testTime").value,
-    scoreMode: document.getElementById("scoreMode").value,
-    totalScore: document.getElementById("totalScore").value,
-    points: document.getElementById("qPoint").value,
-    type: type,
-    question: question,
-    oldQuestion: isEditMode ? originalQuestionId : "", 
-    image: document.getElementById("qData").value || document.getElementById("qUrl").value,
-    answer: JSON.stringify(payloadAnswers)
-  };
+    const finalData = {
+        action: "saveQuestion",
+        testId: testData.id,
+        testTime: document.getElementById("testTime").value,
+        scoreMode: document.getElementById("scoreMode").value,
+        totalScore: document.getElementById("totalScore").value,
+        points: document.getElementById("qPoint").value,
+        type: type,
+        question: question,
+        oldQuestion: isEditMode ? originalQuestionText : "",
+        image: document.getElementById("qData").value || document.getElementById("qUrl").value,
+        answer: JSON.stringify(payloadAnswers)
+    };
 
-  try {
-    await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(finalData) });
-    Swal.fire({ icon: 'success', title: 'ĐÃ ĐỒNG BỘ', text: 'Thành công!', timer: 1200, showConfirmButton: false });
-    localStorage.removeItem("editQuestionData");
-    setTimeout(() => { location.href = 'question-list.html'; }, 1300);
-  } catch (err) {
-    Swal.fire("Lỗi", "Lỗi kết nối!", "error");
-    btn.disabled = false;
-    btn.innerText = "LƯU VÀ ĐỒNG BỘ TOÀN BÀI";
-  }
+    try {
+        await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(finalData) });
+        Swal.fire({ icon: 'success', title: 'ĐÃ ĐỒNG BỘ', timer: 1200, showConfirmButton: false });
+        localStorage.removeItem("editQuestionData");
+        setTimeout(() => location.href = 'question-list.html', 1300);
+    } catch (err) {
+        Swal.fire("Lỗi", "Lỗi kết nối!", "error");
+        btn.disabled = false;
+        btn.innerText = "LƯU & ĐỒNG BỘ TOÀN BÀI";
+    }
 }
 
+// Media Helpers
 function handleFile(input) {
-  const file = input.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = (e) => updatePreview(e.target.result);
-    reader.readAsDataURL(file);
-  }
+    const file = input.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => updatePreview(e.target.result);
+        reader.readAsDataURL(file);
+    }
 }
 function handleLinkInput(val) { if(val.length > 10) updatePreview(val); }
 function updatePreview(src) {
-  document.getElementById('qPrevBox').style.display = 'block';
-  document.getElementById('qPrevImg').src = src;
-  document.getElementById('qData').value = src;
+    document.getElementById('qPrevBox').style.display = 'block';
+    document.getElementById('qPrevImg').src = src;
+    document.getElementById('qData').value = src;
 }
 function clearMedia() {
-  document.getElementById('qPrevBox').style.display = 'none';
-  document.getElementById('qData').value = '';
-  document.getElementById('qUrl').value = '';
-  document.getElementById('fileInput').value = '';
+    document.getElementById('qPrevBox').style.display = 'none';
+    document.getElementById('qData').value = '';
 }
 </script>
 </body>
