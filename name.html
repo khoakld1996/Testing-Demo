@@ -42,7 +42,7 @@
       backdrop-filter: blur(20px); 
       -webkit-backdrop-filter: blur(20px);
       border-radius: 30px; 
-      padding: 40px; 
+      padding: 35px; 
       border: 1px solid var(--glass-border); 
       text-align: center; 
       box-shadow: 0 25px 50px rgba(0,0,0,0.4);
@@ -55,20 +55,20 @@
     }
 
     h2 { 
-      margin-bottom: 30px; 
+      margin-bottom: 25px; 
       background: linear-gradient(to right, #fff, var(--accent));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      font-size: 1.8rem;
+      font-size: 1.6rem;
       font-weight: 800;
     }
 
-    .input-group { text-align: left; margin-bottom: 25px; }
+    .input-group { text-align: left; margin-bottom: 18px; }
     
     label { 
       display: block; 
-      margin-bottom: 10px; 
-      font-size: 0.8rem; 
+      margin-bottom: 8px; 
+      font-size: 0.75rem; 
       color: var(--primary); 
       font-weight: 700;
       text-transform: uppercase;
@@ -87,13 +87,13 @@
 
     input { 
       width: 100%; 
-      padding: 14px 15px 14px 45px; 
+      padding: 12px 15px 12px 45px; 
       border-radius: 12px; 
       border: 1px solid var(--glass-border); 
       background: rgba(0,0,0,0.3); 
       color: white; 
       outline: none; 
-      font-size: 1rem;
+      font-size: 0.95rem;
       transition: all 0.3s; 
     }
     
@@ -101,6 +101,15 @@
       border-color: var(--primary); 
       background: rgba(0,0,0,0.5); 
       box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);
+    }
+
+    /* Style cho các ô chỉ đọc (Trường và Lớp) */
+    input[readonly] {
+      background: rgba(255, 255, 255, 0.05);
+      color: #a0aec0;
+      cursor: not-allowed;
+      border-style: dashed;
+      opacity: 0.8;
     }
 
     .btn-next { 
@@ -114,7 +123,7 @@
       font-size: 1rem; 
       cursor: pointer; 
       transition: 0.3s; 
-      margin-top: 10px;
+      margin-top: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -129,13 +138,13 @@
 
     .btn-home {
       display: inline-block;
-      margin-top: 30px;
+      margin-top: 25px;
       background: none;
       border: none;
       color: rgba(255,255,255,0.4);
       cursor: pointer;
       text-decoration: none;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       transition: 0.3s;
     }
     .btn-home:hover { color: white; }
@@ -143,6 +152,7 @@
     .loading-input {
       opacity: 0.6;
       cursor: wait;
+      border-color: var(--accent) !important;
     }
   </style>
 </head>
@@ -151,14 +161,14 @@
   <div class="container">
     <div class="box">
       <h2 class="animate__animated animate__lightSpeedInLeft">
-        <i class="fas fa-user-check"></i> THÔNG TIN THI
+        <i class="fas fa-user-check"></i> XÁC NHẬN THÔNG TIN
       </h2>
       
       <div class="input-group">
         <label>Họ và tên thí sinh</label>
         <div class="input-wrapper">
           <i class="fas fa-user-edit"></i>
-          <input type="text" id="username_display" placeholder="Đang tải dữ liệu..." autocomplete="off">
+          <input type="text" id="username_display" placeholder="Đang tải tên..." autocomplete="off">
         </div>
       </div>
 
@@ -166,7 +176,15 @@
         <label>Tên trường / Đơn vị</label>
         <div class="input-wrapper">
           <i class="fas fa-school"></i>
-          <input type="text" id="school" placeholder="Đang tải dữ liệu..." autocomplete="off">
+          <input type="text" id="school" placeholder="Đang tải trường..." autocomplete="off" readonly>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Lớp học</label>
+        <div class="input-wrapper">
+          <i class="fas fa-graduation-cap"></i>
+          <input type="text" id="class_name" placeholder="Đang tải lớp..." autocomplete="off" readonly>
         </div>
       </div>
 
@@ -181,74 +199,87 @@
   </div>
 
   <script>
-    // URL WEB APP CỦA BẠN
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzTvaNTz9Iz-2QXZ_R-Js36Bqf50J0vZUhVcdlSVvPtesmdODd0i4aF89SUnCtKkYqb/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbymrHeUnc8umtlHD_jxQbIi5st9Reua96bimU5rGr_xZDk6_3fTPSZ2XGQsH6Y6sumn/exec"; 
 
     window.onload = async () => {
-      // Lấy username từ localStorage đã lưu ở trang Login
       const loggedInUser = localStorage.getItem("username"); 
 
       if (!loggedInUser) {
         Swal.fire({
             icon: 'error',
-            title: 'Lỗi xác thực!',
-            text: 'Không tìm thấy phiên đăng nhập. Vui lòng quay lại trang đăng nhập.',
+            title: 'Chưa đăng nhập!',
+            text: 'Vui lòng đăng nhập để tiếp tục.',
             confirmButtonColor: '#4facfe'
-        }).then(() => { window.location.href = 'login.html?role=student'; });
+        }).then(() => { window.location.href = 'login.html'; });
         return;
       }
 
       const nameInput = document.getElementById("username_display");
       const schoolInput = document.getElementById("school");
-      nameInput.classList.add("loading-input");
-      schoolInput.classList.add("loading-input");
+      const classInput = document.getElementById("class_name");
+
+      // Trạng thái chờ tải
+      [nameInput, schoolInput, classInput].forEach(el => {
+        el.value = "";
+        el.classList.add("loading-input");
+      });
 
       try {
-        // Gửi yêu cầu lấy thông tin chi tiết dựa trên username
-        const response = await fetch(`${SCRIPT_URL}?action=getUserInfo&username=${loggedInUser}`);
+        const response = await fetch(`${SCRIPT_URL}?action=getUserInfo&username=${encodeURIComponent(loggedInUser)}`);
         const data = await response.json();
 
-        nameInput.classList.remove("loading-input");
-        schoolInput.classList.remove("loading-input");
+        [nameInput, schoolInput, classInput].forEach(el => el.classList.remove("loading-input"));
 
         if (data.status === "success") {
+          // Điền dữ liệu từ Sheet
           nameInput.value = data.name || "";
           schoolInput.value = data.school || "";
+          classInput.value = data.class || ""; // Giả định Apps Script trả về trường 'class'
           
+          // Lưu cache cho các trang sau
           localStorage.setItem("studentName", data.name);
           localStorage.setItem("schoolName", data.school);
+          localStorage.setItem("className", data.class);
+
+          // Khóa các trường thông tin cố định
+          schoolInput.readOnly = !!data.school;
+          classInput.readOnly = !!data.class;
+
         } else {
-          nameInput.placeholder = "Không tìm thấy dữ liệu...";
-          schoolInput.placeholder = "Vui lòng nhập thủ công...";
+          nameInput.placeholder = "Không tìm thấy thông tin";
+          schoolInput.readOnly = false;
+          classInput.readOnly = false;
+          Swal.fire("Lưu ý", "Không tìm thấy dữ liệu tự động, vui lòng tự điền thông tin.", "info");
         }
       } catch (err) {
-        console.error("Lỗi kết nối API:", err);
-        nameInput.classList.remove("loading-input");
-        schoolInput.classList.remove("loading-input");
-        nameInput.placeholder = "Lỗi kết nối máy chủ...";
+        console.error("Lỗi kết nối:", err);
+        nameInput.placeholder = "Lỗi máy chủ...";
       }
     };
 
     function startSelection() {
       const name = document.getElementById("username_display").value.trim();
       const school = document.getElementById("school").value.trim();
+      const className = document.getElementById("class_name").value.trim();
 
-      if (!name || !school) {
+      if (!name || !school || !className) {
         Swal.fire({
           icon: 'warning',
           title: 'Thiếu thông tin!',
-          text: 'Vui lòng kiểm tra lại Tên và Trường nhé!',
+          text: 'Vui lòng kiểm tra lại Họ tên, Trường và Lớp học.',
           confirmButtonColor: '#4facfe'
         });
         return;
       }
 
+      // Lưu lại thông tin cuối cùng
       localStorage.setItem("studentName", name);
       localStorage.setItem("schoolName", school);
+      localStorage.setItem("className", className);
       
       Swal.fire({
-        title: 'Đang chuẩn bị...',
-        timer: 800,
+        title: 'Đang xử lý...',
+        timer: 600,
         showConfirmButton: false,
         didOpen: () => { Swal.showLoading(); }
       }).then(() => {

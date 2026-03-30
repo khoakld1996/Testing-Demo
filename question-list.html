@@ -229,7 +229,8 @@
 </div>
 
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbzTvaNTz9Iz-2QXZ_R-Js36Bqf50J0vZUhVcdlSVvPtesmdODd0i4aF89SUnCtKkYqb/exec";
+  // Chú ý: Đảm bảo URL API này khớp với bản Deploy mới nhất của bạn
+  const API = "https://script.google.com/macros/s/AKfycbymrHeUnc8umtlHD_jxQbIi5st9Reua96bimU5rGr_xZDk6_3fTPSZ2XGQsH6Y6sumn/exec";
   const currentTest = JSON.parse(localStorage.getItem("currentTest") || "{}");
   let listQuestions = [];
 
@@ -313,30 +314,30 @@
     btn.disabled = true;
 
     try {
-      const payload = {
-        action: "deleteQuestion",
-        testId: currentTest.id,
-        question: questionText
-      };
+      // Cách gửi tối ưu cho Apps Script để tránh lỗi CORS/CORB
+      const formData = new URLSearchParams();
+      formData.append("action", "deleteQuestion");
+      formData.append("testId", currentTest.id);
+      formData.append("question", questionText);
 
       await fetch(API, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain" },
-        body: JSON.stringify(payload)
+        mode: "no-cors", // Vẫn dùng no-cors nhưng dữ liệu gửi đi dạng Form sẽ được Script nhận tốt hơn
+        body: formData
       });
       
       Swal.fire({ 
         icon: 'success', 
         title: 'ĐANG ĐỒNG BỘ', 
-        text: 'Dữ liệu đã được yêu cầu xóa khỏi Nebula.',
-        timer: 1500, 
+        text: 'Lệnh xóa đã được gửi. Danh sách sẽ cập nhật sau giây lát.',
+        timer: 2000, 
         showConfirmButton: false, 
         background: '#0a0f1c', 
         color: '#fff' 
       });
 
-      setTimeout(loadQuestions, 2000);
+      // Đợi server xử lý xong rồi load lại
+      setTimeout(loadQuestions, 2500);
 
     } catch (err) {
       Swal.fire({ icon: 'error', title: 'LỖI', text: 'Kết nối bị ngắt quãng.', background: '#0a0f1c', color: '#fff' });
