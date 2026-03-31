@@ -34,13 +34,13 @@
 
     /* --- NAVIGATION --- */
     .top-nav {
-      position: fixed; top: 0; left: 0; right: 0; padding: 20px 40px;
+      position: fixed; top: 0; left: 0; right: 0; padding: 15px 30px;
       display: flex; justify-content: space-between; align-items: center; z-index: 100;
-      backdrop-filter: blur(10px); background: rgba(15, 23, 42, 0.5);
+      backdrop-filter: blur(15px); background: rgba(15, 23, 42, 0.7);
       border-bottom: 1px solid var(--glass-border);
     }
 
-    .brand { font-weight: 800; font-size: 1.4rem; letter-spacing: 1px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+    .brand { font-weight: 800; font-size: 1.3rem; letter-spacing: 1px; color: var(--primary); display: flex; align-items: center; gap: 10px; }
     .brand span { color: #fff; font-weight: 300; }
 
     .user-profile { display: flex; align-items: center; gap: 15px; }
@@ -49,81 +49,79 @@
     .user-class-top { font-size: 0.75rem; opacity: 0.6; }
 
     .btn-logout {
-      background: rgba(255, 71, 87, 0.15); border: 1px solid rgba(255, 71, 87, 0.3);
-      color: #ff4757; width: 40px; height: 40px; border-radius: 12px; cursor: pointer;
+      background: rgba(255, 71, 87, 0.1); border: 1px solid rgba(255, 71, 87, 0.2);
+      color: #ff4757; width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
       display: flex; align-items: center; justify-content: center; transition: 0.3s;
     }
-    .btn-logout:hover { background: #ff4757; color: white; transform: rotate(90deg); }
+    .btn-logout:hover { background: #ff4757; color: white; transform: scale(1.1); }
 
     /* --- MAIN CONTAINER --- */
-    .container { position: relative; z-index: 10; width: 100%; max-width: 600px; margin-top: 80px; }
+    .container { position: relative; z-index: 10; width: 100%; max-width: 650px; margin-top: 80px; }
 
     .box { 
       background: var(--glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-      border-radius: 35px; padding: 40px; border: 1px solid var(--glass-border); 
-      box-shadow: 0 50px 100px rgba(0,0,0,0.5);
+      border-radius: 30px; padding: 35px; border: 1px solid var(--glass-border); 
+      box-shadow: 0 40px 80px rgba(0,0,0,0.4);
     }
 
     h2 { 
-      font-size: 1.8rem; margin-bottom: 5px; font-weight: 800; text-align: center;
+      font-size: 1.7rem; margin-bottom: 8px; font-weight: 800; text-align: center;
       background: linear-gradient(to right, #fff, var(--primary));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
-    .welcome-text { text-align: center; color: rgba(255, 255, 255, 0.5); margin-bottom: 30px; font-size: 0.95rem; }
+    .welcome-text { text-align: center; color: rgba(255, 255, 255, 0.6); margin-bottom: 25px; font-size: 0.95rem; }
 
-    /* --- SEARCH & FILTER --- */
-    .filter-section { margin-bottom: 25px; }
-    
-    .search-bar { position: relative; margin-bottom: 15px; }
+    /* --- SEARCH --- */
+    .search-bar { position: relative; margin-bottom: 20px; }
     .search-bar input {
-      width: 100%; background: rgba(255,255,255,0.07); border: 1px solid var(--glass-border);
-      padding: 14px 20px 14px 45px; border-radius: 18px; color: white; font-size: 0.95rem;
+      width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      padding: 14px 20px 14px 45px; border-radius: 15px; color: white; font-size: 0.95rem;
       outline: none; transition: 0.3s;
     }
-    .search-bar input:focus { border-color: var(--primary); background: rgba(255,255,255,0.12); box-shadow: 0 0 20px rgba(79, 172, 254, 0.2); }
+    .search-bar input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
     .search-bar i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--primary); }
 
     /* --- TEST LIST --- */
     #testList { 
-      display: flex; flex-direction: column; gap: 15px; 
-      max-height: 400px; overflow-y: auto; padding-right: 5px;
+      display: flex; flex-direction: column; gap: 12px; 
+      max-height: 420px; overflow-y: auto; padding-right: 5px;
     }
-    #testList::-webkit-scrollbar { width: 5px; }
+    #testList::-webkit-scrollbar { width: 4px; }
     #testList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
 
     .test-card { 
       background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); 
-      padding: 20px; border-radius: 22px; cursor: pointer; 
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+      padding: 18px; border-radius: 20px; cursor: pointer; 
+      transition: all 0.3s ease; 
       display: flex; justify-content: space-between; align-items: center;
-      position: relative; overflow: hidden;
     }
 
     .test-card:hover { 
-      background: rgba(255, 255, 255, 0.08); border-color: var(--primary);
-      transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.07); border-color: var(--primary);
+      transform: translateX(5px);
     }
 
-    .test-info { flex: 1; }
-    .test-name { font-weight: 700; color: #fff; font-size: 1.1rem; display: block; margin-bottom: 6px; }
-    .test-meta { display: flex; flex-wrap: wrap; gap: 15px; font-size: 0.8rem; color: rgba(255, 255, 255, 0.5); }
-    .test-meta span i { color: var(--primary); margin-right: 5px; }
+    .test-name { font-weight: 700; color: #fff; font-size: 1.05rem; display: block; margin-bottom: 5px; }
+    .test-meta { display: flex; gap: 15px; font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); }
+    .test-meta span i { color: var(--primary); margin-right: 4px; }
 
     .play-btn {
-      width: 45px; height: 45px; border-radius: 15px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;
-      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
-      transition: 0.3s; box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(79, 172, 254, 0.15); color: var(--primary);
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+      transition: 0.3s;
     }
+    .test-card:hover .play-btn { background: var(--primary); color: #0f172a; }
 
-    .footer-actions { margin-top: 30px; text-align: center; }
-    .btn-back { color: rgba(255,255,255,0.4); text-decoration: none; font-size: 0.85rem; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-back:hover { color: var(--primary); }
+    .footer-actions { margin-top: 25px; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 20px; }
+    .btn-history { color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-history:hover { filter: brightness(1.2); letter-spacing: 0.5px; }
 
-    /* Skeleton Loading */
-    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: 15px; height: 80px; margin-bottom: 15px; }
-    @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    /* Skeleton */
+    .skeleton { background: rgba(255,255,255,0.05); height: 80px; border-radius: 15px; margin-bottom: 10px; position: relative; overflow: hidden; }
+    .skeleton::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); animation: loading 1.5s infinite; }
+    @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
   </style>
 </head>
 <body>
@@ -132,63 +130,61 @@
     <div class="brand"><i class="fas fa-meteor"></i> NEBULA <span>QUIZ</span></div>
     <div class="user-profile">
       <div class="user-info-top">
-        <span class="user-name-top" id="topNavName">Đang tải...</span>
+        <span class="user-name-top" id="topNavName">Học sinh</span>
         <span class="user-class-top" id="topNavClass">Lớp: ...</span>
       </div>
-      <button class="btn-logout" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+      <button class="btn-logout" title="Đăng xuất" onclick="handleLogout()"><i class="fas fa-power-off"></i></button>
     </div>
   </nav>
 
   <div class="container">
-    <div class="box">
-      <h2 class="animate__animated animate__fadeIn"><i class="fas fa-rocket"></i> HỆ THỐNG THI</h2>
-      <p class="welcome-text" id="welcomeMsg">Đang kết nối Nebula Server...</p>
+    <div class="box animate__animated animate__zoomIn">
+      <h2><i class="fas fa-rocket"></i> HỆ THỐNG THI</h2>
+      <p class="welcome-text" id="welcomeMsg">Chào mừng bạn trở lại!</p>
 
-      <div class="filter-section">
-        <div class="search-bar">
-          <i class="fas fa-search"></i>
-          <input type="text" id="searchInput" placeholder="Tìm tên đề thi..." oninput="renderTests()">
-        </div>
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm bài thi..." oninput="renderTests()">
       </div>
 
       <div id="testList">
         <div class="skeleton"></div>
         <div class="skeleton"></div>
+        <div class="skeleton"></div>
       </div>
 
       <div class="footer-actions">
-        <a href="profile.html" class="btn-back"><i class="fas fa-arrow-left"></i> Hồ sơ cá nhân</a>
+        <a href="history.html" class="btn-history"><i class="fas fa-history"></i> Xem lịch sử bài làm</a>
       </div>
     </div>
   </div>
 
   <script>
-    // URL script của bạn
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWmPOYaxnzgxJG8sCuUvVvxRiWApSdArOq3bSBdI0BsRKOEAsUSCLP_VV6fCnQpE5r/exec";
-    
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAnLalxZL4W3fcKLrScY-xI4gv1Pez9oYRC5z7kueRQVXDGvuigJ-NbN45dJoBLQBg/exec";
     let allTests = [];
 
-    // Khởi tạo thông tin người dùng từ localStorage
+    // Khởi tạo thông tin từ localStorage
     function initUser() {
-      const name = localStorage.getItem("studentName") || "Học sinh";
-      const userClass = localStorage.getItem("studentClass") || "Tự do";
+      const name = localStorage.getItem("studentName") || "Người dùng";
+      const userClass = localStorage.getItem("className") || localStorage.getItem("studentClass") || "";
+      const school = localStorage.getItem("schoolName") || "";
+      
       document.getElementById("topNavName").innerText = name;
-      document.getElementById("topNavClass").innerText = `Lớp: ${userClass}`;
-      document.getElementById("welcomeMsg").innerHTML = `Sẵn sàng chưa <b>${name}</b>?`;
+      document.getElementById("topNavClass").innerText = userClass ? `Lớp: ${userClass}` : school;
+      document.getElementById("welcomeMsg").innerHTML = `Bạn đã sẵn sàng để chinh phục, <b style="color:var(--accent)">${name}</b>?`;
     }
 
-    // Lấy danh sách bài thi từ AppScript (Hành động: getTests)
+    // Lấy danh sách từ server
     async function fetchTests() {
       try {
         const response = await fetch(`${SCRIPT_URL}?action=getTests`);
         allTests = await response.json();
         renderTests();
       } catch (err) {
-        document.getElementById("testList").innerHTML = `<p style="text-align:center;color:#ff4757">Lỗi tải dữ liệu!</p>`;
+        document.getElementById("testList").innerHTML = `<p style="text-align:center;color:#ff4757;padding:20px;">Không thể kết nối đến máy chủ!</p>`;
       }
     }
 
-    // Hiển thị danh sách (có lọc tìm kiếm)
     function renderTests() {
       const list = document.getElementById("testList");
       const search = document.getElementById("searchInput").value.toLowerCase();
@@ -197,81 +193,82 @@
       const filtered = allTests.filter(t => t.name.toLowerCase().includes(search));
 
       if (filtered.length === 0) {
-        list.innerHTML = `<p style="text-align:center; opacity:0.5; padding:20px;">Không tìm thấy đề thi nào</p>`;
+        list.innerHTML = `<p style="text-align:center; opacity:0.5; padding:30px;">Không có bài thi nào phù hợp</p>`;
         return;
       }
 
       filtered.forEach((test, i) => {
         const card = document.createElement("div");
         card.className = "test-card animate__animated animate__fadeInUp";
-        card.style.animationDelay = `${i * 0.1}s`;
+        card.style.animationDelay = `${i * 0.05}s`;
         card.innerHTML = `
           <div class="test-info">
             <span class="test-name">${test.name}</span>
             <div class="test-meta">
               <span><i class="far fa-clock"></i> ${test.duration}p</span>
-              <span><i class="fas fa-list-ol"></i> ${test.qCount} câu</span>
-              <span><i class="fas fa-star"></i> Max: ${test.maxScore}đ</span>
+              <span><i class="fas fa-question-circle"></i> ${test.qCount} câu</span>
+              <span><i class="fas fa-trophy"></i> ${test.maxScore}đ</span>
             </div>
           </div>
-          <div class="play-btn"><i class="fas fa-chevron-right"></i></div>
+          <div class="play-btn"><i class="fas fa-play"></i></div>
         `;
         card.onclick = () => confirmLaunch(test);
         list.appendChild(card);
       });
     }
 
-    // Xác nhận vào thi
     function confirmLaunch(test) {
-      if (test.qCount === 0) {
-        Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Đề thi này chưa có câu hỏi!', background: '#131c2f', color: '#fff' });
+      if (!test.qCount || test.qCount === 0) {
+        Swal.fire({ icon: 'info', title: 'Thông báo', text: 'Đề thi này đang được cập nhật câu hỏi.', background: '#131c2f', color: '#fff' });
         return;
       }
 
       Swal.fire({
-        title: 'BẮT ĐẦU THI?',
-        html: `<div style="text-align:left; font-size:0.9rem; opacity:0.8">
-                <p>Bài thi: <b>${test.name}</b></p>
+        title: 'Bắt đầu bài thi?',
+        html: `<div style="text-align:left; font-size:0.9rem; opacity:0.9">
+                <p>Bài thi: <b style="color:var(--primary)">${test.name}</b></p>
                 <p>Thời gian: <b>${test.duration} phút</b></p>
-                <p>Số câu hỏi: <b>${test.qCount} câu</b></p>
+                <p>Số lượng: <b>${test.qCount} câu hỏi</b></p>
                </div>`,
         icon: 'question',
         showCancelButton: true,
-        confirmButtonText: 'VÀO THI',
-        cancelButtonText: 'HỦY',
+        confirmButtonText: 'BẮT ĐẦU NGAY',
+        cancelButtonText: 'ĐỂ SAU',
         confirmButtonColor: '#4facfe',
         background: '#131c2f',
         color: '#fff'
       }).then((res) => {
         if (res.isConfirmed) {
-          // Lưu thông tin bài thi hiện tại để trang Quiz sử dụng
           localStorage.setItem("currentTestId", test.id);
           localStorage.setItem("currentTestName", test.name);
           localStorage.setItem("currentTestDuration", test.duration);
+          localStorage.setItem("currentTest", JSON.stringify(test));
           window.location.href = "quiz.html";
         }
       });
     }
 
+    // Logic Đăng xuất quay về trang chủ index.html
     function handleLogout() {
       Swal.fire({
-        title: 'Bạn muốn đăng xuất?',
-        text: "Tất cả phiên làm việc sẽ bị kết thúc.",
+        title: 'Đăng xuất?',
+        text: "Hành động này sẽ kết thúc phiên làm việc của bạn.",
         icon: 'warning',
         showCancelButton: true,
         confirmButtonColor: '#ff4757',
         confirmButtonText: 'ĐĂNG XUẤT',
+        cancelButtonText: 'HỦY',
         background: '#131c2f', color: '#fff'
       }).then((result) => {
         if (result.isConfirmed) {
           localStorage.clear();
-          window.location.href = "login.html";
+          // Chuyển hướng về trang chủ index.html
+          window.location.href = "index.html";
         }
       });
     }
 
-    // Khởi chạy khi tải trang
-   window.onload = () => {
+    window.onload = () => {
       initUser();
       fetchTests();
     };

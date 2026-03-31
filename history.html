@@ -41,26 +41,43 @@
     .history-item {
       background: var(--card); border-radius: 15px; border: 1px solid var(--glass-border);
       margin-bottom: 12px; overflow: hidden; transition: 0.3s;
+      backdrop-filter: blur(10px);
     }
 
     .item-summary {
-      padding: 18px 25px; display: grid; grid-template-columns: 2fr 1fr 1fr;
-      align-items: center; cursor: pointer;
+      padding: 18px 25px; 
+      display: grid; 
+      grid-template-columns: 1fr 80px 100px; /* Cố định độ rộng cột để không bị đè chữ */
+      align-items: center; 
+      gap: 15px;
     }
 
-    .test-name { font-weight: 700; color: var(--accent); font-size: 1.1rem; }
-    .test-time { color: #94a3b8; font-size: 0.8rem; margin-top: 4px; }
-    .score-box { text-align: center; font-size: 1.3rem; font-weight: 800; color: #fff; }
-    .correct-box { text-align: right; color: #94a3b8; font-size: 0.9rem; }
+    .test-name { font-weight: 700; color: var(--accent); font-size: 1.1rem; line-height: 1.3; }
+    .test-time { color: #94a3b8; font-size: 0.85rem; margin-top: 6px; }
+    
+    .score-box { 
+      text-align: center; 
+      font-size: 1.5rem; 
+      font-weight: 900; 
+      color: #fff;
+    }
+    .score-label { font-size: 0.6rem; font-weight: 400; color: var(--primary); margin-top: -4px; }
+
+    .correct-box { 
+      text-align: right; 
+      color: var(--accent); 
+      font-size: 0.95rem; 
+      font-weight: 600;
+      white-space: nowrap;
+    }
 
     .loader { text-align: center; padding: 50px; }
     .fa-spin { font-size: 2.5rem; color: var(--primary); margin-bottom: 15px; }
-
     .no-data { text-align: center; padding: 100px 20px; opacity: 0.6; }
     
     @media (max-width: 600px) {
-      .item-summary { grid-template-columns: 1fr; gap: 10px; text-align: center; }
-      .correct-box { text-align: center; }
+      .item-summary { grid-template-columns: 1fr 1fr; }
+      .score-box { text-align: left; }
     }
   </style>
 </head>
@@ -70,30 +87,39 @@
   <div class="header-box">
     <div>
       <h2 style="color: #fff;">Lịch Sử Bài Làm</h2>
-      <p id="studentDisplay" style="color: var(--primary); font-size: 0.9rem;"></p>
+      <p id="studentDisplay" style="color: var(--primary); font-size: 0.9rem; margin-top: 5px;"></p>
     </div>
     <a href="select.html" class="btn-select">
-      <i class="fas fa-edit"></i> Làm bài tiếp
+      <i class="fas fa-play-circle"></i> Tiếp tục
     </a>
   </div>
 
   <div id="historyList">
     <div class="loader">
       <i class="fas fa-spinner fa-spin"></i>
-      <p>Đang quét dữ liệu từ vệ tinh...</p>
+      <p>Đang đồng bộ dữ liệu...</p>
     </div>
   </div>
 </div>
 
 <script>
-  // LINK API được dán tại đây
-  const API_URL = "https://script.google.com/macros/s/AKfycbxWmPOYaxnzgxJG8sCuUvVvxRiWApSdArOq3bSBdI0BsRKOEAsUSCLP_VV6fCnQpE5r/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbzAnLalxZL4W3fcKLrScY-xI4gv1Pez9oYRC5z7kueRQVXDGvuigJ-NbN45dJoBLQBg/exec";
+
+  // Hàm định dạng ngày tháng sang Việt Nam
+  function formatTime(val) {
+    if (!val) return "---";
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return val;
+    return d.toLocaleString('vi-VN', {
+      hour: '2-digit', minute: '2-digit',
+      day: '2-digit', month: '2-digit', year: 'numeric'
+    });
+  }
 
   window.onload = () => {
     const name = localStorage.getItem("studentName") || "Học sinh";
-    const school = localStorage.getItem("studentClass") || localStorage.getItem("schoolName") || "";
-    document.getElementById("studentDisplay").innerText = `🚀 Tên Học Sinh: ${name} ${school ? ' | ' + school : ''}`;
-    
+    const school = localStorage.getItem("className") || localStorage.getItem("schoolName") || "";
+    document.getElementById("studentDisplay").innerText = `🚀 Thí sinh: ${name} ${school ? ' | ' + school : ''}`;
     fetchHistoryFromSheets(name);
   };
 
@@ -101,32 +127,46 @@
     const container = document.getElementById("historyList");
     
     try {
-      // Gọi API lấy dữ liệu (Action getResults bạn cần thêm vào Apps Script)
       const response = await fetch(`${API_URL}?action=getResults`);
       const allData = await response.json();
 
-      // Lọc dữ liệu của học sinh hiện tại
-      const myHistory = allData.filter(row => row.student === studentName);
+      const myHistory = allData.filter(row => String(row.student).trim() === studentName.trim());
 
       if (myHistory.length === 0) {
-        container.innerHTML = `<div class="no-data"><i class="fas fa-ghost fa-3x"></i><p style="margin-top:15px">Chưa có dữ liệu bài làm trên hệ thống.</p></div>`;
+        container.innerHTML = `<div class="no-data"><p>Bạn chưa thực hiện bài thi nào.</p></div>`;
         return;
       }
 
-      // Hiển thị danh sách (Bài mới nhất lên đầu)
       container.innerHTML = "";
       myHistory.reverse().forEach(record => {
         const item = document.createElement("div");
         item.className = "history-item";
+        
+        // KIỂM TRA LỖI KHOANH ĐỎ: Nếu total là ngày tháng thì biến nó thành "Xong" 
+        // hoặc giữ nguyên nếu nó là dạng "3/3"
+        let totalVal = String(record.total);
+        if (totalVal.includes('T') && totalVal.includes('Z')) {
+            totalVal = "Hoàn thành";
+        }
+
+        // Tương tự cho score nếu bị lỗi ngày tháng
+        let scoreVal = String(record.score);
+        if (scoreVal.includes('T') && scoreVal.includes('Z')) {
+            scoreVal = "---";
+        }
+
         item.innerHTML = `
           <div class="item-summary">
             <div>
-              <div class="test-name">${record.testName}</div>
-              <div class="test-time"><i class="far fa-calendar-alt"></i> ${record.time}</div>
+              <div class="test-name">${record.testName || 'Bài thi'}</div>
+              <div class="test-time"><i class="far fa-clock"></i> ${formatTime(record.time)}</div>
             </div>
-            <div class="score-box">${record.score} <small style="font-size:0.7rem">ĐIỂM</small></div>
+            <div class="score-box">
+                ${scoreVal}
+                <div class="score-label">ĐIỂM</div>
+            </div>
             <div class="correct-box">
-               <span style="color: var(--accent)"><i class="fas fa-check-circle"></i> ${record.total}</span>
+               <i class="fas fa-check-double"></i> ${totalVal}
             </div>
           </div>
         `;
@@ -134,8 +174,7 @@
       });
 
     } catch (error) {
-      console.error("Lỗi:", error);
-      container.innerHTML = `<div class="no-data"><p style="color: #ff4757">Không thể kết nối với máy chủ dữ liệu.</p></div>`;
+      container.innerHTML = `<div class="no-data"><p>Lỗi kết nối máy chủ.</p></div>`;
     }
   }
 </script>

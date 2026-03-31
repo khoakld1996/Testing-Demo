@@ -23,7 +23,6 @@
       background-size: cover; color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center;
     }
 
-    /* HEADER */
     .quiz-header {
       width: 100%; max-width: 1100px; background: var(--card); backdrop-filter: blur(20px);
       padding: 20px 30px; border-radius: 20px; display: flex; justify-content: space-between;
@@ -31,7 +30,6 @@
     }
     #timer { font-size: 1.5rem; font-weight: 800; color: #ff4757; font-family: monospace; }
 
-    /* LAYOUT */
     .main-layout { display: grid; grid-template-columns: 1fr 300px; gap: 25px; width: 100%; max-width: 1100px; }
     @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
 
@@ -43,15 +41,12 @@
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     .q-text { font-size: 1.3rem; margin-bottom: 25px; font-weight: 600; line-height: 1.6; color: #fff; }
-
-    /* FIX ẢNH */
     .q-image { 
       max-width: 100%; max-height: 280px; border-radius: 15px; 
       margin: 0 auto 25px auto; display: block; object-fit: contain;
       border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     }
 
-    /* --- ORDERING (SỬA LỖI TRONG ẢNH) --- */
     .drag-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
     .drag-item { 
       background: rgba(255, 255, 255, 0.05); 
@@ -72,7 +67,6 @@
     .sortable-ghost { opacity: 0.3; background: var(--primary) !important; border-style: dashed; }
     .sortable-chosen { box-shadow: 0 10px 20px rgba(0,0,0,0.4); border-color: var(--accent); }
 
-    /* --- MATCHING --- */
     .matching-container { display: flex; flex-direction: column; gap: 15px; }
     .matching-row { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 20px; align-items: stretch; }
     .match-left { 
@@ -91,9 +85,7 @@
       border: 1px solid var(--glass-border); justify-content: center;
     }
 
-    /* TRẮC NGHIỆM */
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-    @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
+    .options-grid { display: flex; flex-direction: column; gap: 12px; }
     .option-label {
       background: rgba(255,255,255,0.05); padding: 18px; border-radius: 15px; border: 2px solid transparent;
       cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; color: #cbd5e1;
@@ -102,7 +94,6 @@
     .selected-card { border-color: var(--accent) !important; background: rgba(0, 255, 204, 0.1) !important; color: #fff; }
     .option-label input { display: none; }
 
-    /* NAV PANEL */
     .nav-panel { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--glass-border); position: sticky; top: 120px; }
     .q-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
     .q-num {
@@ -120,6 +111,7 @@
       width: 100%; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);
       border: 2px solid var(--glass-border); color: #fff; font-size: 1.1rem; outline: none;
     }
+    .input-fill:focus { border-color: var(--primary); }
   </style>
 </head>
 <body>
@@ -153,7 +145,7 @@
   </div>
 
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbxWmPOYaxnzgxJG8sCuUvVvxRiWApSdArOq3bSBdI0BsRKOEAsUSCLP_VV6fCnQpE5r/exec"; 
+  const API = "https://script.google.com/macros/s/AKfycbzAnLalxZL4W3fcKLrScY-xI4gv1Pez9oYRC5z7kueRQVXDGvuigJ-NbN45dJoBLQBg/exec"; 
   let questions = [], currentIdx = 0, timeLeft = 0, timerInterval;
   let isSubmitting = false; 
 
@@ -167,34 +159,52 @@
   }
 
   window.onload = async () => {
-    const testId = localStorage.getItem("currentTestId") || localStorage.getItem("selectedQuiz");
-    if (!testId) return location.href = "index.html";
-    document.getElementById("studentInfo").innerText = `${localStorage.getItem("studentName") || 'Thí sinh'} • ${localStorage.getItem("schoolName") || 'Tự do'}`;
+    const testId = localStorage.getItem("currentTestId");
+    if (!testId) return location.href = "select.html";
+
+    document.getElementById("studentInfo").innerText = 
+      `${localStorage.getItem("studentName") || 'Thí sinh'} • ${localStorage.getItem("schoolName") || 'Tự do'}`;
+    
     await loadQuestions(testId);
   };
 
   async function loadQuestions(testId) {
     try {
       const res = await fetch(`${API}?action=getQuestions&testId=${encodeURIComponent(testId)}`);
-      let data = await res.json();
+      const data = await res.json();
+
+      if (!Array.isArray(data) || data.length === 0) {
+        document.getElementById("quizContent").innerHTML = `<div style="text-align:center;padding:60px;color:#94a3b8">Bài thi chưa có câu hỏi!</div>`;
+        return;
+      }
+
       questions = data.map(q => {
-        let details = {};
-        try { details = (typeof q.answer === 'string') ? JSON.parse(q.answer) : q.answer; } catch (e) { details = {}; }
-        return { ...q, details };
+        let details = { items: [] };
+        try { 
+          details = (typeof q.answer === 'string') ? JSON.parse(q.answer) : (q.answer || { items: [] }); 
+        } catch (e) { details = { items: [] }; }
+        return { 
+          ...q, 
+          details,
+          correct: (q.correct || q.correctAnswer || "").toString().trim()
+        };
       });
+
       timeLeft = (parseInt(data[0]?.testTime) || 20) * 60;
       document.getElementById("quizTitle").innerText = localStorage.getItem("currentTestName") || "Bài thi Nebula";
       renderQuiz();
       renderNavGrid();
       showQuestion(0);
       startTimer();
-    } catch (e) { Swal.fire("Lỗi", "Không thể tải dữ liệu!", "error"); }
+    } catch (e) { 
+      console.error(e);
+      Swal.fire("Lỗi", "Không thể tải dữ liệu câu hỏi!", "error"); 
+    }
   }
 
   function renderQuiz() {
     const content = document.getElementById("quizContent");
     content.innerHTML = "";
-    const alphabet = ["A", "B", "C", "D", "E", "F"];
 
     questions.forEach((q, idx) => {
       const card = document.createElement("div");
@@ -202,42 +212,57 @@
       card.id = `qCard${idx}`;
       
       let html = `<div class="q-text"><b>Câu ${idx + 1}:</b> ${q.question}</div>`;
-      if (q.image) html += `<img src="${q.image}" class="q-image">`;
+      if (q.image && q.image.length > 10) html += `<img src="${q.image}" class="q-image">`;
       html += `<div class="ans-box">`;
 
-      const type = (q.type || "mcq").toLowerCase();
+      const type = (q.type || "single").toLowerCase();
+      const items = q.details?.items || [];
 
-      if (type.startsWith("mcq") || type === "single") {
+      if (type === "single" || type === "mcq" || type === "tf") {
         html += `<div class="options-grid">`;
-        let opts = q.details.items ? q.details.items.map((o, i) => ({ v: alphabet[i], t: o.text })) : Object.keys(q.details).map((k, i) => ({ v: k, t: q.details[k] }));
-        opts.forEach(opt => {
+        const opts = type === "tf" ? ["Đúng", "Sai"] : items.map(o => typeof o === 'object' ? o.text : o);
+        opts.forEach(txt => {
           html += `<label class="option-label">
-                    <input type="radio" name="ans${idx}" value="${opt.v}" onchange="markAsDone(${idx}); updateUI(this);">
-                    <span><b>${opt.v}.</b> ${opt.t}</span>
+                    <input type="radio" name="ans${idx}" value="${txt.replace(/"/g,"&quot;")}" 
+                      onchange="markAsDone(${idx}); updateUI(this);">
+                    <span>${txt}</span>
                   </label>`;
         });
         html += `</div>`;
-      } 
+      }
+      else if (type === "multiple") {
+        html += `<div class="options-grid">`;
+        items.forEach((opt) => {
+          const txt = typeof opt === 'object' ? opt.text : opt;
+          html += `<label class="option-label">
+                    <input type="checkbox" name="chk${idx}" value="${txt.replace(/"/g,"&quot;")}" 
+                      onchange="markAsDone(${idx}); this.parentElement.classList.toggle('selected-card', this.checked);">
+                    <span>${txt}</span>
+                  </label>`;
+        });
+        html += `</div>`;
+      }
       else if (type === "matching") {
         html += `<div class="matching-container">`;
-        const items = q.details.items || [];
         items.forEach((item, i) => {
           html += `<div class="matching-row">
-                    <div class="match-left">${item.left}</div>
-                    <div class="match-right-zone" id="zone_${idx}_${i}" data-correct="${item.right}"></div>
+                    <div class="match-left">${item.left || ''}</div>
+                    <div class="match-right-zone" id="zone_${idx}_${i}"></div>
                   </div>`;
         });
         html += `<div class="match-pool" id="pool${idx}">`;
         shuffle(items.map(it => it.right)).forEach(text => {
-          html += `<div class="drag-item" data-val="${text}">${text}</div>`;
+          html += `<div class="drag-item">${text}</div>`;
         });
         html += `</div></div>`;
       }
       else if (type === "ordering") {
         html += `<div class="drag-list" id="sortList${idx}">`;
-        const orderItems = (q.details.items || Object.values(q.details)).map(it => typeof it === 'object' ? it.text : it);
+        const orderItems = items.map(it => typeof it === 'object' ? it.text : it);
         shuffle(orderItems).forEach((item) => {
-          html += `<div class="drag-item" data-val="${item}"><i class="fas fa-grip-lines"></i> <span>${item}</span></div>`;
+          html += `<div class="drag-item">
+                    <i class="fas fa-grip-lines"></i> <span>${item}</span>
+                  </div>`;
         });
         html += `</div>`;
       }
@@ -247,24 +272,19 @@
 
       card.innerHTML = html + `</div>`;
       content.appendChild(card);
-      setTimeout(() => initDragDrop(idx, type, (q.details.items || []).length || Object.keys(q.details).length), 100);
+      setTimeout(() => initDragDrop(idx, type, items.length), 100);
     });
   }
 
   function initDragDrop(qIdx, type, count) {
     if (type === 'ordering') {
       const el = document.getElementById(`sortList${qIdx}`);
-      if(el) new Sortable(el, { 
-        animation: 250, 
-        ghostClass: 'sortable-ghost', 
-        chosenClass: 'sortable-chosen',
-        onEnd: () => markAsDone(qIdx) 
-      });
+      if(el) new Sortable(el, { animation: 250, onEnd: () => markAsDone(qIdx) });
     } else if (type === 'matching') {
       const pool = document.getElementById(`pool${qIdx}`);
       if(!pool) return;
       new Sortable(pool, { group: `match${qIdx}`, animation: 150 });
-      for(let i=0; i<count; i++) {
+      for(let i = 0; i < count; i++) {
         const zone = document.getElementById(`zone_${qIdx}_${i}`);
         if(zone) new Sortable(zone, {
           group: `match${qIdx}`, animation: 150,
@@ -296,13 +316,9 @@
     document.getElementById(`qNum${index}`).classList.add("current");
     document.getElementById("prevBtn").style.visibility = (index === 0) ? "hidden" : "visible";
     const nxt = document.getElementById("nextBtn");
-    if (index === questions.length - 1) {
-      nxt.innerHTML = `HOÀN THÀNH <i class="fas fa-check-circle"></i>`;
-      nxt.style.background = "var(--accent)"; nxt.style.color = "#000";
-    } else {
-      nxt.innerHTML = `TIẾP THEO <i class="fas fa-chevron-right"></i>`;
-      nxt.style.background = "var(--primary)"; nxt.style.color = "#fff";
-    }
+    nxt.innerHTML = (index === questions.length - 1) ? `HOÀN THÀNH <i class="fas fa-check-circle"></i>` : `TIẾP THEO <i class="fas fa-chevron-right"></i>`;
+    nxt.style.background = (index === questions.length - 1) ? "var(--accent)" : "var(--primary)";
+    nxt.style.color = (index === questions.length - 1) ? "#000" : "#fff";
   }
 
   function handleNextClick() {
@@ -310,7 +326,7 @@
     else showQuestion(currentIdx + 1);
   }
 
-  function changeQuestion(s) { if(questions[currentIdx+s]) showQuestion(currentIdx + s); }
+  function changeQuestion(s) { if(questions[currentIdx + s]) showQuestion(currentIdx + s); }
   function markAsDone(i) { document.getElementById(`qNum${i}`)?.classList.add("done"); }
   function updateUI(input) {
     input.closest('.ans-box').querySelectorAll('.option-label').forEach(l => l.classList.remove('selected-card'));
@@ -330,7 +346,7 @@
     const done = document.querySelectorAll(".q-num.done").length;
     Swal.fire({
       title: "Nộp bài?", text: `Hoàn thành ${done}/${questions.length} câu.`,
-      icon: "question", showCancelButton: true, confirmButtonText: "Nộp bài", confirmButtonColor: "#ef4444"
+      icon: "question", showCancelButton: true, confirmButtonText: "Nộp bài"
     }).then(r => { if(r.isConfirmed) submitQuiz(); });
   }
 
@@ -341,41 +357,71 @@
     Swal.fire({ title: 'Đang chấm điểm...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
     let scoreCount = 0;
+    
+    // Hàm chuẩn hóa chuỗi để so sánh chính xác
+    const cleanStr = (s) => s ? s.toString().split('|').map(x => x.trim()).join('|').trim() : "";
+
     questions.forEach((q, i) => {
       let correct = false;
-      const type = q.type.toLowerCase();
-      if (type === "mcq" || type === "single") {
-        correct = (document.querySelector(`input[name="ans${i}"]:checked`)?.value === q.correct);
-      } else if (type === "fill") {
-        correct = (document.getElementById(`fill${i}`).value.trim().toLowerCase() === q.correct.toString().toLowerCase());
-      } else if (type === "ordering") {
-        const order = Array.from(document.querySelectorAll(`#sortList${i} .drag-item span`)).map(el => el.innerText).join("|");
-        correct = (order === q.correct);
-      } else if (type === "matching") {
-        const zones = document.querySelectorAll(`[id^="zone_${i}_"]`);
-        let all = true;
-        zones.forEach(z => { if (z.firstElementChild?.dataset.val !== z.dataset.correct) all = false; });
-        correct = (all && zones.length > 0);
+      const type = (q.type || "single").toLowerCase();
+      const ansKey = cleanStr(q.correct);
+
+      if (type === "single" || type === "mcq" || type === "tf") {
+        const val = (document.querySelector(`input[name="ans${i}"]:checked`)?.value || "").trim();
+        correct = (val !== "" && val === ansKey);
+      } 
+      else if (type === "multiple") {
+        const val = Array.from(document.querySelectorAll(`input[name="chk${i}"]:checked`))
+                          .map(el => el.value.trim()).sort().join("|");
+        const exp = ansKey.split("|").sort().join("|");
+        correct = (val !== "" && val === exp);
       }
+      else if (type === "fill") {
+        const val = (document.getElementById(`fill${i}`)?.value || "").trim().toLowerCase();
+        correct = (val !== "" && val === ansKey.toLowerCase());
+      } 
+      else if (type === "ordering") {
+        const val = Array.from(document.querySelectorAll(`#sortList${i} .drag-item span`))
+                          .map(el => el.innerText.trim()).join("|");
+        correct = (val !== "" && val === ansKey);
+      } 
+      else if (type === "matching") {
+        const pairs = [];
+        document.querySelectorAll(`[id^="zone_${i}_"]`).forEach(z => {
+          const left = z.closest('.matching-row').querySelector('.match-left').innerText.trim();
+          const right = z.firstElementChild?.innerText?.trim() || "";
+          if(right) pairs.push(`${left}-${right}`);
+        });
+        const val = pairs.sort().join("|");
+        const exp = ansKey.split("|").map(s => s.trim()).sort().join("|");
+        correct = (val !== "" && val === exp);
+      }
+
       if (correct) scoreCount++;
     });
 
-    const finalScore = ((scoreCount / questions.length) * 10).toFixed(1);
-    const data = {
+    const totalQ = questions.length;
+    const finalScore = totalQ > 0 ? ((scoreCount / totalQ) * 10).toFixed(1) : "0.0";
+    
+    const submitData = {
       action: "submitResult",
-      student: localStorage.getItem("studentName"),
-      school: localStorage.getItem("schoolName"),
-      testName: localStorage.getItem("currentTestName"),
+      student: localStorage.getItem("studentName") || "Ẩn danh",
+      school: localStorage.getItem("schoolName") || "",
+      testName: localStorage.getItem("currentTestName") || "",
       score: finalScore,
-      total: `${scoreCount}/${questions.length}`
+      total: `${scoreCount}/${totalQ}`
     };
 
     try {
-      await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(data) });
+      await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(submitData) });
       localStorage.setItem("lastScore", finalScore);
-      localStorage.setItem("correctCount", data.total);
+      localStorage.setItem("correctCount", submitData.total);
+      localStorage.setItem("quiz_submitted", "true");
       window.location.replace("result.html");
-    } catch (e) { Swal.fire("Lỗi", "Gửi bài thất bại!", "error"); }
+    } catch (e) { 
+      Swal.fire("Lỗi", "Gửi bài thất bại!", "error"); 
+      isSubmitting = false;
+    }
   }
 </script>
 </body>

@@ -7,170 +7,184 @@
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
     :root {
       --primary: #4facfe; --secondary: #00f2fe; --accent: #00ffcc;
-      --glass-bg: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-bg: rgba(15, 23, 42, 0.65); --glass-border: rgba(255, 255, 255, 0.1);
       --text-main: #ffffff;
-      --swal-bg: rgba(15, 25, 45, 0.9);
     }
 
-    /* TÙY CHỈNH POPUP SWEETALERT2 CHO GIỐNG GIAO DIỆN NEBULA */
+    /* TÙY CHỈNH SWEETALERT2 */
     .swal2-popup {
-      background: var(--swal-bg) !important;
+      background: rgba(15, 23, 42, 0.9) !important;
       backdrop-filter: blur(20px) !important;
       border: 1px solid var(--glass-border) !important;
       border-radius: 25px !important;
       color: #fff !important;
     }
-    .swal2-title { color: #fff !important; font-weight: 800 !important; text-transform: uppercase; }
-    .swal2-html-container { color: rgba(255,255,255,0.8) !important; }
-    .swal2-confirm {
-      background: linear-gradient(135deg, var(--primary), #0072ff) !important;
-      border-radius: 12px !important;
-      font-weight: 700 !important;
-      padding: 12px 30px !important;
-    }
-    .swal2-timer-progress-bar { background: var(--accent) !important; }
+    .swal2-title { color: #fff !important; font-weight: 800 !important; }
+    .swal2-confirm { background: linear-gradient(135deg, var(--primary), var(--secondary)) !important; border-radius: 12px !important; color: #000 !important; font-weight: 700 !important; }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
 
     body {
       min-height: 100vh; display: flex; justify-content: center; align-items: center;
       color: var(--text-main); overflow: hidden; position: relative;
-      background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
+      background: #0b0f1a url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center/cover;
     }
 
     body::before {
       content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(135deg, rgba(15, 32, 39, 0.9), rgba(44, 83, 100, 0.8)); z-index: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(79, 172, 254, 0.15), rgba(15, 23, 42, 0.9)); z-index: 0;
     }
 
     .container { position: relative; z-index: 10; width: 100%; max-width: 450px; padding: 20px; }
 
     .box {
-      background: var(--glass-bg); backdrop-filter: blur(25px); border-radius: 30px; 
-      padding: 40px 30px; border: 1px solid var(--glass-border);
-      box-shadow: 0 25px 50px rgba(0,0,0,0.4); text-align: center;
-      animation: fadeInUp 0.8s ease-out;
+      background: var(--glass-bg); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
+      border-radius: 35px; padding: 45px 35px; border: 1px solid var(--glass-border);
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6); text-align: center;
+      transition: 0.4s;
     }
 
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
     h2 {
-      font-size: 1.8rem; margin-bottom: 30px; font-weight: 800;
+      font-size: 1.8rem; margin-bottom: 30px; font-weight: 800; letter-spacing: 1px;
       background: linear-gradient(to right, #fff, var(--primary));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       display: flex; align-items: center; justify-content: center; gap: 12px;
     }
 
-    .input-group { margin-bottom: 18px; text-align: left; }
+    .input-group { margin-bottom: 22px; text-align: left; }
     .input-group label {
-      display: block; margin-bottom: 8px; font-size: 0.7rem;
-      color: var(--primary); text-transform: uppercase; font-weight: 800; letter-spacing: 1.2px;
+      display: block; margin-bottom: 8px; font-size: 0.75rem; margin-left: 12px;
+      color: rgba(255,255,255,0.5); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
     }
 
     .input-wrapper { position: relative; }
-    .input-wrapper i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: rgba(255, 255, 255, 0.4); }
+    .input-wrapper i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--primary); font-size: 1.1rem; }
 
     input {
-      width: 100%; padding: 14px 15px 14px 45px; border-radius: 14px;
-      border: 1px solid var(--glass-border); background: rgba(0, 0, 0, 0.3);
-      color: white; font-size: 0.95rem; outline: none; transition: 0.3s;
+      width: 100%; padding: 16px 20px 16px 52px; border-radius: 18px;
+      border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.05);
+      color: white; font-size: 1rem; outline: none; transition: 0.3s ease;
     }
-    input:focus { border-color: var(--primary); background: rgba(0, 0, 0, 0.5); }
+    input:focus { 
+      border-color: var(--primary); background: rgba(255, 255, 255, 0.1); 
+      box-shadow: 0 0 15px rgba(79, 172, 254, 0.2); 
+    }
 
     .btn {
-      width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 800;
-      cursor: pointer; transition: 0.4s; font-size: 1rem; margin-top: 10px;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      text-transform: uppercase;
+      width: 100%; padding: 18px; border-radius: 18px; border: none; font-weight: 800;
+      cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+      font-size: 1rem; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 10px;
     }
 
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; filter: grayscale(0.5); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .btn-primary { background: linear-gradient(135deg, var(--primary), #0072ff); color: white; }
-    .btn-primary:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.1); }
+    .btn-primary { 
+      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
+      color: #0b0f1a; 
+      box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+    }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-3px); filter: brightness(1.1); box-shadow: 0 15px 30px rgba(79, 172, 254, 0.4); }
 
-    .btn-register { background: transparent; border: 1px solid var(--accent); color: var(--accent); margin-top: 15px; }
+    .btn-register { background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: #fff; margin-top: 15px; }
+    .btn-register:hover { background: rgba(255,255,255,0.1); }
 
-    .hidden { display: none; }
-    .back-link { margin-top: 25px; display: inline-block; color: rgba(255, 255, 255, 0.5); text-decoration: none; font-size: 0.85rem; }
-    .shake { animation: shake 0.4s; }
+    .hidden { display: none !important; }
+    .back-link { margin-top: 30px; display: inline-block; color: rgba(255, 255, 255, 0.4); text-decoration: none; font-size: 0.85rem; transition: 0.3s; }
+    .back-link:hover { color: var(--primary); }
+
     @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+    .shake { animation: shake 0.4s; }
+
+    /* Hiệu ứng hạt decor */
+    .bg-dot {
+      position: absolute; width: 3px; height: 3px; background: var(--accent);
+      border-radius: 50%; opacity: 0.3; animation: float 15s infinite linear; z-index: 1;
+    }
+    @keyframes float { 0% { transform: translateY(100vh); opacity: 0; } 50% { opacity: 0.4; } 100% { transform: translateY(-10vh); opacity: 0; } }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="box" id="mainBox">
-    <h2 id="formHeader"><i class="fas fa-lock"></i> ĐĂNG NHẬP</h2>
+  <div class="bg-dot" style="left: 10%; animation-duration: 10s;"></div>
+  <div class="bg-dot" style="left: 35%; animation-duration: 18s; animation-delay: 2s;"></div>
+  <div class="bg-dot" style="left: 75%; animation-duration: 14s; animation-delay: 5s;"></div>
 
-    <!-- FORM ĐĂNG NHẬP -->
-    <div id="loginForm">
-      <div class="input-group">
-        <label>Tài khoản</label>
-        <div class="input-wrapper"><i class="fas fa-user"></i><input id="user" type="text" placeholder="Username..."></div>
-      </div>
-      <div class="input-group">
-        <label>Mật khẩu</label>
-        <div class="input-wrapper"><i class="fas fa-key"></i><input id="pass" type="password" placeholder="••••••••"></div>
-      </div>
-      <button id="btnLogin" class="btn btn-primary" onclick="handleAction('login')">
-        Đăng nhập <i class="fas fa-sign-in-alt"></i>
-      </button>
-      <button id="regToggleBtn" class="btn btn-register hidden" onclick="toggleForm(true)">Tạo tài khoản học sinh</button>
-    </div>
+  <div class="container">
+    <div class="box animate__animated animate__zoomIn" id="mainBox">
+      <h2 id="formHeader"><i class="fas fa-lock"></i> ĐĂNG NHẬP</h2>
 
-    <!-- FORM ĐĂNG KÝ -->
-    <div id="registerForm" class="hidden">
-      <div class="input-group">
-        <label>Họ và Tên</label>
-        <div class="input-wrapper"><i class="fas fa-id-card"></i><input id="regFullName" type="text" placeholder="Nguyễn Văn A"></div>
+      <!-- FORM ĐĂNG NHẬP -->
+      <div id="loginForm">
+        <div class="input-group">
+          <label>Tài khoản</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user"></i>
+            <input id="user" type="text" placeholder="Nhập username...">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Mật khẩu</label>
+          <div class="input-wrapper">
+            <i class="fas fa-key"></i>
+            <input id="pass" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <button id="btnLogin" class="btn btn-primary" onclick="handleAction('login')">
+          Đăng nhập <i class="fas fa-sign-in-alt"></i>
+        </button>
+        <button id="regToggleBtn" class="btn btn-register hidden" onclick="toggleForm(true)">Tạo tài khoản học sinh</button>
       </div>
-      <div style="display: flex; gap: 10px;">
-        <div class="input-group" style="flex: 1;"><label>Lớp</label><input id="regClass" type="text" placeholder="10A1" style="padding-left:15px"></div>
-        <div class="input-group" style="flex: 2;"><label>Trường</label><input id="regSchool" type="text" placeholder="Tên trường..." style="padding-left:15px"></div>
+
+      <!-- FORM ĐĂNG KÝ -->
+      <div id="registerForm" class="hidden">
+        <div class="input-group">
+          <label>Họ và Tên</label>
+          <div class="input-wrapper">
+            <i class="fas fa-id-card"></i>
+            <input id="regFullName" type="text" placeholder="Nguyễn Văn A">
+          </div>
+        </div>
+        <div style="display: flex; gap: 15px;">
+          <div class="input-group" style="flex: 1;"><label>Lớp</label><input id="regClass" type="text" placeholder="10A1" style="padding-left:18px"></div>
+          <div class="input-group" style="flex: 2;"><label>Trường</label><input id="regSchool" type="text" placeholder="Tên trường..." style="padding-left:18px"></div>
+        </div>
+        <div class="input-group">
+          <label>Tên đăng nhập</label>
+          <div class="input-wrapper">
+            <i class="fas fa-user-tag"></i>
+            <input id="regUser" type="text" placeholder="vana123">
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Mật khẩu</label>
+          <div class="input-wrapper">
+            <i class="fas fa-lock"></i>
+            <input id="regPass" type="password" placeholder="••••••••">
+          </div>
+        </div>
+        <button id="btnReg" class="btn btn-primary" style="background: linear-gradient(135deg, #00ffcc, #0072ff);" onclick="handleAction('register')">
+          Gửi yêu cầu <i class="fas fa-paper-plane"></i>
+        </button>
+        <button class="btn btn-register" onclick="toggleForm(false)">Quay lại</button>
       </div>
-      <div class="input-group">
-        <label>Tên đăng nhập</label>
-        <div class="input-wrapper"><i class="fas fa-user-tag"></i><input id="regUser" type="text" placeholder="vana123"></div>
-      </div>
-      <div class="input-group">
-        <label>Mật khẩu</label>
-        <div class="input-wrapper"><i class="fas fa-lock"></i><input id="regPass" type="password" placeholder="••••••••"></div>
-      </div>
-      <button id="btnReg" class="btn btn-primary" style="background: linear-gradient(135deg, #2ed573, #1e90ff);" onclick="handleAction('register')">
-        Gửi yêu cầu <i class="fas fa-paper-plane"></i>
-      </button>
-      <button class="btn btn-register" style="border-color:#aaa; color:#aaa" onclick="toggleForm(false)">Quay lại</button>
+      
+      <a href="index.html" class="back-link"><i class="fas fa-chevron-left"></i> Quay về trang chủ</a>
     </div>
-    
-    <a href="index.html" class="back-link"><i class="fas fa-chevron-left"></i> Quay về trang chủ</a>
   </div>
-</div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxWmPOYaxnzgxJG8sCuUvVvxRiWApSdArOq3bSBdI0BsRKOEAsUSCLP_VV6fCnQpE5r/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAnLalxZL4W3fcKLrScY-xI4gv1Pez9oYRC5z7kueRQVXDGvuigJ-NbN45dJoBLQBg/exec";
   const params = new URLSearchParams(window.location.search);
   const roleFromUrl = params.get('role') || 'admin'; 
   
   let isRegisterMode = false;
   let isSubmitting = false;
-
-  // Cấu hình Popup Toast mặc định
-  const Toast = Swal.mixin({
-    toast: false,
-    position: 'center',
-    showConfirmButton: true,
-    timerProgressBar: true,
-    didOpen: (toast) => {
-      toast.addEventListener('mouseenter', Swal.stopTimer)
-      toast.addEventListener('mouseleave', Swal.resumeTimer)
-    }
-  });
 
   window.onload = () => {
     const header = document.getElementById('formHeader');
@@ -183,9 +197,8 @@
     document.getElementById('user').focus();
   };
 
-  document.addEventListener('keydown', function(e) {
+  document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !isSubmitting) {
-      e.preventDefault();
       handleAction(isRegisterMode ? 'register' : 'login');
     }
   });
@@ -193,11 +206,18 @@
   function toggleForm(showReg) {
     if(isSubmitting) return;
     isRegisterMode = showReg;
-    document.getElementById('loginForm').classList.toggle('hidden', showReg);
-    document.getElementById('registerForm').classList.toggle('hidden', !showReg);
-    document.getElementById('formHeader').innerHTML = showReg ? '<i class="fas fa-edit"></i> ĐĂNG KÝ MỚI' : (roleFromUrl === 'student' ? '<i class="fas fa-user-graduate"></i> HỌC SINH' : '<i class="fas fa-user-shield"></i> QUẢN TRỊ VIÊN');
-    if(showReg) document.getElementById('regFullName').focus();
-    else document.getElementById('user').focus();
+    const box = document.getElementById('mainBox');
+    box.classList.add('animate__animated', 'animate__flipInY');
+    
+    setTimeout(() => {
+      document.getElementById('loginForm').classList.toggle('hidden', showReg);
+      document.getElementById('registerForm').classList.toggle('hidden', !showReg);
+      document.getElementById('formHeader').innerHTML = showReg ? '<i class="fas fa-edit"></i> ĐĂNG KÝ MỚI' : (roleFromUrl === 'student' ? '<i class="fas fa-user-graduate"></i> HỌC SINH' : '<i class="fas fa-user-shield"></i> QUẢN TRỊ VIÊN');
+      if(showReg) document.getElementById('regFullName').focus();
+      else document.getElementById('user').focus();
+    }, 200);
+
+    setTimeout(() => box.classList.remove('animate__flipInY'), 800);
   }
 
   async function handleAction(action) {
@@ -207,12 +227,7 @@
     const passVal = action === 'login' ? document.getElementById('pass').value.trim() : document.getElementById('regPass').value.trim();
 
     if (!userVal || !passVal) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Thiếu thông tin!',
-        text: 'Vui lòng nhập đầy đủ các trường yêu cầu ✨',
-        showClass: { popup: 'animate__animated animate__headShake' }
-      });
+      Swal.fire({ icon: 'warning', title: 'Thiếu thông tin!', text: 'Vui lòng nhập đầy đủ các trường yêu cầu ✨' });
       return;
     }
 
@@ -247,11 +262,9 @@
           Swal.fire({
             icon: 'success',
             title: 'CHÀO MỪNG TRỞ LẠI!',
-            html: `Hệ thống Nebula xin chào học sinh: <b style="color:var(--primary)">${result.name}</b>`,
+            html: `Hệ thống Nebula xin chào! <b style="color:var(--primary)">${result.name}</b>`,
             timer: 2000,
-            showConfirmButton: false,
-            timerProgressBar: true,
-            showClass: { popup: 'animate__animated animate__zoomIn' }
+            showConfirmButton: false
           });
 
           setTimeout(() => { 
@@ -262,29 +275,14 @@
             icon: 'success',
             title: 'GỬI THÀNH CÔNG!',
             text: 'Yêu cầu của bạn đã được gửi. Hãy kiên nhẫn đợi quản trị viên phê duyệt nhé!',
-            confirmButtonText: 'ĐÃ HIỂU'
           }).then(() => toggleForm(false));
         }
-      } else if (result.status === "pending") {
-        Swal.fire({
-          icon: 'info',
-          title: 'ĐANG CHỜ DUYỆT',
-          text: 'Tài khoản của bạn đã có trên hệ thống nhưng chưa được kích hoạt bởi quản trị viên.',
-          confirmButtonText: 'ĐÃ HIỂU'
-        });
       } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'TRUY CẬP THẤT BẠI',
-          text: result.message || 'Thông tin đăng nhập không chính xác. Vui lòng kiểm tra lại!',
-          confirmButtonText: 'THỬ LẠI',
-          showClass: { popup: 'animate__animated animate__shakeX' }
-        });
+        Swal.fire({ icon: 'error', title: 'THẤT BẠI', text: result.message || 'Sai thông tin!' });
         document.getElementById('mainBox').classList.add('shake');
         setTimeout(() => document.getElementById('mainBox').classList.remove('shake'), 400);
       }
     } catch (error) {
-      console.error(error);
       Swal.fire({ icon: 'error', title: 'LỖI KẾT NỐI', text: 'Không thể liên lạc với máy chủ Nebula!' });
     } finally {
       isSubmitting = false;

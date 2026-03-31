@@ -85,7 +85,7 @@
     .test-card h4 { color: #60a5fa; margin-bottom: 4px; font-size: 0.95rem; }
     .test-card p  { font-size: 0.72rem; opacity: 0.5; }
 
-    .result-row { display: grid; grid-template-columns: 2fr 1.5fr 1fr; padding: 12px 6px; border-bottom: 1px solid var(--border); font-size: 0.88rem; }
+    .result-row { display: grid; grid-template-columns: 1.8fr 1.5fr 1fr; padding: 12px 6px; border-bottom: 1px solid var(--border); font-size: 0.88rem; align-items: center; }
 
     .user-card {
       background: rgba(255,255,255,0.02); border-left: 4px solid var(--warning);
@@ -207,7 +207,8 @@
       <div class="glass-card" style="margin-bottom:25px; border-top:3px solid var(--primary)">
         <h3 style="font-size:1rem; margin-bottom:16px"><i class="fas fa-plus-circle" style="color:var(--primary)"></i> Khởi tạo bài mới</h3>
         <input id="newName" class="input-dark" style="margin-bottom:10px" placeholder="Tên bài thi (Ví dụ: Toán cuối kỳ I)">
-        <input id="newDesc" class="input-dark" style="margin-bottom:16px" placeholder="Mô tả ngắn gọn">
+        <input id="newDesc" class="input-dark" style="margin-bottom:10px" placeholder="Mô tả ngắn gọn">
+        <input id="newDur" class="input-dark" type="number" style="margin-bottom:16px" placeholder="Thời gian (phút)" value="45">
         <button class="btn btn-glow" style="width:100%; justify-content:center; padding:13px" onclick="addTest()">
           <i class="fas fa-rocket"></i> XÁC NHẬN TẠO ĐỀ
         </button>
@@ -242,7 +243,7 @@
 // ─────────────────────────────────────────────
 //  API URL — cập nhật LINKS API
 // ─────────────────────────────────────────────
-const API = "https://script.google.com/macros/s/AKfycbxWmPOYaxnzgxJG8sCuUvVvxRiWApSdArOq3bSBdI0BsRKOEAsUSCLP_VV6fCnQpE5r/exec";
+const API = "https://script.google.com/macros/s/AKfycbzAnLalxZL4W3fcKLrScY-xI4gv1Pez9oYRC5z7kueRQVXDGvuigJ-NbN45dJoBLQBg/exec";
 
 // ─────────────────────────────────────────────
 //  STATE
@@ -252,7 +253,7 @@ let debugOpen = false;
 let chartInst = null;
 
 // Bật dòng dưới khi muốn khoá trang admin
-// if (localStorage.getItem("userRole") !== "admin") location.replace("index.html");
+if (localStorage.getItem("userRole") !== "admin") { localStorage.clear(); location.replace("index.html"); }
 
 function logout() { localStorage.clear(); location.replace("index.html"); }
 
@@ -415,18 +416,20 @@ function renderResults() {
     return;
   }
   el.innerHTML = [...results].reverse().map(r => {
-    const name  = r.name || r.student || "—";
+    const name  = r.student || r.name || "—";
     const tname = r.testName || r.test || "—";
-    const s     = parseFloat(r.score || 0);
-    // total có thể dạng "3/10" hoặc số nguyên
-    const totStr = (r.total || "10").toString();
-    const den    = parseFloat(totStr.split("/").pop()) || 10;
-    const pct    = Math.round(s / den * 100);
+    const score = parseFloat(r.score || 0);
+    // total dạng "3/10" (đúng/tổng) — chỉ hiển thị, không tính pct từ đây
+    const pct   = Math.round(score / 10 * 100); // score là thang 10
+    const time  = r.time || "";
     return `
       <div class="result-row">
-        <span style="font-weight:600">${name}</span>
+        <div>
+          <div style="font-weight:600">${name}</div>
+          <div style="font-size:0.7rem; opacity:0.45">${time}</div>
+        </div>
         <span style="opacity:.6; font-size:.82rem">${tname}</span>
-        <span style="color:${pct >= 50 ? 'var(--secondary)' : 'var(--danger)'}; font-weight:700">${r.score}/${r.total}</span>
+        <span style="color:${pct >= 50 ? 'var(--secondary)' : 'var(--danger)'}; font-weight:700">${score} đ &nbsp;<small style="opacity:0.5;font-weight:400">(${r.total || ''})</small></span>
       </div>`;
   }).join("");
 }
@@ -465,9 +468,9 @@ function renderPending() {
 function updateStats() {
   if (!results.length) { document.getElementById("cAvg").innerText = "0%"; return; }
   const pass = results.filter(r => {
-    const s   = parseFloat(r.score || 0);
-    const den = parseFloat((r.total || "10").toString().split("/").pop()) || 10;
-    return (s / den) >= 0.5;
+    // score là điểm thang 10
+    const s = parseFloat(r.score || 0);
+    return s >= 5;
   }).length;
   document.getElementById("cAvg").innerText = Math.round(pass / results.length * 100) + "%";
 }
@@ -476,8 +479,7 @@ function drawChart() {
   const stats = [0, 0, 0];
   results.forEach(r => {
     const s   = parseFloat(r.score || 0);
-    const den = parseFloat((r.total || "10").toString().split("/").pop()) || 10;
-    const pct = (s / den) * 100;
+    const pct = s * 10; // score thang 10 → pct
     if (pct >= 80) stats[0]++;
     else if (pct >= 50) stats[1]++;
     else stats[2]++;
@@ -512,10 +514,12 @@ async function addTest() {
   if (!name) return Swal.fire({ icon: "warning", title: "Thiếu tên đề!", text: "Vui lòng nhập tên bài thi.", confirmButtonColor: "#3b82f6" });
 
   Swal.fire({ title: "Đang khởi tạo...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-  await postAPI({ action: "createTest", name, desc });
+  const dur = parseInt(document.getElementById('newDur').value) || 45;
+  await postAPI({ action: "createTest", name, desc, duration: dur });
   Swal.fire({ icon: "success", title: "Hoàn tất!", timer: 1000, showConfirmButton: false });
   document.getElementById("newName").value = "";
   document.getElementById("newDesc").value = "";
+  document.getElementById("newDur").value = "45";
   setTimeout(loadData, 1300);
 }
 
@@ -545,7 +549,7 @@ async function approveUser(username, action) {
   });
   if (!r.isConfirmed) return;
   Swal.fire({ title: "Đang xử lý...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-  await postAPI({ action: "handleUserRequest", email: username, status: isApprove ? "approved" : "rejected" });
+  await postAPI({ action: "handleUserRequest", username: username, status: isApprove ? "approved" : "rejected" });
   Swal.fire({ icon: "success", title: "Thành công!", timer: 800, showConfirmButton: false });
   setTimeout(loadData, 1000);
 }
