@@ -86,7 +86,6 @@
 
     /* DANH SÁCH CÂU HỎI */
     .q-list { display:flex; flex-direction:column; gap:10px; }
-
     .q-item {
       border-radius:14px; border:1px solid var(--glass-border);
       background:rgba(255,255,255,0.02); overflow:hidden; cursor:pointer; transition:0.2s;
@@ -105,11 +104,9 @@
     .q-arrow   { color:#475569; font-size:0.75rem; transition:transform 0.2s; }
     .q-item.open .q-arrow { transform:rotate(180deg); }
 
-    /* CHI TIẾT CÂU */
     .q-detail { display:none; padding:0 18px 16px; border-top:1px solid rgba(255,255,255,0.05); }
     .q-item.open .q-detail { display:block; }
     .detail-inner { padding-top:12px; }
-
     .d-label { font-size:0.67rem; text-transform:uppercase; letter-spacing:1px; color:#475569; margin-bottom:6px; font-weight:700; }
 
     .opt-item {
@@ -119,14 +116,12 @@
     }
     .opt-item.is-correct { background:rgba(0,255,204,0.08); border-color:rgba(0,255,204,0.3); color:var(--correct); }
     .opt-item.is-wrong   { background:rgba(255,71,87,0.08);  border-color:rgba(255,71,87,0.3);  color:var(--wrong); }
-
     .correct-answer-box {
       background:rgba(0,255,204,0.07); border:1px solid rgba(0,255,204,0.2);
       border-radius:10px; padding:9px 13px; font-size:0.85rem;
       color:var(--correct); display:flex; align-items:center; gap:8px;
     }
     .divider { height:1px; background:rgba(255,255,255,0.05); margin:10px 0; }
-
     .loading-questions { text-align:center; padding:40px; color:#475569; }
 
     @media(max-width:600px) {
@@ -138,7 +133,6 @@
 <body>
 <div class="container">
 
-  <!-- ── VIEW 1: DANH SÁCH LỊCH SỬ ── -->
   <div id="viewList">
     <div class="header-box">
       <div>
@@ -152,28 +146,25 @@
     </div>
   </div>
 
-  <!-- ── VIEW 2: CHI TIẾT BÀI LÀM ── -->
   <div id="viewDetail">
     <div class="detail-back">
       <button class="btn-sm" onclick="backToList()"><i class="fas fa-arrow-left"></i> Quay lại</button>
       <span id="detailTestName" style="font-weight:800; font-size:1rem; color:#fff"></span>
     </div>
-
     <div class="detail-summary" id="detailSummary"></div>
-
     <div class="q-list" id="qDetailList">
       <div class="loading-questions"><i class="fas fa-spinner fa-spin"></i> Đang tải câu hỏi...</div>
     </div>
   </div>
 
 </div>
-<script>
-  const API = "https://script.google.com/macros/s/AKfycbxERNvcslJ8lMkwAMEW73y3VKSIMLNWgI65Gf8qPvJ5VomQJcW_JrIzOL8bYXCCB00m/exec";
 
-  let allResults   = [];
+<script>
+  const API = "https://script.google.com/macros/s/AKfycbyWQYM84IUA98xAJdUjEFTjnyGdDvQyI2GcIyI0BTZC8kcG5YGr1C1FjphqAttK0qjU/exec";
+
+  let allResults = [];
   let currentRecord = null;
 
-  // ── FORMAT TIME ──
   function fmtTime(val) {
     if (!val) return "—";
     const d = new Date(val);
@@ -181,23 +172,21 @@
     return d.toLocaleString("vi-VN", { hour:"2-digit", minute:"2-digit", day:"2-digit", month:"2-digit", year:"numeric" });
   }
 
-  // ── INIT ──
   window.onload = () => {
-    const name   = localStorage.getItem("studentName") || "Học sinh";
-    const school = localStorage.getItem("schoolName")  || "";
+    const name = localStorage.getItem("studentName") || "Học sinh";
+    const school = localStorage.getItem("schoolName") || "";
     document.getElementById("studentDisplay").innerText = `🚀 ${name}${school ? " | " + school : ""}`;
     loadHistory(name);
   };
 
-  // ── LOAD DANH SÁCH ──
   async function loadHistory(studentName) {
     const el = document.getElementById("historyList");
     try {
-      const res  = await fetch(`${API}?action=getResults`);
+      const res = await fetch(`${API}?action=getResults`);
       allResults = await res.json();
 
       const mine = allResults
-        .filter(r => String(r.student || "").trim() === studentName.trim())
+        .filter(r => String(r.student || "").trim().toLowerCase() === studentName.trim().toLowerCase())
         .reverse();
 
       if (!mine.length) {
@@ -206,101 +195,111 @@
       }
 
       el.innerHTML = mine.map((r, i) => {
-        const score = isNaN(parseFloat(r.score)) ? "—" : parseFloat(r.score).toFixed(1).replace(/\.0$/,"");
-        const total = String(r.total || "").includes("T") ? "—" : (r.total || "—");
+        const name = r.testName || r.testname || "Bài thi";
+        
+        // FIX LỖI ĐIỂM: Xử lý an toàn cho cả string và number
+        const rawScore = r.score;
+        let scoreDisplay = "0";
+        if (rawScore !== undefined && rawScore !== null) {
+          const numScore = parseFloat(rawScore);
+          scoreDisplay = isNaN(numScore) ? rawScore : numScore.toFixed(1).replace(/\.0$/, "");
+        }
+
+        const total = r.total || "—";
+        const time = r.time || "";
+
         return `
           <div class="history-item animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s"
-               onclick='openDetail(${JSON.stringify(JSON.stringify(r))})'>
+               onclick='prepareDetail(${i}, ${JSON.stringify(mine[i]).replace(/'/g, "&apos;")})'>
             <div>
-              <div class="test-name">${r.testName || "Bài thi"}</div>
-              <div class="test-time"><i class="far fa-clock"></i> ${fmtTime(r.time)}</div>
+              <div class="test-name">${name}</div>
+              <div class="test-time"><i class="far fa-clock"></i> ${fmtTime(time)}</div>
             </div>
-            <div class="score-box">${score}<span class="score-lbl">ĐIỂM</span></div>
+            <div class="score-box">${scoreDisplay}<span class="score-lbl">ĐIỂM</span></div>
             <div class="total-box"><i class="fas fa-check-double"></i> ${total}</div>
             <div class="arr"><i class="fas fa-chevron-right"></i></div>
           </div>`;
       }).join("");
     } catch(e) {
+      console.error(e);
       el.innerHTML = `<div class="no-data"><i class="fas fa-wifi"></i><p>Lỗi kết nối máy chủ.</p></div>`;
     }
   }
 
-  // ── MỞ CHI TIẾT ──
-  async function openDetail(recordJson) {
-    currentRecord = JSON.parse(recordJson);
+  // Hàm trung gian để tránh lỗi truyền JSON phức tạp vào onclick
+  function prepareDetail(index, record) {
+    openDetail(record);
+  }
 
-    document.getElementById("viewList").style.display   = "none";
+  async function openDetail(record) {
+    currentRecord = record;
+
+    document.getElementById("viewList").style.display = "none";
     document.getElementById("viewDetail").style.display = "block";
-    document.getElementById("detailTestName").innerText = currentRecord.testName || "Bài thi";
+    
+    const tName = currentRecord.testName || currentRecord.testname || "Bài thi";
+    document.getElementById("detailTestName").innerText = tName;
 
-    // Summary
-    const score = isNaN(parseFloat(currentRecord.score)) ? "—" : parseFloat(currentRecord.score).toFixed(1).replace(/\.0$/,"");
+    // Summary Score
+    const numScore = parseFloat(currentRecord.score);
+    const scoreStr = isNaN(numScore) ? currentRecord.score : numScore.toFixed(1).replace(/\.0$/,"");
+    
     const total = String(currentRecord.total || "");
-    const [correct, totalQ] = total.includes("/") ? total.split("/") : ["—","—"];
-    const wrong = (!isNaN(parseInt(correct)) && !isNaN(parseInt(totalQ)))
-      ? parseInt(totalQ) - parseInt(correct) : "—";
+    const [correct, totalQ] = total.includes("/") ? total.split("/") : ["0","0"];
+    const wrong = (parseInt(totalQ) || 0) - (parseInt(correct) || 0);
 
     document.getElementById("detailSummary").innerHTML = `
-      <div class="detail-title">${currentRecord.testName || "Bài thi"}</div>
+      <div class="detail-title">${tName}</div>
       <div class="chips">
-        <span class="chip chip-score"><i class="fas fa-trophy"></i> ${score} điểm</span>
+        <span class="chip chip-score"><i class="fas fa-trophy"></i> ${scoreStr} điểm</span>
         <span class="chip chip-correct"><i class="fas fa-check"></i> ${correct} câu đúng</span>
         <span class="chip chip-wrong"><i class="fas fa-times"></i> ${wrong} câu sai</span>
         <span class="chip chip-time"><i class="far fa-clock"></i> ${fmtTime(currentRecord.time)}</span>
       </div>`;
 
-    // Load câu hỏi từ AppScript
-    await loadQuestions(currentRecord.testName);
+    await loadQuestions(tName);
   }
 
-  // ── LOAD CÂU HỎI ──
   async function loadQuestions(testName) {
     const el = document.getElementById("qDetailList");
     el.innerHTML = `<div class="loading-questions"><i class="fas fa-spinner fa-spin"></i> Đang tải câu hỏi...</div>`;
 
     try {
-      // Lấy testId từ allResults hoặc từ tên bài
-      // Tìm testId qua getTests
+      // 1. Tìm testId
       const testsRes = await fetch(`${API}?action=getTests`);
-      const tests    = await testsRes.json();
-      const found    = tests.find(t => (t.name || "").trim() === (testName || "").trim());
+      const tests = await testsRes.json();
+      const found = tests.find(t => (t.name || "").trim().toLowerCase() === (testName || "").trim().toLowerCase());
 
       if (!found) {
-        el.innerHTML = `<div class="loading-questions" style="color:#ff4757">Không tìm thấy câu hỏi của bài này.</div>`;
+        el.innerHTML = `<div class="loading-questions" style="color:#ff4757">Không tìm thấy dữ liệu gốc của bài này.</div>`;
         return;
       }
 
-      const qRes  = await fetch(`${API}?action=getQuestions&testId=${encodeURIComponent(found.id)}`);
+      // 2. Tải danh sách câu hỏi gốc
+      const qRes = await fetch(`${API}?action=getQuestions&testId=${encodeURIComponent(found.id)}`);
       const qList = await qRes.json();
 
-      if (!qList.length) {
-        el.innerHTML = `<div class="loading-questions">Bài thi không có câu hỏi.</div>`;
-        return;
+      // 3. Lấy đáp án của học sinh (ƯU TIÊN TỪ DATABASE)
+      let studentAnswers = {};
+      if (currentRecord.answers) {
+        try {
+          studentAnswers = typeof currentRecord.answers === 'string' ? JSON.parse(currentRecord.answers) : currentRecord.answers;
+        } catch(e) { studentAnswers = {}; }
+      } else {
+        // Fallback cho bài thi vừa làm xong chưa kịp sync hết
+        try { studentAnswers = JSON.parse(localStorage.getItem("quizAnswers") || "{}"); } catch(e) {}
       }
 
-      // Lấy đáp án học sinh từ localStorage (nếu là bài vừa làm)
-      let quizAnswers = {};
-      try { quizAnswers = JSON.parse(localStorage.getItem("quizAnswers") || "{}"); } catch(e) {}
-
-      const total   = String(currentRecord.total || "");
-      const [cStr]  = total.includes("/") ? total.split("/") : ["0"];
-      const cCount  = parseInt(cStr) || 0;
-
-      // Nếu không có quizAnswers (bài cũ), ta sẽ hiển thị câu hỏi + đáp án đúng
-      const hasAnswers = Object.keys(quizAnswers).length > 0;
-
       el.innerHTML = qList.map((q, idx) => {
-        const studentAns = quizAnswers[q.question] || "";
+        const studentAns = studentAnswers[q.question] || "";
         const correctAns = String(q.correct || "").trim();
-        const pts        = parseFloat(q.points) || 0;
+        const pts = parseFloat(q.points) || 0;
 
-        let status = "unknown";
-        if (hasAnswers && studentAns) {
-          status = checkAns(q, studentAns, correctAns) ? "correct" : "wrong";
-        }
+        const isCorrect = checkAns(q, studentAns, correctAns);
+        const status = studentAns ? (isCorrect ? "correct" : "wrong") : "unanswered";
 
-        const badgeClass = status === "correct" ? "correct" : status === "wrong" ? "wrong" : "wrong";
-        const badgeIcon  = status === "correct" ? "fa-check" : "fa-question";
+        const badgeClass = status === "correct" ? "correct" : "wrong";
+        const badgeIcon = status === "correct" ? "fa-check" : (status === "wrong" ? "fa-times" : "fa-minus");
 
         return `
           <div class="q-item" id="qd${idx}">
@@ -309,84 +308,81 @@
                 <i class="fas ${badgeIcon}"></i>
               </div>
               <div class="q-preview">Câu ${idx+1}: ${q.question}</div>
-              ${pts > 0 ? `<div class="q-pts">${pts}đ/câu</div>` : ""}
+              ${pts > 0 ? `<div class="q-pts">${pts}đ</div>` : ""}
               <i class="fas fa-chevron-down q-arrow"></i>
             </div>
             <div class="q-detail">
               <div class="detail-inner">
-                ${q.image ? `<img src="${q.image}" style="width:100%;border-radius:10px;margin-bottom:10px;max-height:160px;object-fit:cover">` : ""}
-                ${renderDetail(q, studentAns, correctAns, status, hasAnswers)}
+                ${q.image ? `<img src="${q.image}" style="width:100%;border-radius:10px;margin-bottom:10px;max-height:200px;object-fit:contain;background:rgba(0,0,0,0.2)">` : ""}
+                ${renderDetail(q, studentAns, correctAns, status)}
               </div>
             </div>
           </div>`;
       }).join("");
 
     } catch(e) {
-      el.innerHTML = `<div class="loading-questions" style="color:#ff4757">Lỗi kết nối máy chủ.</div>`;
+      console.error(e);
+      el.innerHTML = `<div class="loading-questions" style="color:#ff4757">Lỗi tải chi tiết câu hỏi.</div>`;
     }
   }
 
-  // ── TOGGLE CÂU ──
   function toggleQ(idx) {
     document.getElementById(`qd${idx}`).classList.toggle("open");
   }
 
-  // ── KIỂM TRA ĐÁP ÁN ──
   function checkAns(q, studentAns, correctAns) {
+    if (!studentAns) return false;
     const type = (q.type || "single").toLowerCase();
-    if (type === "fill") return studentAns.toLowerCase() === correctAns.toLowerCase();
-    return studentAns.trim() === correctAns.trim();
+    if (type === "fill") return studentAns.toLowerCase().trim() === correctAns.toLowerCase().trim();
+    return String(studentAns).trim() === String(correctAns).trim();
   }
 
-  // ── RENDER CHI TIẾT ──
-  function renderDetail(q, studentAns, correctAns, status, hasAnswers) {
+  function renderDetail(q, studentAns, correctAns, status) {
     const type = (q.type || "single").toLowerCase();
-    let html   = "";
+    let html = "";
 
-    // Single / MCQ / TF → hiện options
-    if (type === "single" || type === "mcq" || type === "tf") {
+    if (["single", "mcq", "tf"].includes(type)) {
       let opts = [];
       try {
         const det = typeof q.answer === "string" ? JSON.parse(q.answer) : q.answer;
         opts = (det?.items || []).map(o => typeof o === "object" ? o.text : o);
       } catch(e) {}
-      if (type === "tf") opts = ["Đúng","Sai"];
+      if (type === "tf") opts = ["Đúng", "Sai"];
 
       if (opts.length) {
         html += `<div class="d-label">Các lựa chọn</div>`;
         opts.forEach(opt => {
-          const isCorr   = opt.trim() === correctAns.trim();
-          const isChosen = hasAnswers && opt.trim() === studentAns.trim();
+          const optText = String(opt).trim();
+          const isCorr = optText === correctAns;
+          const isChosen = optText === String(studentAns).trim();
+          
           let cls = "", icon = "fa-circle";
-          if      (isCorr && isChosen) { cls = "is-correct"; icon = "fa-circle-check"; }
-          else if (isChosen && !isCorr){ cls = "is-wrong";   icon = "fa-circle-xmark"; }
-          else if (isCorr)             { cls = "is-correct"; icon = "fa-circle-check"; }
+          if (isCorr) { cls = "is-correct"; icon = "fa-circle-check"; }
+          else if (isChosen && !isCorr) { cls = "is-wrong"; icon = "fa-circle-xmark"; }
+          
           html += `<div class="opt-item ${cls}"><i class="fas ${icon}"></i>${opt}</div>`;
         });
         return html;
       }
     }
 
-    // Fill / Ordering / Matching
-    if (hasAnswers && studentAns) {
+    // Tự luận hoặc khác
+    if (studentAns) {
       html += `<div class="d-label">Bài làm của bạn</div>`;
       html += `<div class="opt-item ${status === 'correct' ? 'is-correct' : 'is-wrong'}">
                  <i class="fas ${status === 'correct' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
                  ${studentAns}
-               </div>`;
-      html += `<div class="divider"></div>`;
+               </div><div class="divider"></div>`;
     }
 
-    // Luôn hiện đáp án đúng
     html += `<div class="d-label">Đáp án đúng</div>`;
     html += `<div class="correct-answer-box"><i class="fas fa-star"></i>${correctAns || "—"}</div>`;
     return html;
   }
 
-  // ── QUAY LẠI DANH SÁCH ──
   function backToList() {
     document.getElementById("viewDetail").style.display = "none";
-    document.getElementById("viewList").style.display   = "block";
+    document.getElementById("viewList").style.display = "block";
   }
 </script>
 </body>

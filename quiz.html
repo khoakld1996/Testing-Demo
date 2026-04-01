@@ -131,8 +131,8 @@
   </div>
 
 <script>
-  // URL API của bạn (Giữ nguyên từ dự án cũ)
-  const API = "https://script.google.com/macros/s/AKfycbxERNvcslJ8lMkwAMEW73y3VKSIMLNWgI65Gf8qPvJ5VomQJcW_JrIzOL8bYXCCB00m/exec"; 
+  // URL API CHUẨN (đổi lại API của mình nếu cần)
+  const API = "https://script.google.com/macros/s/AKfycbyWQYM84IUA98xAJdUjEFTjnyGdDvQyI2GcIyI0BTZC8kcG5YGr1C1FjphqAttK0qjU/exec"; 
   let questions = [], currentIdx = 0, timeLeft = 0, timerInterval;
   let isSubmitting = false; 
 
@@ -146,7 +146,6 @@
   }
 
   window.onload = async () => {
-    // Xóa rác dữ liệu từ bài thi cũ nếu có
     localStorage.removeItem("quizAnswers");
     localStorage.removeItem("quizQuestions");
     localStorage.removeItem("quiz_submitted");
@@ -170,7 +169,6 @@
         return;
       }
 
-      // Chuẩn hóa dữ liệu ngay khi load
       questions = data.map(q => {
         let details = { items: [] };
         try { 
@@ -350,9 +348,12 @@
     clearInterval(timerInterval);
     Swal.fire({ title: 'Đang chấm điểm...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
-    // HÀM CHUẨN HÓA TRỌNG YẾU (Đảm bảo đồng nhất tuyệt đối)
+    // HÀM CHUẨN HÓA ĐÃ FIX TRIỆT ĐỂ LỖI LOGIC
     const clean = (s) => s ? s.toString().toLowerCase().trim() : "";
     const cleanArr = (s) => s ? s.toString().split('|').map(x => x.trim().toLowerCase()).sort().join('|') : "";
+    
+    // ĐÂY LÀ HÀM QUAN TRỌNG NHẤT VỪA ĐƯỢC THÊM ĐỂ FIX LỖI CHO CÂU SẮP XẾP! (Không sort)
+    const cleanOrder = (s) => s ? s.toString().split('|').map(x => x.trim().toLowerCase()).join('|') : "";
 
     let scoreCount = 0; 
     let totalScoreAchieved = 0;
@@ -380,11 +381,11 @@
                           .map(el => el.value.trim()).sort().join("|");
         isCorrect = (studentAns !== "" && cleanArr(studentAns) === cleanArr(correctAns));
       }
-      // 3. Loại Ordering
+      // 3. Loại Ordering (ĐÃ FIX: Dùng cleanOrder không tự ý sort lại thứ tự đáp án)
       else if (type === "ordering") {
         studentAns = Array.from(document.querySelectorAll(`#sortList${i} .drag-item span`))
                           .map(el => el.innerText.trim()).join("|");
-        isCorrect = (studentAns !== "" && cleanArr(studentAns) === cleanArr(correctAns));
+        isCorrect = (studentAns !== "" && cleanOrder(studentAns) === cleanOrder(correctAns));
       } 
       // 4. Loại Matching
       else if (type === "matching") {
@@ -405,7 +406,6 @@
       }
     });
 
-    // Quyết định hiển thị thang điểm
     const hasCustomPoints = questions.some(q => q.points > 0);
     const finalScore = hasCustomPoints 
       ? totalScoreAchieved.toFixed(1).replace(/\.0$/, "") 
@@ -418,13 +418,12 @@
       testName: localStorage.getItem("currentTestName") || "Bài thi Nebula",
       score: finalScore,
       total: `${scoreCount}/${questions.length}`,
-      answers: quizAnswers // Gửi đáp án chi tiết về Google Sheet
+      answers: quizAnswers 
     };
 
     try {
       await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(submitData) });
       
-      // Lưu vào Local để trang result.html hiển thị ngay lập tức
       localStorage.setItem("lastScore", finalScore);
       localStorage.setItem("correctCount", submitData.total);
       localStorage.setItem("quizAnswers", JSON.stringify(quizAnswers));
