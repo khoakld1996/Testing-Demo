@@ -6,71 +6,124 @@
   <title>Kết Quả | Nebula Quiz 2026</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-  
   <style>
     :root {
       --primary: #4facfe; --accent: #00ffcc; --bg: #0b0f1a;
-      --card: rgba(22, 30, 46, 0.7); --glass-border: rgba(255, 255, 255, 0.1);
-      --text: #f8fafc;
+      --card: rgba(22,30,46,0.75); --glass-border: rgba(255,255,255,0.1);
+      --text: #f8fafc; --correct: #00ffcc; --wrong: #ff4757;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; }
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter','Segoe UI',sans-serif; }
 
     body {
-      min-height: 100vh;
+      min-height:100vh;
       background: var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
-      background-size: cover; background-blend-mode: overlay;
-      display: flex; justify-content: center; align-items: center; color: var(--text); padding: 20px;
+      background-size:cover; background-blend-mode:overlay;
+      display:flex; justify-content:center; align-items:center; color:var(--text); padding:20px;
     }
 
     .result-container {
-      background: var(--card); backdrop-filter: blur(25px); border-radius: 35px;
-      padding: 50px 40px; border: 1px solid var(--glass-border); text-align: center;
-      width: 100%; max-width: 500px; box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+      background:var(--card); backdrop-filter:blur(30px); border-radius:35px;
+      padding:45px 35px; border:1px solid var(--glass-border); text-align:center;
+      width:100%; max-width:500px; box-shadow:0 25px 80px rgba(0,0,0,0.6);
       position: relative; overflow: hidden;
     }
 
-    .trophy-box { font-size: 5rem; margin-bottom: 10px; filter: drop-shadow(0 0 20px var(--accent)); animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .trophy-box { font-size:5rem; margin-bottom:10px; filter:drop-shadow(0 0 20px var(--accent)); animation:float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
 
-    h2 { font-size: 2.2rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .status-text { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+    h2 { font-size:2.2rem; font-weight:800; background:linear-gradient(to right,#fff,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom: 5px; }
+    .status-text { color:#94a3b8; font-size:0.8rem; text-transform:uppercase; letter-spacing:3px; margin-bottom:25px; }
 
     .score-circle {
-      width: 150px; height: 150px; margin: 0 auto 30px; border-radius: 50%;
-      background: rgba(0,0,0,0.3); border: 4px solid var(--glass-border);
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      width:160px; height:160px; margin:0 auto 30px; border-radius:50%;
+      background:rgba(0,0,0,0.4); border:4px solid var(--glass-border);
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      box-shadow: inset 0 0 20px rgba(79, 172, 254, 0.2);
+    }
+    .score-big { font-size:3.8rem; font-weight:900; background:linear-gradient(135deg,#fff 30%,var(--primary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height: 1; }
+    .score-label { font-size:0.75rem; color:var(--primary); font-weight:bold; margin-top: 5px; }
+
+    .info-list { background:rgba(0,0,0,0.25); border-radius:24px; padding:20px; margin-bottom:22px; border:1px solid var(--glass-border); }
+    .info-item { display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.95rem; }
+    .info-item:last-child { border:none; }
+    .label-box { color:#94a3b8; display:flex; align-items:center; gap:12px; }
+    .val-box { font-weight:600; color:#fff; }
+
+    #syncStatus {
+      font-size:0.8rem; font-weight:700; color:var(--accent);
+      display:flex; align-items:center; justify-content:center; gap:8px;
+      margin-bottom:22px; transition: 0.3s;
     }
 
-    .score-big { font-size: 3.5rem; font-weight: 900; background: linear-gradient(135deg, #fff 30%, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .score-label { font-size: 0.7rem; color: var(--primary); font-weight: bold; }
+    .btn-group { display:grid; grid-template-columns:1fr; gap:12px; }
+    .btn { width:100%; padding:18px; border-radius:18px; border:none; font-weight:800; cursor:pointer; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; text-transform:uppercase; letter-spacing: 1px; font-size: 0.9rem; }
+    .btn-main { background:linear-gradient(135deg,var(--primary),#00f2fe); color:#0b0f1a; box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3); }
+    .btn-review { background:rgba(255,200,0,0.1); color:#ffc800; border:1px solid rgba(255,200,0,0.2); }
+    .btn-outline { background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--glass-border); }
+    .btn:hover { transform:translateY(-4px); opacity:0.95; filter: brightness(1.1); }
 
-    .info-list { background: rgba(0, 0, 0, 0.2); border-radius: 20px; padding: 20px; margin-bottom: 30px; border: 1px solid var(--glass-border); }
-    .info-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 1rem; }
-    .info-item:last-child { border: none; }
-    .label-box { color: #64748b; display: flex; align-items: center; gap: 10px; }
-    .val-box { font-weight: 600; color: #fff; }
+    /* MODAL CHUẨN */
+    .modal-overlay {
+      position:fixed; inset:0; background:rgba(5, 8, 18, 0.9);
+      backdrop-filter:blur(12px); z-index:1000;
+      display:none; justify-content:center; align-items:flex-start;
+      padding:20px; overflow-y:auto;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-box {
+      background:#0f172a; border:1px solid var(--glass-border);
+      border-radius:32px; width:100%; max-width:720px;
+      padding:32px; margin:auto; box-shadow:0 40px 120px rgba(0,0,0,0.8);
+      animation: animate__animated animate__fadeInUp animate__faster;
+    }
+    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.08); }
+    .modal-title { font-size:1.2rem; font-weight:800; color:#fff; display: flex; align-items: center; gap: 10px; }
+    .modal-close { width:38px; height:38px; border-radius:12px; border:none; background:rgba(255,71,87,0.1); color:#ff4757; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; }
 
-    .btn-group { display: grid; grid-template-columns: 1fr; gap: 12px; }
-    .btn { width: 100%; padding: 16px; border-radius: 15px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; }
-    .btn-main { background: linear-gradient(135deg, var(--primary), #00f2fe); color: #0b0f1a; }
-    .btn-outline { background: rgba(255, 255, 255, 0.05); color: #fff; border: 1px solid var(--glass-border); }
-    .btn:hover { transform: translateY(-3px); opacity: 0.9; }
+    .modal-chips { display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:20px; }
+    .m-chip { padding:14px; border-radius:18px; text-align:center; font-weight:800; }
+    .m-chip small { display:block; font-size:0.65rem; font-weight:500; opacity:0.7; margin-top:3px; text-transform: uppercase; }
+    .mc-correct { background:rgba(0,255,204,0.1); border:1px solid rgba(0,255,204,0.2); color:var(--correct); }
+    .mc-wrong { background:rgba(255,71,87,0.1); border:1px solid rgba(255,71,87,0.2); color:var(--wrong); }
+    .mc-skip { background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:#94a3b8; }
 
-    #syncStatus { font-size: 0.75rem; margin-top: 15px; color: #00ffcc; font-weight: bold; }
+    .q-list { display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; padding-right:8px; }
+    .q-list::-webkit-scrollbar { width:5px; }
+    .q-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:10px; }
+
+    .q-item { border-radius:18px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.02); overflow:hidden; transition: 0.3s; }
+    .q-item.correct-bg { border-left: 4px solid var(--correct); }
+    .q-item.wrong-bg { border-left: 4px solid var(--wrong); }
+    
+    .q-header { display:flex; align-items:center; gap:14px; padding:16px 20px; cursor:pointer; }
+    .q-badge { min-width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; }
+    .q-badge.correct { background:var(--correct); color:#0b0f1a; }
+    .q-badge.wrong { background:var(--wrong); color:#fff; }
+    .q-badge.skip { background:#475569; color:#fff; }
+    
+    .q-text { flex:1; font-size:0.92rem; color:#e2e8f0; font-weight: 500; }
+    .q-pts { font-size:0.75rem; color:var(--primary); font-weight:800; padding:4px 8px; background:rgba(79, 172, 254, 0.1); border-radius:6px; }
+
+    .q-detail { display:none; padding:5px 20px 20px 66px; background: rgba(0,0,0,0.1); border-top: 1px solid rgba(255,255,255,0.03); }
+    .q-item.open .q-detail { display:block; }
+    .opt { padding:10px 14px; border-radius:10px; font-size:0.85rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:10px; color:#94a3b8; margin-bottom:6px; }
+    .opt.is-correct { background:rgba(0,255,204,0.1); border-color:rgba(0,255,204,0.3); color:var(--correct); }
+    .opt.is-wrong { background:rgba(255,71,87,0.1); border-color:rgba(255,71,87,0.3); color:var(--wrong); }
+    .q-img-review { width:100%; border-radius:12px; margin: 10px 0; max-height:220px; object-fit:contain; background:#000; border: 1px solid var(--glass-border); }
   </style>
 </head>
 <body>
 
 <div class="result-container animate__animated animate__zoomIn">
-  <div class="trophy-box">🏆</div>
-  <h2>HOÀN THÀNH!</h2>
-  <p class="status-text">KẾT QUẢ CỦA BẠN</p>
+  <div class="trophy-box" id="trophyIcon">🏆</div>
+  <h2 id="congratsTitle">HOÀN THÀNH!</h2>
+  <p class="status-text">KẾT QUẢ CHUYẾN DU HÀNH</p>
 
-  <div class="score-circle animate__animated animate__bounceIn">
+  <div class="score-circle animate__animated animate__bounceIn animate__delay-1s">
     <div class="score-big" id="displayScore">0.0</div>
     <div class="score-label">ĐIỂM SỐ</div>
   </div>
-  
+
   <div class="info-list">
     <div class="info-item">
       <div class="label-box"><i class="fas fa-user-astronaut"></i> Thí sinh</div>
@@ -82,50 +135,183 @@
     </div>
     <div class="info-item">
       <div class="label-box"><i class="fas fa-check-circle"></i> Câu đúng</div>
-      <div class="val-box" id="resCorrect" style="color: var(--accent);">0/0</div>
+      <div class="val-box" id="resCorrect" style="color:var(--accent)">0/0</div>
     </div>
   </div>
 
-  <div id="syncStatus"></div>
+  <div id="syncStatus"><i class="fas fa-circle-check"></i> Đã lưu kết quả</div>
 
   <div class="btn-group">
+    <button class="btn btn-review" onclick="openReview()">
+      <i class="fas fa-list-check"></i> Xem lại bài làm
+    </button>
     <button class="btn btn-main" onclick="location.href='index.html'">
-      <i class="fas fa-home"></i> Trang chủ
+      <i class="fas fa-rocket"></i> Về trang chủ
     </button>
     <button class="btn btn-outline" onclick="location.href='history.html'">
-      <i class="fas fa-history"></i> Xem lịch sử
+      <i class="fas fa-clock-rotate-left"></i> Lịch sử làm bài
     </button>
   </div>
 </div>
 
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title"><i class="fas fa-file-invoice" style="color:var(--accent)"></i> Chi tiết bài làm</div>
+      <button class="modal-close" onclick="closeReview()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-chips" id="modalChips"></div>
+    <div class="q-list" id="qReviewList">
+      <div style="text-align:center;padding:50px;color:#64748b"><i class="fas fa-circle-notch fa-spin"></i> Đang chuẩn bị dữ liệu...</div>
+    </div>
+  </div>
+</div>
+
 <script>
+  const API = "https://script.google.com/macros/s/AKfycbxERNvcslJ8lMkwAMEW73y3VKSIMLNWgI65Gf8qPvJ5VomQJcW_JrIzOL8bYXCCB00m/exec"; 
+
+  let quizData = { questions: [], answers: {} };
+  let reviewLoaded = false;
+
   window.onload = () => {
-    // 1. Lấy dữ liệu hiển thị
-    const studentName = localStorage.getItem("studentName") || "Phi hành gia";
-    const studentSchool = localStorage.getItem("schoolName") || "Tự do";
-    const score = parseFloat(localStorage.getItem("lastScore") || "0.0");
+    const name = localStorage.getItem("studentName") || "Người dùng";
+    const school = localStorage.getItem("schoolName") || "Tự do";
+    const score = parseFloat(localStorage.getItem("lastScore") || "0");
     const correctStr = localStorage.getItem("correctCount") || "0/0";
 
-    // 2. Hiển thị lên giao diện
-    document.getElementById("resName").innerText = studentName;
-    document.getElementById("resSchool").innerText = studentSchool;
+    // Xử lý hiển thị
+    document.getElementById("resName").innerText = name;
+    document.getElementById("resSchool").innerText = school.replace(/^'+/, ""); 
     document.getElementById("resCorrect").innerText = correctStr;
-    animateValue("displayScore", 0, score, 1500);
+    
+    // Hiệu ứng điểm số
+    animateValue("displayScore", 0, score, 1200);
 
-    // 3. KIỂM TRA CHỐNG F5 (CHỈ GỬI BÙ NẾU TRANG QUIZ CHƯA GỬI THÀNH CÔNG)
-    // Nếu trang Quiz đã gửi rồi (localStorage quiz_submitted = true), trang này không gửi lại nữa.
-    const alreadySubmitted = localStorage.getItem("quiz_submitted");
-    const syncStatus = document.getElementById("syncStatus");
+    // Chỉnh sửa tiêu đề dựa trên điểm
+    const title = document.getElementById("congratsTitle");
+    const trophy = document.getElementById("trophyIcon");
+    if(score >= 8) { title.innerText = "XUẤT SẮC!"; trophy.innerText = "👑"; }
+    else if(score >= 5) { title.innerText = "TỐT LẮM!"; trophy.innerText = "🚀"; }
+    else { title.innerText = "CỐ GẮNG LÊN!"; trophy.innerText = "🎯"; }
 
-    if (alreadySubmitted === "true") {
-        syncStatus.innerHTML = '<i class="fas fa-cloud-check"></i> Dữ liệu đã được lưu an toàn!';
-        syncStatus.style.color = "#00ffcc";
-    } else {
-        // Nếu vì lý do nào đó trang Quiz chưa kịp gửi (rớt mạng), gửi bù tại đây
-        syncStatus.innerHTML = '<i class="fas fa-sync fa-spin"></i> Đang hoàn tất lưu dữ liệu...';
-        // Gọi hàm gửi bài bù nếu cần (tùy chọn)
-    }
+    // Load data sẵn để review
+    try {
+      quizData.answers = JSON.parse(localStorage.getItem("quizAnswers") || "{}");
+      quizData.questions = JSON.parse(localStorage.getItem("quizQuestions") || "[]");
+    } catch(e) { console.error("Data error", e); }
   };
+
+  async function openReview() {
+    document.getElementById("reviewModal").classList.add("open");
+    if (reviewLoaded) return;
+    
+    const listEl = document.getElementById("qReviewList");
+    
+    // Nếu mất session Questions, kéo lại từ API
+    if (quizData.questions.length === 0) {
+      const tid = localStorage.getItem("currentTestId");
+      if (!tid) {
+        listEl.innerHTML = `<div style="text-align:center;color:var(--wrong);padding:20px;">Không tìm thấy dữ liệu đề thi để hiển thị.</div>`;
+        return;
+      }
+      try {
+        const res = await fetch(`${API}?action=getQuestions&testId=${tid}`);
+        quizData.questions = await res.json();
+      } catch(e) {
+        listEl.innerHTML = `<div style="text-align:center;color:var(--wrong);padding:20px;">Lỗi kết nối máy chủ.</div>`;
+        return;
+      }
+    }
+
+    renderReview();
+    reviewLoaded = true;
+  }
+
+  function renderReview() {
+    let c = 0, w = 0, s = 0;
+    const clean = str => str ? str.toString().trim().toLowerCase() : "";
+    const cleanSort = str => str ? str.toString().split('|').map(x => x.trim().toLowerCase()).sort().join('|') : "";
+
+    const html = quizData.questions.map((q, i) => {
+      const userAns = quizData.answers[q.question] || "";
+      const correctAns = q.correct ? q.correct.toString().trim() : "";
+      const type = (q.type || "single").toLowerCase();
+      
+      let isCorrect = false;
+      if (userAns) {
+        if (["single", "tf", "fill"].includes(type)) isCorrect = clean(userAns) === clean(correctAns);
+        else isCorrect = cleanSort(userAns) === cleanSort(correctAns);
+      }
+
+      const status = userAns === "" ? "skip" : (isCorrect ? "correct" : "wrong");
+      if (status === "correct") c++; else if (status === "wrong") w++; else s++;
+
+      const icon = status === "correct" ? "fa-check" : status === "wrong" ? "fa-times" : "fa-minus";
+
+      return `
+        <div class="q-item ${status}-bg" id="q${i}">
+          <div class="q-header" onclick="document.getElementById('q${i}').classList.toggle('open')">
+            <div class="q-badge ${status}"><i class="fas ${icon}"></i></div>
+            <div class="q-text">Câu ${i+1}: ${q.question}</div>
+            <div class="q-pts">${isCorrect ? '+' : ''}${isCorrect ? q.points : 0}đ</div>
+          </div>
+          <div class="q-detail">
+            ${q.image ? `<img src="${q.image}" class="q-img-review" onerror="this.style.display='none'">` : ""}
+            ${renderOptions(q, userAns, correctAns, status)}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    document.getElementById("modalChips").innerHTML = `
+      <div class="m-chip mc-correct">${c}<small>Đúng</small></div>
+      <div class="m-chip mc-wrong">${w}<small>Sai</small></div>
+      <div class="m-chip mc-skip">${s}<small>Bỏ qua</small></div>
+    `;
+    document.getElementById("qReviewList").innerHTML = html;
+  }
+
+  function renderOptions(q, userAns, correctAns, status) {
+    const type = (q.type || "single").toLowerCase();
+    let resHtml = `<div style="font-size:0.65rem; color:#475569; text-transform:uppercase; margin-bottom:8px; font-weight:700;">Chi tiết đáp án</div>`;
+
+    if (["single", "mcq", "tf", "multiple"].includes(type)) {
+      let options = [];
+      try {
+        const d = typeof q.answer === "string" ? JSON.parse(q.answer) : q.answer;
+        options = (d.items || []).map(o => typeof o === 'object' ? o.text : o);
+      } catch(e) { if(type === "tf") options = ["Đúng", "Sai"]; }
+
+      const uArr = userAns.split("|").map(x => x.trim());
+      const cArr = correctAns.split("|").map(x => x.trim());
+
+      options.forEach(opt => {
+        const isUserChosen = uArr.includes(opt);
+        const isRight = cArr.includes(opt);
+        let cls = "";
+        let icon = "fa-circle";
+        
+        if (isRight) { cls = "is-correct"; icon = "fa-circle-check"; }
+        else if (isUserChosen && !isRight) { cls = "is-wrong"; icon = "fa-circle-xmark"; }
+
+        resHtml += `<div class="opt ${cls}"><i class="fas ${icon}"></i> ${opt}</div>`;
+      });
+    } else {
+      // Dành cho Fill-in
+      resHtml += `
+        <div class="opt ${status === 'correct' ? 'is-correct' : 'is-wrong'}" style="margin-bottom:10px">
+          <i class="fas ${status === 'correct' ? 'fa-check-circle' : 'fa-times-circle'}"></i> 
+          Bài làm: ${userAns || "(Trống)"}
+        </div>
+        <div class="opt is-correct" style="background:rgba(0,255,204,0.05)">
+          <i class="fas fa-star"></i> Đáp án: ${correctAns}
+        </div>
+      `;
+    }
+    return resHtml;
+  }
+
+  function closeReview() { document.getElementById("reviewModal").classList.remove("open"); }
 
   function animateValue(id, start, end, duration) {
     const obj = document.getElementById(id);
@@ -133,13 +319,11 @@
     const step = (timestamp) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const current = (progress * (end - start)).toFixed(1);
-      obj.innerHTML = current;
-      if (progress < 1) {
-        window.requestAnimationFrame(step);
-      }
+      const val = (progress * (end - start) + start).toFixed(1);
+      obj.innerHTML = val.endsWith(".0") ? val.slice(0, -2) : val;
+      if (progress < 1) requestAnimationFrame(step);
     };
-    window.requestAnimationFrame(step);
+    requestAnimationFrame(step);
   }
 </script>
 

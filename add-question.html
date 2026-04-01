@@ -109,7 +109,6 @@
 
 <div class="container animate__animated animate__fadeIn">
   <div class="glass-panel">
-    <!-- Điều hướng -->
     <div class="nav-header">
       <button class="btn-nav" title="Quay lại" onclick="location.href='question-list.html'"><i class="fas fa-arrow-left"></i></button>
       <div id="testInfo" style="font-weight: 800; color: #90caf9;">BÀI THI: ĐANG TẢI...</div>
@@ -118,7 +117,6 @@
 
     <h2 id="pageTitle"><i class="fas fa-atom"></i> THIẾT KẾ CÂU HỎI NEBULA</h2>
 
-    <!-- Thiết lập chung -->
     <div class="setup-grid">
       <div>
         <label><i class="fas fa-hourglass-half"></i> Thời gian (Phút)</label>
@@ -142,13 +140,11 @@
       </div>
     </div>
     
-    <!-- Nội dung câu hỏi -->
     <div class="form-group">
       <label>Nội dung câu hỏi</label>
       <textarea id="qText" class="input-control" rows="3" placeholder="Nhập câu hỏi tại đây..."></textarea>
     </div>
 
-    <!-- Media (Ảnh) -->
     <div class="form-group">
       <label>Ảnh minh họa (Tùy chọn)</label>
       <div style="display:flex; gap:15px; align-items: center; background: rgba(255,255,255,0.03); padding:15px; border-radius:20px; border: 1px dashed var(--border);">
@@ -162,7 +158,6 @@
       </div>
     </div>
 
-    <!-- Loại câu hỏi -->
     <div class="form-group">
       <label>Dạng câu hỏi</label>
       <select id="qType" class="input-control" onchange="renderEditor()">
@@ -175,7 +170,6 @@
       </select>
     </div>
 
-    <!-- Đáp án -->
     <div id="answerArea">
       <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
         <label id="ansLabel" style="margin:0;">Thiết lập đáp án</label>
@@ -184,7 +178,6 @@
       <div id="ansList"></div>
     </div>
 
-    <!-- Output Cột K -->
     <div class="correct-area animate__animated animate__fadeIn">
       <label style="color: var(--secondary);"><i class="fas fa-fingerprint"></i> Dữ liệu chấm điểm </label>
       <input type="text" id="finalCorrect" class="input-control" readonly style="border-color: var(--secondary); color: var(--secondary); font-weight: bold; background: rgba(0,230,118,0.05);" placeholder="Hệ thống sẽ tự tạo mã chấm điểm...">
@@ -195,8 +188,7 @@
 </div>
 
 <script>
-  // LINK URL API APPSCRITPS
-const API_URL = "https://script.google.com/macros/s/AKfycbxd1hGjg_tvNQfA7H1V49ofcIM-dWctzgmeW79KgC1J12WLwbr4QDgicaxe9x2Lq0Et/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbxERNvcslJ8lMkwAMEW73y3VKSIMLNWgI65Gf8qPvJ5VomQJcW_JrIzOL8bYXCCB00m/exec"; 
 let isEditMode = false;
 let originalQuestionText = ""; 
 let currentQuestionCount = 0;
@@ -219,7 +211,6 @@ window.onload = async () => {
     await fetchQuestionStats(testData.id);
 };
 
-// Khởi tạo Editor dựa trên loại câu hỏi
 function renderEditor() {
     const type = document.getElementById("qType").value;
     const list = document.getElementById("ansList");
@@ -244,7 +235,6 @@ function renderEditor() {
     updateCorrectStr();
 }
 
-// Thêm dòng đáp án mới
 function addRow(data = null) {
     const type = document.getElementById("qType").value;
     const list = document.getElementById("ansList");
@@ -272,7 +262,6 @@ function addRow(data = null) {
     list.appendChild(div);
 }
 
-// Xử lý Cột K (Đáp án chấm điểm)
 function updateCorrectStr() {
     const type = document.getElementById("qType").value;
     let result = "";
@@ -285,17 +274,16 @@ function updateCorrectStr() {
         let parts = [];
         document.querySelectorAll(".ans-row").forEach(row => {
             if (type === "single" || type === "multiple") {
-                if (row.querySelector(".is-correct").checked) {
-                    const txt = row.querySelector(".ans-text").value.trim();
-                    if(txt) parts.push(txt);
-                }
+                const mark = row.querySelector(".is-correct");
+                const txt = row.querySelector(".ans-text").value.trim();
+                if (mark.checked && txt) parts.push(txt);
             } else if (type === "matching") {
                 const l = row.querySelector(".l-val").value.trim();
                 const r = row.querySelector(".r-val").value.trim();
-                if(l && r) parts.push(`${l}-${r}`);
+                if (l && r) parts.push(`${l}-${r}`);
             } else if (type === "ordering") {
                 const txt = row.querySelector(".ord-val").value.trim();
-                if(txt) parts.push(txt);
+                if (txt) parts.push(txt);
             }
         });
         result = parts.join("|");
@@ -303,35 +291,33 @@ function updateCorrectStr() {
     document.getElementById("finalCorrect").value = result;
 }
 
-// Lưu dữ liệu
 async function saveData() {
     const btn = document.getElementById("saveBtn");
     const testData = JSON.parse(localStorage.getItem("currentTest"));
     const question = document.getElementById("qText").value.trim();
     const correct = document.getElementById("finalCorrect").value.trim();
+    const type = document.getElementById("qType").value;
 
     if (!question) return Swal.fire("Lỗi", "Câu hỏi không được bỏ trống!", "error");
-    if (!correct && document.getElementById("qType").value !== "fill") {
-        return Swal.fire("Chưa chọn đáp án", "Vui lòng thiết lập ít nhất 1 đáp án đúng!", "warning");
-    }
+    if (!correct && type !== "fill") return Swal.fire("Thiếu đáp án", "Vui lòng thiết lập ít nhất 1 đáp án đúng!", "warning");
 
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-meteor fa-spin"></i> ĐANG ĐẨY DỮ LIỆU...';
+    btn.innerHTML = '<i class="fas fa-meteor fa-spin"></i> ĐANG ĐỒNG BỘ...';
 
-    // Đóng gói Answer JSON (Cột E)
-    const type = document.getElementById("qType").value;
     let payloadAnswers = { items: [] };
-    
-    if (!["tf", "fill"].includes(type)) {
-        document.querySelectorAll(".ans-row").forEach(row => {
-            if (type === "single" || type === "multiple") 
-                payloadAnswers.items.push({ text: row.querySelector(".ans-text").value, isCorrect: row.querySelector(".is-correct").checked });
-            else if (type === "matching") 
-                payloadAnswers.items.push({ left: row.querySelector(".l-val").value, right: row.querySelector(".r-val").value });
-            else if (type === "ordering") 
-                payloadAnswers.items.push({ text: row.querySelector(".ord-val").value });
-        });
-    }
+    document.querySelectorAll(".ans-row").forEach(row => {
+        if (type === "single" || type === "multiple") {
+            const txt = row.querySelector(".ans-text").value.trim();
+            if (txt) payloadAnswers.items.push({ text: txt, isCorrect: row.querySelector(".is-correct").checked });
+        } else if (type === "matching") {
+            const l = row.querySelector(".l-val").value.trim();
+            const r = row.querySelector(".r-val").value.trim();
+            if (l && r) payloadAnswers.items.push({ left: l, right: r });
+        } else if (type === "ordering") {
+            const txt = row.querySelector(".ord-val").value.trim();
+            if (txt) payloadAnswers.items.push({ text: txt });
+        }
+    });
 
     const finalData = {
         action: "saveQuestion",
@@ -350,21 +336,25 @@ async function saveData() {
 
     try {
         await fetch(API_URL, { method: "POST", mode: "no-cors", body: JSON.stringify(finalData) });
-        Swal.fire({ icon: 'success', title: 'THÀNH CÔNG', text: 'Câu hỏi đã được đồng bộ hóa!', timer: 2000, showConfirmButton: false });
+        Swal.fire({ icon: 'success', title: 'THÀNH CÔNG', text: 'Dữ liệu đã được đồng bộ!', timer: 1500, showConfirmButton: false });
         localStorage.removeItem("editQuestionData");
-        setTimeout(() => location.href = 'question-list.html', 2100);
+        setTimeout(() => location.href = 'question-list.html', 1600);
     } catch (err) {
-        Swal.fire("Lỗi kết nối", "Hệ thống Cloud bận, vui lòng thử lại!", "error");
+        Swal.fire("Lỗi Cloud", "Hệ thống bận, vui lòng thử lại!", "error");
         btn.disabled = false;
         btn.innerText = "THỬ LẠI NGAY";
     }
 }
 
-/* --- Các hàm hỗ trợ --- */
-
 function fillEditData(data) {
     document.getElementById("qText").value = data.question || "";
     document.getElementById("qType").value = data.type || "single";
+    document.getElementById("testTime").value = data.testTime || 15;
+    document.getElementById("scoreMode").value = data.scoreMode || "equal";
+    document.getElementById("totalScore").value = data.totalScore || 10;
+    document.getElementById("qPoint").value = data.points || 1;
+    toggleScoreUI();
+
     if(data.image) updatePreview(data.image);
     
     const list = document.getElementById("ansList");
@@ -390,7 +380,7 @@ async function fetchQuestionStats(testId) {
         const resp = await fetch(`${API_URL}?action=getQuestions&testId=${testId}`);
         const data = await resp.json();
         currentQuestionCount = Array.isArray(data) ? data.length : 0;
-        if(currentQuestionCount > 0) {
+        if(currentQuestionCount > 0 && !isEditMode) {
             const s = data[0];
             document.getElementById("testTime").value = s.testTime || 15;
             document.getElementById("scoreMode").value = s.scoreMode || "equal";
@@ -415,6 +405,7 @@ function toggleScoreUI() {
 function handleFile(input) {
     const file = input.files[0];
     if (file) {
+        if (file.size > 1024 * 500) return Swal.fire("Ảnh quá lớn", "Vui lòng chọn ảnh dưới 500KB để tối ưu hệ thống!", "warning");
         const reader = new FileReader();
         reader.onload = (e) => {
             updatePreview(e.target.result);

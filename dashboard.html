@@ -11,9 +11,11 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
     :root {
-      --bg-dark: #0a0f18;
-      --card-bg: rgba(15, 23, 42, 0.75);
+      --bg-dark: #070b14;
+      --card-bg: rgba(15, 23, 42, 0.7);
       --primary: #3b82f6;
       --secondary: #10b981;
       --accent: #8b5cf6;
@@ -21,547 +23,425 @@
       --warning: #f59e0b;
       --text: #f8fafc;
       --border: rgba(255, 255, 255, 0.08);
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
     }
 
-    ::-webkit-scrollbar { width: 6px; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+    ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--primary); }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
     body {
       background: var(--bg-dark);
       background-image: 
-        radial-gradient(at 0% 0%, rgba(59,130,246,0.15) 0, transparent 50%), 
-        radial-gradient(at 100% 100%, rgba(139,92,246,0.15) 0, transparent 50%),
+        radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 40%),
         url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
       background-size: cover;
       background-attachment: fixed;
       color: var(--text);
       padding: 20px;
       min-height: 100vh;
+      line-height: 1.5;
     }
 
     .container { max-width: 1400px; margin: 0 auto; }
 
+    /* Glassmorphism Card */
     .glass-card {
       background: var(--card-bg);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 25px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--glass-shadow);
+      transition: border-color 0.3s;
     }
 
-    .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    /* Layout Components */
+    .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
     .logo-area h1 {
-      font-size: 1.5rem; font-weight: 800; letter-spacing: 1px;
-      background: linear-gradient(to right, #60a5fa, #a78bfa);
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 1px;
+      background: linear-gradient(135deg, #60a5fa, #a78bfa);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    .logo-area p { font-size: 0.75rem; opacity: 0.5; margin-top: 2px; }
+    .logo-area p { font-size: 0.7rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 2px; }
 
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 20px; margin-bottom: 30px; }
-    .stat-box { display: flex; align-items: center; gap: 20px; transition: 0.3s; border: 1px solid var(--border); }
-    .stat-box:hover { transform: translateY(-5px); border-color: var(--primary); }
-    .stat-icon { width: 55px; height: 55px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 20px; margin-bottom: 25px; }
+    .stat-box { display: flex; align-items: center; gap: 18px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .stat-box:hover { transform: translateY(-8px); border-color: rgba(255,255,255,0.2); }
+    .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
     .stat-box h2 { font-size: 1.8rem; font-weight: 800; }
-    .stat-box p  { opacity: 0.5; font-size: 0.8rem; margin-bottom: 4px; }
+    .stat-box p { opacity: 0.5; font-size: 0.75rem; margin-bottom: 2px; }
 
     .main-grid { display: grid; grid-template-columns: 1.8fr 1.2fr; gap: 25px; }
-    @media (max-width: 1024px) { .main-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
 
-    .item-list { max-height: 460px; overflow-y: auto; padding-right: 6px; }
-
+    /* Lists Management */
+    .item-list { max-height: 480px; overflow-y: auto; padding-right: 8px; }
+    
     .test-card {
-      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      padding: 16px 18px; border-radius: 18px; margin-bottom: 10px;
+      background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+      padding: 18px; border-radius: 16px; margin-bottom: 12px;
       display: flex; justify-content: space-between; align-items: center;
-      transition: all 0.3s;
+      transition: 0.3s;
     }
-    .test-card:hover { background: rgba(255,255,255,0.07); transform: translateX(5px); border-color: var(--primary); }
-    .test-card h4 { color: #60a5fa; margin-bottom: 4px; font-size: 0.95rem; }
-    .test-card p  { font-size: 0.72rem; opacity: 0.5; }
+    .test-card:hover { background: rgba(255,255,255,0.06); border-color: var(--primary); }
+    .test-card h4 { color: #60a5fa; margin-bottom: 4px; font-size: 1rem; }
+    .test-card p { font-size: 0.75rem; opacity: 0.5; }
 
-    .result-row { display: grid; grid-template-columns: 1.8fr 1.5fr 1fr; padding: 12px 6px; border-bottom: 1px solid var(--border); font-size: 0.88rem; align-items: center; }
+    .result-row { display: grid; grid-template-columns: 1.5fr 1.5fr 1fr; padding: 14px 10px; border-bottom: 1px solid var(--border); font-size: 0.85rem; align-items: center; transition: 0.2s; }
+    .result-row:hover { background: rgba(255,255,255,0.02); }
 
     .user-card {
-      background: rgba(255,255,255,0.02); border-left: 4px solid var(--warning);
-      padding: 14px; border-radius: 14px; margin-bottom: 10px;
+      background: rgba(245,158,11,0.05); border-left: 4px solid var(--warning);
+      padding: 16px; border-radius: 12px; margin-bottom: 12px;
       display: flex; justify-content: space-between; align-items: center;
     }
 
-    .btn { padding: 9px 16px; border-radius: 12px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 7px; font-size: 0.82rem; font-family: inherit; }
-    .btn-glow    { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
-    .btn-glow:hover { filter: brightness(1.15); }
+    /* Form & Buttons */
+    .btn { padding: 10px 18px; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+    .btn-glow { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
+    .btn-glow:hover { transform: scale(1.02); filter: brightness(1.1); }
     .btn-outline { background: transparent; border: 1px solid var(--border); color: white; }
-    .btn-outline:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.3); }
-    .btn-sm { padding: 6px 10px; font-size: 0.7rem; border-radius: 9px; }
+    .btn-outline:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.2); }
+    
+    .input-dark { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 12px 16px; border-radius: 10px; outline: none; width: 100%; font-size: 0.85rem; transition: 0.2s; }
+    .input-dark:focus { border-color: var(--primary); background: rgba(0,0,0,0.5); }
 
-    .input-dark { background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: white; padding: 11px 14px; border-radius: 12px; outline: none; width: 100%; font-size: 0.88rem; font-family: inherit; transition: border-color 0.2s; }
-    .input-dark:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(59,130,246,0.2); }
-    .input-dark::placeholder { color: rgba(255,255,255,0.3); }
+    /* API Status Pill */
+    .api-status { display: inline-flex; align-items: center; gap: 8px; font-size: 0.7rem; padding: 6px 14px; border-radius: 30px; border: 1px solid var(--border); font-weight: 700; text-transform: uppercase; }
+    .api-status .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+    .api-status.ok { color: var(--secondary); background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); }
+    .api-status.loading { color: var(--warning); background: rgba(245,158,11,0.1); animation: pulse 1.5s infinite; }
+    .api-status.err { color: var(--danger); background: rgba(239,68,68,0.1); }
+    @keyframes pulse { 0%,100% {opacity: 1;} 50% {opacity: 0.5;} }
 
-    /* STATUS PILL */
-    .api-status { display: inline-flex; align-items: center; gap: 7px; font-size: 0.72rem; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); font-weight: 600; transition: all 0.3s; }
-    .api-status .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-    .api-status.ok      { color: var(--secondary); border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.08); }
-    .api-status.loading { color: var(--warning);   border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.08); animation: blink 1.4s infinite; }
-    .api-status.err     { color: var(--danger);    border-color: rgba(239,68,68,0.4);  background: rgba(239,68,68,0.08); }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    /* Skeleton Loading */
+    .skeleton { height: 60px; border-radius: 12px; margin-bottom: 12px; background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite linear; }
+    @keyframes shimmer { to { background-position: 200% 0; } }
 
-    /* SKELETON */
-    .skeleton { height: 58px; border-radius: 14px; margin-bottom: 10px; background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.04) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-    @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-
-    /* EMPTY / ERROR */
-    .empty-msg { text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.25); font-size: 0.85rem; }
-    .empty-msg i { font-size: 2rem; margin-bottom: 10px; display: block; }
-    .error-msg { text-align: center; padding: 30px 20px; color: var(--warning); font-size: 0.82rem; }
-    .error-msg i { font-size: 1.4rem; margin-bottom: 8px; display: block; }
-
-    /* DEBUG */
-    #debugPanel { background: rgba(0,0,0,0.6); border: 1px solid rgba(255,80,80,0.25); border-radius: 16px; padding: 16px 20px; margin-bottom: 20px; font-size: 0.76rem; font-family: monospace; display: none; max-height: 220px; overflow-y: auto; }
-    #debugPanel.visible { display: block; }
-    .dl { padding: 2px 0; }
-    .dl.ok   { color: #10b981; }
-    .dl.err  { color: #ef4444; }
-    .dl.warn { color: #f59e0b; }
+    #debugPanel { background: #000; border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 20px; font-family: 'Courier New', monospace; font-size: 0.75rem; display: none; max-height: 200px; overflow-y: auto; color: #aaa; }
+    .dl-err { color: var(--danger); } .dl-warn { color: var(--warning); } .dl-ok { color: var(--secondary); }
   </style>
 </head>
 <body>
+
 <div class="container animate__animated animate__fadeIn">
 
-  <!-- HEADER -->
   <header class="nav-header">
     <div class="logo-area">
-      <h1><i class="fas fa-rocket"></i> ADMIN DASHBOARD</h1>
-      <p>PREMIUM MANAGEMENT SYSTEM</p>
+      <h1><i class="fas fa-shield-halved"></i> NEBULA ADMIN</h1>
+      <p>Hệ thống quản trị tối cao</p>
     </div>
-    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-      <span id="apiStatus" class="api-status loading"><span class="dot"></span> Đang kết nối...</span>
-      <button class="btn btn-outline" onclick="toggleDebug()"><i class="fas fa-bug"></i> Debug</button>
-      <button class="btn btn-outline" onclick="loadData()"><i class="fas fa-sync-alt"></i> Làm mới</button>
-      <button class="btn btn-outline" style="color:var(--danger)" onclick="logout()"><i class="fas fa-power-off"></i> Thoát</button>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <span id="apiStatus" class="api-status loading"><span class="dot"></span> Kết nối...</span>
+      <button class="btn btn-outline" onclick="toggleDebug()"><i class="fas fa-code"></i></button>
+      <button class="btn btn-outline" onclick="loadData()"><i class="fas fa-sync"></i></button>
+      <button class="btn btn-outline" style="color:var(--danger)" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
     </div>
   </header>
 
-  <!-- DEBUG PANEL -->
-  <div id="debugPanel">
-    <div style="color:#60a5fa; font-weight:bold; margin-bottom:8px;"><i class="fas fa-terminal"></i> DEBUG LOG</div>
-    <div id="debugLog"></div>
-  </div>
+  <div id="debugPanel"></div>
 
-  <!-- STATS -->
   <div class="stats-grid">
     <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:var(--primary)"><i class="fas fa-book"></i></div>
-      <div><p>Tổng đề thi</p><h2 id="cTests">—</h2></div>
+      <div class="stat-icon" style="background:rgba(59,130,246,0.1); color:var(--primary)"><i class="fas fa-file-invoice"></i></div>
+      <div><p>Đề thi</p><h2 id="cTests">—</h2></div>
     </div>
     <div class="glass-card stat-box">
       <div class="stat-icon" style="background:rgba(245,158,11,0.1); color:var(--warning)"><i class="fas fa-user-clock"></i></div>
       <div><p>Chờ duyệt</p><h2 id="cPending">—</h2></div>
     </div>
     <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:var(--secondary)"><i class="fas fa-check-double"></i></div>
-      <div><p>Lượt thi</p><h2 id="cResults">—</h2></div>
+      <div class="stat-icon" style="background:rgba(16,185,129,0.1); color:var(--secondary)"><i class="fas fa-graduation-cap"></i></div>
+      <div><p>Lượt làm bài</p><h2 id="cResults">—</h2></div>
     </div>
     <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(139,92,246,0.1); color:var(--accent)"><i class="fas fa-chart-line"></i></div>
-      <div><p>Tỷ lệ đạt</p><h2 id="cAvg">—</h2></div>
+      <div class="stat-icon" style="background:rgba(139,92,246,0.1); color:var(--accent)"><i class="fas fa-award"></i></div>
+      <div><p>Tỉ lệ đạt (≥5đ)</p><h2 id="cAvg">—</h2></div>
     </div>
   </div>
 
-  <!-- MAIN GRID -->
   <div class="main-grid">
-    <section>
-
-      <!-- KHO ĐỀ THI -->
+    <main>
       <div class="glass-card" style="margin-bottom:25px">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-          <h3 style="font-size:1rem"><i class="fas fa-database" style="color:var(--primary)"></i> Kho đề thi hiện có</h3>
-          <input type="text" id="searchInput" class="input-dark" style="width:230px" placeholder="🔍 Tìm nhanh..." oninput="filterTests()">
+          <h3 style="font-size:1rem; display:flex; align-items:center; gap:10px">
+            <i class="fas fa-folder-open" style="color:var(--primary)"></i> Danh sách đề thi
+          </h3>
+          <input type="text" id="searchInput" class="input-dark" style="width:250px" placeholder="Tìm tên đề thi..." oninput="filterTests()">
         </div>
-        <div id="testList" class="item-list">
-          <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
-        </div>
+        <div id="testList" class="item-list"></div>
       </div>
 
-      <!-- BẢNG ĐIỂM -->
       <div class="glass-card">
-        <h3 style="font-size:1rem; margin-bottom:16px"><i class="fas fa-history" style="color:var(--primary)"></i> Bảng điểm học sinh</h3>
-        <div class="result-row" style="opacity:0.45; font-weight:700; font-size:0.75rem; border-bottom:2px solid var(--border); letter-spacing:0.5px;">
-          <span>THÍ SINH</span><span>TÊN ĐỀ</span><span>ĐIỂM SỐ</span>
-        </div>
-        <div id="resultList" class="item-list" style="max-height:340px">
-          <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
-        </div>
-      </div>
-
-    </section>
-    <aside>
-
-      <!-- TẠO ĐỀ MỚI -->
-      <div class="glass-card" style="margin-bottom:25px; border-top:3px solid var(--primary)">
-        <h3 style="font-size:1rem; margin-bottom:16px"><i class="fas fa-plus-circle" style="color:var(--primary)"></i> Khởi tạo bài mới</h3>
-        <input id="newName" class="input-dark" style="margin-bottom:10px" placeholder="Tên bài thi (Ví dụ: Toán cuối kỳ I)">
-        <input id="newDesc" class="input-dark" style="margin-bottom:10px" placeholder="Mô tả ngắn gọn">
-        <input id="newDur" class="input-dark" type="number" style="margin-bottom:16px" placeholder="Thời gian (phút)" value="45">
-        <button class="btn btn-glow" style="width:100%; justify-content:center; padding:13px" onclick="addTest()">
-          <i class="fas fa-rocket"></i> XÁC NHẬN TẠO ĐỀ
-        </button>
-      </div>
-
-      <!-- BIỂU ĐỒ -->
-      <div class="glass-card" style="margin-bottom:25px">
-        <h3 style="font-size:1rem; margin-bottom:16px"><i class="fas fa-chart-pie" style="color:var(--accent)"></i> Phân tích chất lượng</h3>
-        <div style="height:200px"><canvas id="chartEl"></canvas></div>
-      </div>
-
-      <!-- DUYỆT TÀI KHOẢN -->
-      <div class="glass-card" style="border-top:3px solid var(--warning)">
-        <h3 style="font-size:1rem; margin-bottom:16px; color:var(--warning)">
-          <i class="fas fa-user-shield"></i> Duyệt tài khoản
+        <h3 style="font-size:1rem; margin-bottom:20px; display:flex; align-items:center; gap:10px">
+          <i class="fas fa-list-check" style="color:var(--secondary)"></i> Kết quả gần đây
         </h3>
-        <div id="pendingList" class="item-list" style="max-height:300px">
-          <div class="skeleton"></div>
+        <div class="result-row" style="opacity:0.5; font-weight:800; font-size:0.7rem; letter-spacing:1px; border-bottom: 2px solid var(--border)">
+          <span>THÍ SINH</span><span>ĐỀ THI</span><span>KẾT QUẢ</span>
+        </div>
+        <div id="resultList" class="item-list" style="max-height:350px"></div>
+      </div>
+    </main>
+
+    <aside>
+      <div class="glass-card" style="margin-bottom:25px; border-top: 4px solid var(--primary)">
+        <h3 style="font-size:1rem; margin-bottom:18px">Khởi tạo đề mới</h3>
+        <div style="display:flex; flex-direction:column; gap:12px">
+          <input id="newName" class="input-dark" placeholder="Tên bài thi (Ví dụ: Kiểm tra 15')">
+          <input id="newDesc" class="input-dark" placeholder="Mô tả bài thi">
+          <div style="display:flex; align-items:center; gap:10px">
+             <i class="fas fa-clock" style="opacity:0.5"></i>
+             <input id="newDur" class="input-dark" type="number" placeholder="Phút" value="45">
+          </div>
+          <button class="btn btn-glow" style="width:100%; justify-content:center; padding:14px" onclick="addTest()">
+            <i class="fas fa-plus"></i> TẠO BÀI THI NGAY
+          </button>
         </div>
       </div>
 
+      <div class="glass-card" style="margin-bottom:25px">
+        <h3 style="font-size:1rem; margin-bottom:15px">Phân tích chất lượng</h3>
+        <div style="height:220px"><canvas id="chartEl"></canvas></div>
+      </div>
+
+      <div class="glass-card" style="border-top: 4px solid var(--warning)">
+        <h3 style="font-size:1rem; margin-bottom:18px; color:var(--warning)">Yêu cầu đăng ký</h3>
+        <div id="pendingList" class="item-list" style="max-height:280px"></div>
+      </div>
     </aside>
   </div>
 
-  <footer style="text-align:center; margin-top:50px; opacity:0.18; font-size:0.68rem; letter-spacing:3px">
-    NEBULA SYSTEM • STABLE VERSION 2026 • KIEU LE DANG KHOA
+  <footer style="text-align:center; margin-top:50px; opacity:0.2; font-size:0.7rem; letter-spacing:4px">
+    NEBULA ECOSYSTEM &copy; 2026 • DESIGNED FOR PERFORMANCE
   </footer>
-
 </div>
 
 <script>
-// ─────────────────────────────────────────────
-//  API URL — cập nhật LINKS API
-// ─────────────────────────────────────────────
-const API = "https://script.google.com/macros/s/AKfycbxd1hGjg_tvNQfA7H1V49ofcIM-dWctzgmeW79KgC1J12WLwbr4QDgicaxe9x2Lq0Et/exec";
+const API = "https://script.google.com/macros/s/AKfycbxERNvcslJ8lMkwAMEW73y3VKSIMLNWgI65Gf8qPvJ5VomQJcW_JrIzOL8bYXCCB00m/exec";
 
-// ─────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────
-let tests = [], results = [], pending = [];
-let debugOpen = false;
-let chartInst = null;
+let tests = [], results = [], pending = [], chartInst = null;
 
-// Bật dòng dưới khi muốn khoá trang admin
-if (localStorage.getItem("userRole") !== "admin") { localStorage.clear(); location.replace("index.html"); }
-
-function logout() { localStorage.clear(); location.replace("index.html"); }
-
-// ─────────────────────────────────────────────
-//  DEBUG
-// ─────────────────────────────────────────────
-function log(msg, type = "ok") {
-  const el = document.getElementById("debugLog");
-  const t  = new Date().toLocaleTimeString("vi-VN");
-  el.innerHTML += `<div class="dl ${type}">[${t}] ${msg}</div>`;
-  el.scrollTop  = el.scrollHeight;
+// Kiểm tra quyền Admin
+if (localStorage.getItem("userRole") !== "admin") { 
+    location.replace("index.html"); 
 }
+
+function logout() { 
+    localStorage.clear(); 
+    location.replace("index.html"); 
+}
+
+// Utils
+function log(msg, type='ok') {
+    const p = document.getElementById("debugPanel");
+    const t = new Date().toLocaleTimeString();
+    p.innerHTML += `<div class="dl-${type}">[${t}] ${msg}</div>`;
+    p.scrollTop = p.scrollHeight;
+}
+
 function toggleDebug() {
-  debugOpen = !debugOpen;
-  document.getElementById("debugPanel").classList.toggle("visible", debugOpen);
+    const p = document.getElementById("debugPanel");
+    p.style.display = p.style.display === 'block' ? 'none' : 'block';
 }
 
-// ─────────────────────────────────────────────
-//  STATUS PILL
-// ─────────────────────────────────────────────
 function setStatus(type, text) {
-  const el = document.getElementById("apiStatus");
-  el.className = `api-status ${type}`;
-  el.innerHTML = `<span class="dot"></span> ${text}`;
+    const el = document.getElementById("apiStatus");
+    el.className = `api-status ${type}`;
+    el.innerHTML = `<span class="dot"></span> ${text}`;
 }
 
-// ─────────────────────────────────────────────
-//  SAFE FETCH — mỗi API gọi độc lập, không crash nhau
-// ─────────────────────────────────────────────
+// API Handlers
 async function callAPI(action) {
-  log(`Fetching: ${action}...`, "warn");
-  try {
-    const ctrl  = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 20000);
-    const resp  = await fetch(`${API}?action=${action}`, { signal: ctrl.signal });
-    clearTimeout(timer);
-
-    const text = await resp.text();
-    log(`${action} → ${text.length} chars | ${text.substring(0, 100)}`, "warn");
-
-    const json = JSON.parse(text);
-    if (json && json.status === "error") {
-      log(`${action} → ERROR: ${json.message}`, "err");
-      return null;
+    try {
+        const resp = await fetch(`${API}?action=${action}`);
+        const json = await resp.json();
+        return json;
+    } catch (e) {
+        log(`Lỗi API ${action}: ` + e.message, 'err');
+        return null;
     }
-    log(`${action} → OK (${Array.isArray(json) ? json.length + " items" : "object"})`, "ok");
-    return json;
-  } catch (e) {
-    log(`${action} → ${e.name === "AbortError" ? "TIMEOUT >20s" : "ERR: " + e.message}`, "err");
-    return null;
-  }
 }
 
-async function postAPI(body) {
-  try {
-    await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(body) });
-    return true;
-  } catch (e) { return false; }
+async function postAPI(params) {
+    try {
+        const query = new URLSearchParams(params).toString();
+        const resp = await fetch(`${API}?${query}`);
+        return await resp.json();
+    } catch (e) {
+        log("Lỗi gửi dữ liệu: " + e.message, 'err');
+        return {status: "error"};
+    }
 }
 
-function skels(n) { return Array(n).fill('<div class="skeleton"></div>').join(""); }
-function esc(s)   { return (s || "").toString().replace(/'/g, "\\'"); }
-
-// ─────────────────────────────────────────────
-//  LOAD DATA
-// ─────────────────────────────────────────────
+// Data Loaders
 async function loadData() {
-  log("=== BẮT ĐẦU TẢI DỮ LIỆU ===", "warn");
-  setStatus("loading", "Đang kết nối...");
+    setStatus("loading", "Đang tải...");
+    log("Bắt đầu đồng bộ dữ liệu...", "warn");
 
-  document.getElementById("testList").innerHTML    = skels(3);
-  document.getElementById("resultList").innerHTML  = skels(3);
-  document.getElementById("pendingList").innerHTML = skels(1);
-  ["cTests","cResults","cPending","cAvg"].forEach(id => document.getElementById(id).innerText = "—");
+    document.getElementById("testList").innerHTML = Array(3).fill('<div class="skeleton"></div>').join('');
+    document.getElementById("resultList").innerHTML = Array(3).fill('<div class="skeleton"></div>').join('');
+    document.getElementById("pendingList").innerHTML = '<div class="skeleton"></div>';
 
-  let ok = 0;
+    const [tData, rData, pData] = await Promise.all([
+        callAPI("getTests"),
+        callAPI("getResults"),
+        callAPI("getPendingUsers")
+    ]);
 
-  // 1. Đề thi
-  const t = await callAPI("getTests");
-  if (Array.isArray(t)) { tests = t; ok++; renderTests(); }
-  else {
-    tests = [];
-    document.getElementById("testList").innerHTML =
-      `<div class="error-msg"><i class="fas fa-exclamation-triangle"></i>Không tải được đề thi<br><small style="opacity:.5">Kiểm tra Apps Script: action=getTests</small></div>`;
-  }
-  document.getElementById("cTests").innerText = tests.length;
+    if (tData) { tests = tData; renderTests(); }
+    if (rData) { results = rData; renderResults(); }
+    if (pData) { pending = pData; renderPending(); }
 
-  // 2. Kết quả
-  const r = await callAPI("getResults");
-  if (Array.isArray(r)) { results = r; ok++; renderResults(); }
-  else {
-    results = [];
-    document.getElementById("resultList").innerHTML =
-      `<div class="empty-msg"><i class="fas fa-ghost"></i>Chưa có kết quả thi</div>`;
-  }
-  document.getElementById("cResults").innerText = results.length;
+    document.getElementById("cTests").innerText = tests.length;
+    document.getElementById("cResults").innerText = results.length;
+    document.getElementById("cPending").innerText = pending.length;
 
-  // 3. Chờ duyệt
-  const p = await callAPI("getPendingUsers");
-  if (Array.isArray(p)) { pending = p; ok++; renderPending(); }
-  else {
-    pending = [];
-    document.getElementById("pendingList").innerHTML =
-      `<div class="empty-msg" style="padding:20px"><i class="fas fa-check-circle" style="color:var(--secondary)"></i>Không có tài khoản chờ duyệt</div>`;
-  }
-  document.getElementById("cPending").innerText = pending.length;
-
-  updateStats();
-  drawChart();
-
-  if (ok === 3)     { setStatus("ok",      "Kết nối thành công");  log("=== 3/3 OK ===", "ok"); }
-  else if (ok > 0)  { setStatus("loading", `${ok}/3 API OK`);      log(`=== ${ok}/3 OK ===`, "warn"); if (!debugOpen) toggleDebug(); }
-  else              { setStatus("err",     "Lỗi kết nối");          log("=== 0/3 OK ===", "err");  if (!debugOpen) toggleDebug(); }
+    updateStats();
+    setStatus("ok", "Trực tuyến");
 }
 
-// ─────────────────────────────────────────────
-//  RENDER: ĐỀ THI
-// ─────────────────────────────────────────────
 function renderTests(data = tests) {
-  const el = document.getElementById("testList");
-  if (!data.length) {
-    el.innerHTML = `<div class="empty-msg"><i class="fas fa-inbox"></i>Không tìm thấy đề thi nào.</div>`;
-    return;
-  }
-  el.innerHTML = data.map(t => `
-    <div class="test-card animate__animated animate__fadeInLeft">
-      <div>
-        <h4>${t.name || "(Không tên)"}</h4>
-        <p>ID: ${t.id || "?"} &nbsp;|&nbsp; ${t.desc || "Chưa có mô tả"}</p>
-      </div>
-      <div style="display:flex; gap:7px">
-        <button class="btn btn-outline" style="padding:8px" title="Thêm câu hỏi"
-          onclick="goTo('add-question.html','${esc(t.id)}','${esc(t.name)}')">
-          <i class="fas fa-plus"></i>
-        </button>
-        <button class="btn btn-outline" style="padding:8px" title="Danh sách câu hỏi"
-          onclick="goTo('question-list.html','${esc(t.id)}','${esc(t.name)}')">
-          <i class="fas fa-list-ol"></i>
-        </button>
-        <button class="btn btn-outline" style="padding:8px; color:var(--danger)" title="Xóa đề"
-          onclick="deleteTest('${esc(t.id)}','${esc(t.name)}')">
-          <i class="fas fa-trash-alt"></i>
-        </button>
-      </div>
-    </div>`).join("");
-}
-
-function filterTests() {
-  const q = document.getElementById("searchInput").value.toLowerCase();
-  renderTests(tests.filter(t => (t.name || "").toLowerCase().includes(q)));
-}
-
-// ─────────────────────────────────────────────
-//  RENDER: KẾT QUẢ
-// ─────────────────────────────────────────────
-function renderResults() {
-  const el = document.getElementById("resultList");
-  if (!results.length) {
-    el.innerHTML = `<div class="empty-msg"><i class="fas fa-ghost"></i>Chưa có lượt thi nào.</div>`;
-    return;
-  }
-  el.innerHTML = [...results].reverse().map(r => {
-    const name  = r.student || r.name || "—";
-    const tname = r.testName || r.test || "—";
-    const score = parseFloat(r.score || 0);
-    // total dạng "3/10" (đúng/tổng) — chỉ hiển thị, không tính pct từ đây
-    const pct   = Math.round(score / 10 * 100); // score là thang 10
-    const time  = r.time || "";
-    return `
-      <div class="result-row">
-        <div>
-          <div style="font-weight:600">${name}</div>
-          <div style="font-size:0.7rem; opacity:0.45">${time}</div>
+    const el = document.getElementById("testList");
+    if(!data.length) { el.innerHTML = '<div style="text-align:center; padding:30px; opacity:0.3">Trống</div>'; return; }
+    
+    el.innerHTML = data.map(t => `
+        <div class="test-card animate__animated animate__fadeInUp">
+            <div>
+                <h4>${t.name}</h4>
+                <p>Mã: ${t.id} • ${t.desc || 'Không có mô tả'}</p>
+            </div>
+            <div style="display:flex; gap:8px">
+                <button class="btn btn-outline" onclick="goTo('add-question.html','${t.id}','${t.name}')" title="Thêm câu hỏi"><i class="fas fa-plus-circle"></i></button>
+                <button class="btn btn-outline" onclick="goTo('question-list.html','${t.id}','${t.name}')" title="Quản lý"><i class="fas fa-tasks"></i></button>
+                <button class="btn btn-outline" style="color:var(--danger)" onclick="deleteTest('${t.id}','${t.name}')"><i class="fas fa-trash"></i></button>
+            </div>
         </div>
-        <span style="opacity:.6; font-size:.82rem">${tname}</span>
-        <span style="color:${pct >= 50 ? 'var(--secondary)' : 'var(--danger)'}; font-weight:700">${score} đ &nbsp;<small style="opacity:0.5;font-weight:400">(${r.total || ''})</small></span>
-      </div>`;
-  }).join("");
+    `).join('');
 }
 
-// ─────────────────────────────────────────────
-//  RENDER: PENDING
-// ─────────────────────────────────────────────
+function renderResults() {
+    const el = document.getElementById("resultList");
+    if(!results.length) { el.innerHTML = '<div style="text-align:center; padding:30px; opacity:0.3">Chưa có dữ liệu</div>'; return; }
+
+    el.innerHTML = [...results].reverse().slice(0, 50).map(r => {
+        const score = parseFloat(r.score || 0);
+        const color = score >= 8 ? 'var(--secondary)' : (score >= 5 ? '#3b82f6' : 'var(--danger)');
+        return `
+            <div class="result-row">
+                <div>
+                    <div style="font-weight:600">${r.student || 'Ẩn danh'}</div>
+                    <div style="font-size:0.65rem; opacity:0.4">${r.time || ''}</div>
+                </div>
+                <div style="opacity:0.7">${r.testName || 'Đề thi'}</div>
+                <div style="font-weight:800; color:${color}">${score}đ <small style="font-weight:400; opacity:0.5; color:white">(${r.total || ''})</small></div>
+            </div>
+        `;
+    }).join('');
+}
+
 function renderPending() {
-  const el = document.getElementById("pendingList");
-  if (!pending.length) {
-    el.innerHTML = `<div class="empty-msg" style="padding:20px"><i class="fas fa-check-circle" style="color:var(--secondary)"></i>Hệ thống chưa có tài khoản duyệt!</div>`;
-    return;
-  }
-  el.innerHTML = pending.map(u => `
-    <div class="user-card animate__animated animate__fadeInRight">
-      <div>
-        <div style="font-weight:700; font-size:0.85rem">${u.name || "?"}</div>
-        <div style="font-size:0.7rem; opacity:0.5; margin-top:2px">${u.username || u.email || "?"}</div>
-      </div>
-      <div style="display:flex; gap:6px">
-        <button class="btn btn-glow btn-sm" style="background:var(--secondary)"
-          onclick="approveUser('${esc(u.username || u.email)}','approve')">
-          <i class="fas fa-check"></i> Duyệt
-        </button>
-        <button class="btn btn-outline btn-sm" style="color:var(--danger)"
-          onclick="approveUser('${esc(u.username || u.email)}','reject')">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-    </div>`).join("");
+    const el = document.getElementById("pendingList");
+    if(!pending.length) { el.innerHTML = '<div style="text-align:center; padding:20px; opacity:0.4; font-size:0.8rem">Không có yêu cầu mới</div>'; return; }
+
+    el.innerHTML = pending.map(u => `
+        <div class="user-card animate__animated animate__fadeInRight">
+            <div style="min-width:0">
+                <div style="font-weight:800; font-size:0.85rem">${u.name}</div>
+                <div style="font-size:0.7rem; opacity:0.7">${u.username} | ${u.class || 'N/A'}</div>
+            </div>
+            <div style="display:flex; gap:5px">
+                <button class="btn btn-glow" style="padding:6px 10px; background:var(--secondary)" onclick="handleUser('${u.username}','approve')"><i class="fas fa-check"></i></button>
+                <button class="btn btn-outline" style="padding:6px 10px; color:var(--danger)" onclick="handleUser('${u.username}','reject')"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+    `).join('');
 }
 
-// ─────────────────────────────────────────────
-//  STATS + CHART
-// ─────────────────────────────────────────────
 function updateStats() {
-  if (!results.length) { document.getElementById("cAvg").innerText = "0%"; return; }
-  const pass = results.filter(r => {
-    // score là điểm thang 10
-    const s = parseFloat(r.score || 0);
-    return s >= 5;
-  }).length;
-  document.getElementById("cAvg").innerText = Math.round(pass / results.length * 100) + "%";
+    if(!results.length) return;
+    const pass = results.filter(r => parseFloat(r.score) >= 5).length;
+    document.getElementById("cAvg").innerText = Math.round((pass / results.length) * 100) + "%";
+    
+    // Chart
+    const s = [0, 0, 0]; // Giỏi, Khá, Yếu
+    results.forEach(r => {
+        const val = parseFloat(r.score);
+        if(val >= 8) s[0]++; else if(val >= 5) s[1]++; else s[2]++;
+    });
+
+    if(chartInst) chartInst.destroy();
+    chartInst = new Chart(document.getElementById("chartEl"), {
+        type: 'doughnut',
+        data: {
+            labels: ['Giỏi', 'Trung bình', 'Yếu'],
+            datasets: [{
+                data: s,
+                backgroundColor: ['#10b981', '#3b82f6', '#ef4444'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'right', labels: { color: '#94a3b8', font: { size: 10 }, usePointStyle: true } } }
+        }
+    });
 }
 
-function drawChart() {
-  const stats = [0, 0, 0];
-  results.forEach(r => {
-    const s   = parseFloat(r.score || 0);
-    const pct = s * 10; // score thang 10 → pct
-    if (pct >= 80) stats[0]++;
-    else if (pct >= 50) stats[1]++;
-    else stats[2]++;
-  });
-  const ctx = document.getElementById("chartEl").getContext("2d");
-  if (chartInst) chartInst.destroy();
-  chartInst = new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: ["Giỏi (≥80%)", "Khá (50–79%)", "Yếu (<50%)"],
-      datasets: [{
-        data: stats.every(v => v === 0) ? [1, 1, 1] : stats,
-        backgroundColor: ["#10b981", "#3b82f6", "#ef4444"],
-        borderWidth: 0, hoverOffset: 8
-      }]
-    },
-    options: {
-      maintainAspectRatio: false, cutout: "70%",
-      plugins: {
-        legend: { position: "bottom", labels: { color: "#94a3b8", font: { size: 11 }, padding: 16, usePointStyle: true } }
-      }
-    }
-  });
-}
-
-// ─────────────────────────────────────────────
-//  ACTIONS
-// ─────────────────────────────────────────────
+// Actions
 async function addTest() {
-  const name = document.getElementById("newName").value.trim();
-  const desc = document.getElementById("newDesc").value.trim();
-  if (!name) return Swal.fire({ icon: "warning", title: "Thiếu tên đề!", text: "Vui lòng nhập tên bài thi.", confirmButtonColor: "#3b82f6" });
+    const name = document.getElementById("newName").value.trim();
+    const desc = document.getElementById("newDesc").value.trim();
+    const dur = document.getElementById("newDur").value;
+    if(!name) return Swal.fire("Lỗi", "Vui lòng nhập tên đề", "error");
 
-  Swal.fire({ title: "Đang khởi tạo...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-  const dur = parseInt(document.getElementById('newDur').value) || 45;
-  await postAPI({ action: "createTest", name, desc, duration: dur });
-  Swal.fire({ icon: "success", title: "Hoàn tất!", timer: 1000, showConfirmButton: false });
-  document.getElementById("newName").value = "";
-  document.getElementById("newDesc").value = "";
-  document.getElementById("newDur").value = "45";
-  setTimeout(loadData, 1300);
+    Swal.fire({ title: 'Đang khởi tạo...', didOpen: () => Swal.showLoading() });
+    const res = await postAPI({ action: "createTest", name, desc, duration: dur });
+    if(res.status === "success") {
+        Swal.fire({ icon: 'success', title: 'Thành công', timer: 1000 });
+        loadData();
+        document.getElementById("newName").value = "";
+    }
 }
 
 async function deleteTest(id, name) {
-  const r = await Swal.fire({
-    title: "Xác nhận xóa?",
-    html: `Đề <b>"${name}"</b> và toàn bộ câu hỏi sẽ bị xóa vĩnh viễn!`,
-    icon: "warning", showCancelButton: true,
-    confirmButtonColor: "#ef4444", cancelButtonColor: "#64748b",
-    confirmButtonText: "Xóa!", cancelButtonText: "Hủy"
-  });
-  if (!r.isConfirmed) return;
-  Swal.fire({ title: "Đang xóa...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-  await postAPI({ action: "deleteTest", testId: id });
-  Swal.fire({ icon: "success", title: "Đã xóa!", timer: 1000, showConfirmButton: false });
-  setTimeout(loadData, 1300);
+    const r = await Swal.fire({
+        title: 'Xóa đề thi?',
+        text: `Bạn có chắc muốn xóa vĩnh viễn đề "${name}"?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444'
+    });
+    if(!r.isConfirmed) return;
+    
+    Swal.fire({ title: 'Đang xóa...', didOpen: () => Swal.showLoading() });
+    await postAPI({ action: "deleteTest", testId: id });
+    loadData();
 }
 
-async function approveUser(username, action) {
-  const isApprove = action === "approve";
-  const r = await Swal.fire({
-    title: "Xác nhận",
-    text: isApprove ? "Duyệt tài khoản này?" : "Xóa yêu cầu đăng ký này?",
-    icon: "question", showCancelButton: true,
-    confirmButtonText: "Đồng ý", cancelButtonText: "Hủy",
-    confirmButtonColor: isApprove ? "#10b981" : "#ef4444"
-  });
-  if (!r.isConfirmed) return;
-  Swal.fire({ title: "Đang xử lý...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-  await postAPI({ action: "handleUserRequest", username: username, status: isApprove ? "approved" : "rejected" });
-  Swal.fire({ icon: "success", title: "Thành công!", timer: 800, showConfirmButton: false });
-  setTimeout(loadData, 1000);
+async function handleUser(username, action) {
+    const isApp = action === 'approve';
+    Swal.fire({ title: 'Đang xử lý...', didOpen: () => Swal.showLoading() });
+    await postAPI({ action: "handleUserRequest", username, status: isApp ? "approved" : "rejected" });
+    Swal.fire({ icon: 'success', title: 'Xong!', timer: 800, showConfirmButton: false });
+    loadData();
+}
+
+function filterTests() {
+    const q = document.getElementById("searchInput").value.toLowerCase();
+    renderTests(tests.filter(t => t.name.toLowerCase().includes(q)));
 }
 
 function goTo(page, id, name) {
-  localStorage.setItem("currentTest", JSON.stringify({ id, name }));
-  location.href = page;
+    localStorage.setItem("currentTest", JSON.stringify({ id, name }));
+    location.href = page;
 }
 
-// ─────────────────────────────────────────────
-//  INIT
-// ─────────────────────────────────────────────
 window.onload = loadData;
 </script>
 </body>

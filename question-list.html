@@ -10,344 +10,259 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-
     :root {
-      --primary: #448aff;
-      --secondary: #00e5ff;
-      --danger: #ff5252;
-      --warning: #ffb142;
-      --bg-dark: #0a0f1c;
-      --glass: rgba(15, 23, 42, 0.85);
-      --glass-border: rgba(255, 255, 255, 0.1);
-      --accent: #7c4dff;
+      --primary: #448aff; --secondary: #00e5ff; --danger: #ff5252;
+      --warning: #ffb142; --bg-dark: #0a0f1c; --glass: rgba(15, 23, 42, 0.85);
+      --glass-border: rgba(255, 255, 255, 0.1); --accent: #7c4dff;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 
     body {
       min-height: 100vh;
-      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.7)), 
-                  url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');
-      background-size: cover;
-      background-attachment: fixed;
-      background-position: center;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      padding: 50px 20px;
+      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), 
+                  url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
+      background-size: cover; color: #fff;
+      display: flex; justify-content: center; padding: 40px 20px;
     }
 
     .container { width: 100%; max-width: 1000px; }
 
     .glass-panel {
-      background: var(--glass);
-      backdrop-filter: blur(25px);
-      -webkit-backdrop-filter: blur(25px);
-      border: 1px solid var(--glass-border);
-      border-radius: 40px;
-      padding: 45px;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-      position: relative;
-      overflow: hidden;
+      background: var(--glass); backdrop-filter: blur(25px);
+      border: 1px solid var(--glass-border); border-radius: 35px;
+      padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
-    .glass-panel::before {
-      content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 5px;
-      background: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
-    }
-
+    /* Header & Search */
     .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 40px;
-      padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 30px; gap: 20px;
     }
-
     .header h2 {
-      font-size: 1.8rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #fff 30%, #90caf9 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      display: flex;
-      align-items: center;
-      gap: 15px;
+      font-size: 1.6rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--secondary));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
+    .search-box {
+      flex: 1; position: relative; max-width: 400px;
+    }
+    .search-box input {
+      width: 100%; padding: 12px 20px 12px 45px; border-radius: 15px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+      color: white; outline: none; transition: 0.3s;
+    }
+    .search-box input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+    .search-box i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); }
+
+    /* Question List Area */
     #questionList {
-      max-height: 58vh;
-      overflow-y: auto;
-      padding-right: 15px;
+      max-height: 60vh; overflow-y: auto; padding-right: 10px;
+      margin: 20px 0;
     }
 
     .q-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid var(--glass-border);
-      border-radius: 24px;
-      padding: 22px;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border);
+      border-radius: 20px; padding: 20px; margin-bottom: 15px;
+      display: flex; align-items: center; gap: 20px;
+      transition: 0.3s; animation: fadeInUp 0.5s ease backwards;
     }
-
     .q-card:hover {
-      background: rgba(255, 255, 255, 0.08);
-      transform: translateY(-5px) scale(1.01);
-      border-color: rgba(68, 138, 255, 0.5);
-      box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+      background: rgba(255, 255, 255, 0.07); transform: translateX(5px);
+      border-color: var(--primary);
     }
 
-    .q-thumb-container {
-      width: 90px; height: 90px;
-      border-radius: 18px;
-      overflow: hidden;
-      border: 2px solid rgba(255,255,255,0.08);
-      flex-shrink: 0;
+    .q-thumb {
+      width: 70px; height: 70px; border-radius: 12px; object-fit: cover;
+      border: 1px solid var(--glass-border); cursor: pointer;
     }
-    .q-thumb { width: 100%; height: 100%; object-fit: cover; cursor: pointer; transition: 0.3s; }
-    
     .no-thumb {
-      width: 90px; height: 90px;
-      background: rgba(255,255,255,0.02);
-      border-radius: 18px;
-      display: flex; align-items: center; justify-content: center;
-      color: rgba(255,255,255,0.1);
-      border: 1px dashed rgba(255,255,255,0.1);
+      width: 70px; height: 70px; border-radius: 12px;
+      background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.1); border: 1px dashed var(--glass-border);
     }
 
-    .q-main { flex-grow: 1; overflow: hidden; }
-    .q-text {
-      display: block;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #e2e8f0;
-      margin-bottom: 12px;
-      line-height: 1.5;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .q-info { flex: 1; min-width: 0; }
+    .q-title {
+      display: block; font-size: 1rem; font-weight: 600; margin-bottom: 8px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e2e8f0;
     }
 
-    .badge-group { display: flex; gap: 10px; flex-wrap: wrap; }
-    .tag {
-      font-size: 0.7rem;
-      padding: 6px 14px;
-      border-radius: 12px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid transparent;
+    .badge {
+      font-size: 0.65rem; padding: 4px 10px; border-radius: 8px;
+      font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;
     }
-    .tag-mcq { background: rgba(68, 138, 255, 0.15); color: #90caf9; border-color: rgba(68, 138, 255, 0.3); }
-    .tag-tf { background: rgba(0, 229, 255, 0.1); color: #00e5ff; border-color: rgba(0, 229, 255, 0.3); }
-    .tag-other { background: rgba(124, 77, 255, 0.1); color: #b388ff; border-color: rgba(124, 77, 255, 0.3); }
+    .badge-mcq { background: rgba(68, 138, 255, 0.1); color: var(--primary); border: 1px solid var(--primary); }
+    .badge-tf { background: rgba(0, 229, 255, 0.1); color: var(--secondary); border: 1px solid var(--secondary); }
+    .badge-other { background: rgba(124, 77, 255, 0.1); color: var(--accent); border: 1px solid var(--accent); }
 
-    .action-controls { display: flex; gap: 12px; }
-    .btn-icon {
-      width: 44px; height: 44px;
-      border-radius: 14px;
-      border: 1px solid transparent;
-      cursor: pointer;
-      transition: 0.3s;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem;
+    /* Actions */
+    .btn-group { display: flex; gap: 8px; }
+    .btn-action {
+      width: 38px; height: 38px; border-radius: 10px; border: none;
+      cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
     }
-    .btn-edit { background: rgba(255, 177, 66, 0.1); color: var(--warning); border-color: rgba(255, 177, 66, 0.3); }
-    .btn-edit:hover { background: var(--warning); color: #000; transform: translateY(-3px); }
+    .btn-edit { background: rgba(255, 177, 66, 0.15); color: var(--warning); }
+    .btn-edit:hover { background: var(--warning); color: #000; }
+    .btn-delete { background: rgba(255, 82, 82, 0.15); color: var(--danger); }
+    .btn-delete:hover { background: var(--danger); color: #fff; }
+
+    .footer {
+      display: flex; justify-content: space-between; align-items: center; margin-top: 30px;
+    }
+    .btn-main {
+      padding: 15px 30px; border-radius: 15px; border: none; font-weight: 700;
+      cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .btn-add { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; }
+    .btn-add:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(68, 138, 255, 0.3); }
     
-    .btn-del { background: rgba(255, 82, 82, 0.1); color: var(--danger); border-color: rgba(255, 82, 82, 0.3); }
-    .btn-del:hover { background: var(--danger); color: #fff; transform: translateY(-3px); }
+    .btn-back { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); }
+    .btn-back:hover { background: rgba(255,255,255,0.1); }
 
-    .footer-actions {
-      margin-top: 45px;
-      display: grid;
-      grid-template-columns: 1fr 2fr;
-      gap: 25px;
-    }
-
-    .btn {
-      padding: 18px;
-      border-radius: 20px;
-      border: none;
-      cursor: pointer;
-      font-weight: 700;
-      transition: 0.4s;
-      color: white;
-      text-decoration: none;
-      display: flex; align-items: center; justify-content: center;
-      gap: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      font-size: 0.9rem;
-    }
-
-    .btn-primary { background: linear-gradient(135deg, var(--primary), var(--accent)); }
-    .btn-secondary { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--glass-border); }
-
-    .loading-state { text-align: center; padding: 70px; }
-    .loading-state i { font-size: 3.5rem; margin-bottom: 25px; color: var(--secondary); text-shadow: 0 0 25px var(--primary); }
-
-    ::-webkit-scrollbar { width: 8px; }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
   </style>
 </head>
-
 <body>
+
 <div class="container animate__animated animate__fadeIn">
   <div class="glass-panel">
     
     <div class="header">
-      <h2 id="testTitle"><i class="fas fa-satellite-dish fa-spin"></i> KẾT NỐI NEBULA...</h2>
-      <button class="btn-icon" style="background: rgba(255,255,255,0.06); color: #fff; border: 1px solid rgba(255,255,255,0.1);" onclick="location.href='dashboard.html'"><i class="fas fa-th-large"></i></button>
-    </div>
-
-    <div id="questionList">
-      <div class="loading-state">
-        <i class="fas fa-atom fa-spin"></i>
-        <p>Đang truy xuất luồng dữ liệu câu hỏi...</p>
+      <h2 id="testNameDisplay"><i class="fas fa-database"></i> TỔNG KHO CÂU HỎI</h2>
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm nội dung câu hỏi..." oninput="filterQuestions()">
       </div>
     </div>
 
-    <div class="footer-actions">
-      <a href="dashboard.html" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Quay lại</a>
-      <button onclick="goToAdd()" class="btn btn-primary"><i class="fas fa-plus-circle"></i> Thêm câu hỏi mới</button>
+    <div id="questionList">
+      <div style="text-align:center; padding:50px; opacity:0.5;">
+        <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+        <p style="margin-top:15px;">Đang quét luồng dữ liệu...</p>
+      </div>
     </div>
-    
-    <div style="text-align: center; margin-top: 40px; opacity: 0.15; font-size: 0.75rem; letter-spacing: 6px;">
-      NEBULA QUANTUM INTERFACE • VERSION 2.8
+
+    <div class="footer">
+      <button class="btn-main btn-back" onclick="location.href='dashboard.html'">
+        <i class="fas fa-chevron-left"></i> Trang quản trị
+      </button>
+      <button class="btn-main btn-add" onclick="goToAdd()">
+        <i class="fas fa-plus-circle"></i> Thêm câu hỏi mới
+      </button>
     </div>
+
   </div>
 </div>
 
 <script>
-  // Chú ý: Đảm bảo URL API này khớp với bản Deploy mới nhất
-  const API = "https://script.google.com/macros/s/AKfycbxd1hGjg_tvNQfA7H1V49ofcIM-dWctzgmeW79KgC1J12WLwbr4QDgicaxe9x2Lq0Et/exec";
+  const API = "https://script.google.com/macros/s/AKfycbxERNvcslJ8lMkwAMEW73y3VKSIMLNWgI65Gf8qPvJ5VomQJcW_JrIzOL8bYXCCB00m/exec";
   const currentTest = JSON.parse(localStorage.getItem("currentTest") || "{}");
-  let listQuestions = [];
+  let allQuestions = [];
 
-  window.onload = function() {
-    if (!currentTest.id) { location.href = 'dashboard.html'; return; }
-    document.getElementById("testTitle").innerHTML = `<i class="fas fa-microchip"></i> ${currentTest.name.toUpperCase()}`;
+  window.onload = () => {
+    if (!currentTest.id) return location.href = 'dashboard.html';
+    document.getElementById("testNameDisplay").innerHTML = `<i class="fas fa-microchip"></i> ${currentTest.name.toUpperCase()}`;
     loadQuestions();
   };
 
   async function loadQuestions() {
     const listEl = document.getElementById("questionList");
     try {
-      const response = await fetch(`${API}?action=getQuestions&testId=${currentTest.id}`);
-      listQuestions = await response.json();
-
-      if (listQuestions.length === 0) {
-        listEl.innerHTML = `
-          <div style="text-align:center; padding:70px; opacity:0.3; border: 2px dashed rgba(255,255,255,0.05); border-radius: 30px; margin: 20px 0;">
-            <i class="fas fa-ghost fa-4x" style="margin-bottom:25px;"></i>
-            <p>Không gian dữ liệu trống.</p>
-          </div>`;
-        return;
-      }
-
-      listEl.innerHTML = listQuestions.map((q, i) => {
-        const hasImg = q.image && q.image.length > 20;
-        let typeInfo = getTypeInfo(q.type);
-
-        return `
-          <div class="q-card animate__animated animate__fadeInUp" style="animation-delay: ${i * 0.05}s">
-            ${hasImg ? 
-              `<div class="q-thumb-container"><img src="${q.image}" class="q-thumb" onclick="zoomImg('${q.image}')"></div>` : 
-              `<div class="no-thumb"><i class="fas fa-atom fa-2x"></i></div>`}
-            
-            <div class="q-main">
-              <span class="q-text" title="${q.question}">${i + 1}. ${q.question}</span>
-              <div class="badge-group">
-                <span class="tag ${typeInfo.class}"><i class="fas ${typeInfo.icon}"></i> ${typeInfo.name}</span>
-              </div>
-            </div>
-
-            <div class="action-controls">
-              <button class="btn-icon btn-edit" onclick="editQuestion(${i})"><i class="fas fa-edit"></i></button>
-              <button class="btn-icon btn-del" onclick="deleteQuestion('${q.question}', this)"><i class="fas fa-trash"></i></button>
-            </div>
-          </div>`;
-      }).join('');
+      const resp = await fetch(`${API}?action=getQuestions&testId=${currentTest.id}`);
+      allQuestions = await resp.json();
+      renderList(allQuestions);
     } catch (err) {
-      listEl.innerHTML = `<div style="color:var(--danger); text-align:center; padding:50px;"><p>⚠️ Lỗi kết nối Nebula!</p></div>`;
+      listEl.innerHTML = `<div style="text-align:center; color:var(--danger); padding:40px;">⚠️ Không thể kết nối Cloud. Vui lòng kiểm tra lại!</div>`;
     }
   }
 
-  function getTypeInfo(type) {
+  function renderList(data) {
+    const listEl = document.getElementById("questionList");
+    if (!data || data.length === 0) {
+      listEl.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.2; border: 1px dashed #fff; border-radius:20px;">
+        <i class="fas fa-folder-open fa-3x"></i><p style="margin-top:10px;">Chưa có câu hỏi nào trong bài thi này.</p>
+      </div>`;
+      return;
+    }
+
+    listEl.innerHTML = data.map((q, i) => {
+      const type = getBadge(q.type);
+      return `
+        <div class="q-card" style="animation-delay: ${i * 0.05}s">
+          ${q.image && q.image.length > 20 ? 
+            `<img src="${q.image}" class="q-thumb" onclick="previewImg('${q.image}')">` : 
+            `<div class="no-thumb"><i class="fas fa-image"></i></div>`}
+          
+          <div class="q-info">
+            <span class="q-title" title="${q.question}">${i + 1}. ${q.question}</span>
+            <span class="badge ${type.class}"><i class="fas ${type.icon}"></i> ${type.label}</span>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn-action btn-edit" title="Chỉnh sửa" onclick="editQuestion(${i})"><i class="fas fa-pen"></i></button>
+            <button class="btn-action btn-delete" title="Xóa" onclick="deleteQuestion('${q.question}', this)"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function getBadge(type) {
     switch(type) {
-      case 'tf': return { name: "Đúng/Sai", class: "tag-tf", icon: "fa-check-double" };
-      case 'matching': return { name: "Ghép nối", class: "tag-other", icon: "fa-project-diagram" };
-      case 'ordering': return { name: "Sắp xếp", class: "tag-other", icon: "fa-sort-amount-down" };
-      case 'fill': return { name: "Điền khuyết", class: "tag-other", icon: "fa-pen-nib" };
-      default: return { name: "Trắc nghiệm", class: "tag-mcq", icon: "fa-list-ul" };
+      case 'tf': return { label: "Đúng/Sai", class: "badge-tf", icon: "fa-check-circle" };
+      case 'matching': return { label: "Ghép cặp", class: "badge-other", icon: "fa-clone" };
+      case 'ordering': return { label: "Sắp xếp", class: "badge-other", icon: "fa-sort-numeric-down" };
+      case 'fill': return { label: "Điền khuyết", class: "badge-other", icon: "fa-keyboard" };
+      default: return { label: "Trắc nghiệm", class: "badge-mcq", icon: "fa-list-ul" };
     }
   }
 
-  async function deleteQuestion(questionText, btn) {
-    const result = await Swal.fire({
-      title: 'XÁC NHẬN XÓA?',
-      text: "Thao tác này sẽ xóa vĩnh viễn thực thể dữ liệu!",
+  function filterQuestions() {
+    const term = document.getElementById("searchInput").value.toLowerCase();
+    const filtered = allQuestions.filter(q => q.question.toLowerCase().includes(term));
+    renderList(filtered);
+  }
+
+  async function deleteQuestion(qText, btn) {
+    const confirm = await Swal.fire({
+      title: 'Xác nhận xóa?',
+      text: "Dữ liệu sẽ bị gỡ khỏi Cloud hệ thống!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ff5252',
-      cancelButtonColor: 'rgba(255,255,255,0.1)',
-      confirmButtonText: 'XÓA NGAY',
-      cancelButtonText: 'HỦY',
-      background: '#0a0f1c', 
-      color: '#fff'
+      background: '#0a0f1c', color: '#fff',
+      confirmButtonText: 'Xóa ngay', cancelButtonText: 'Hủy'
     });
 
-    if (!result.isConfirmed) return;
+    if (!confirm.isConfirmed) return;
 
-    const originalContent = btn.innerHTML;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     btn.disabled = true;
 
     try {
-      // Cách gửi tối ưu cho Apps Script để tránh lỗi CORS/CORB
-      const formData = new URLSearchParams();
-      formData.append("action", "deleteQuestion");
-      formData.append("testId", currentTest.id);
-      formData.append("question", questionText);
+      const fd = new URLSearchParams();
+      fd.append("action", "deleteQuestion");
+      fd.append("testId", currentTest.id);
+      fd.append("question", qText);
 
-      await fetch(API, {
-        method: "POST",
-        mode: "no-cors", // Vẫn dùng no-cors nhưng dữ liệu gửi đi dạng Form sẽ được Script nhận tốt hơn
-        body: formData
-      });
+      await fetch(API, { method: "POST", mode: "no-cors", body: fd });
       
-      Swal.fire({ 
-        icon: 'success', 
-        title: 'ĐANG ĐỒNG BỘ', 
-        text: 'Lệnh xóa đã được gửi. Danh sách sẽ cập nhật sau giây lát.',
-        timer: 2000, 
-        showConfirmButton: false, 
-        background: '#0a0f1c', 
-        color: '#fff' 
-      });
-
-      // Đợi server xử lý xong rồi load lại
-      setTimeout(loadQuestions, 2500);
-
-    } catch (err) {
-      Swal.fire({ icon: 'error', title: 'LỖI', text: 'Kết nối bị ngắt quãng.', background: '#0a0f1c', color: '#fff' });
-      btn.innerHTML = originalContent;
+      Swal.fire({ icon: 'success', title: 'Đã gửi lệnh xóa', timer: 1500, showConfirmButton: false, background: '#0a0f1c', color: '#fff' });
+      setTimeout(loadQuestions, 2000);
+    } catch (e) {
+      Swal.fire("Lỗi", "Không thể xóa lúc này!", "error");
+      btn.innerHTML = '<i class="fas fa-trash-alt"></i>';
       btn.disabled = false;
     }
   }
 
   function editQuestion(index) {
-    localStorage.setItem("editQuestionData", JSON.stringify(listQuestions[index]));
+    localStorage.setItem("editQuestionData", JSON.stringify(allQuestions[index]));
     location.href = "add-question.html";
   }
 
@@ -356,15 +271,10 @@
     location.href = "add-question.html";
   }
 
-  function zoomImg(src) {
-    Swal.fire({
-      imageUrl: src,
-      background: 'rgba(10, 15, 28, 0.96)',
-      backdrop: 'rgba(0,0,0,0.85)',
-      showConfirmButton: false,
-      showCloseButton: true
-    });
+  function previewImg(src) {
+    Swal.fire({ imageUrl: src, imageAlt: 'Preview', background: 'rgba(0,0,0,0.9)', showConfirmButton: false, showCloseButton: true });
   }
 </script>
+
 </body>
 </html>
