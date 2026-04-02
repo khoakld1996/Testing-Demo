@@ -8,19 +8,17 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <style>
     :root {
-      --primary: #4facfe; --accent: #00ffcc; --bg: #0b0f1a;
-      --card: rgba(30,41,59,0.75); --glass-border: rgba(255,255,255,0.1);
-      --text: #f8fafc; --correct: #00ffcc; --wrong: #ff4757;
+      --primary:#4facfe; --accent:#00ffcc; --bg:#0b0f1a;
+      --card:rgba(30,41,59,0.75); --glass-border:rgba(255,255,255,0.1);
+      --text:#f8fafc; --correct:#00ffcc; --wrong:#ff4757;
     }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
     body {
       min-height:100vh;
-      background: var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
+      background:var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
       background-size:cover; background-blend-mode:overlay; color:var(--text); padding:20px;
     }
     .container { width:100%; max-width:850px; margin:0 auto; }
-
-    /* HEADER */
     .header-box {
       background:var(--card); backdrop-filter:blur(15px);
       padding:20px 25px; border-radius:20px; border:1px solid var(--glass-border);
@@ -30,15 +28,12 @@
     .btn-back {
       padding:11px 22px; background:rgba(255,255,255,0.07);
       color:#fff; border:1px solid var(--glass-border); border-radius:12px;
-      cursor:pointer; font-weight:700; display:flex; align-items:center; gap:8px; transition:0.3s;
-      text-decoration:none;
+      cursor:pointer; font-weight:700; display:flex; align-items:center; gap:8px;
+      transition:0.3s; text-decoration:none;
     }
     .btn-back:hover { background:rgba(255,255,255,0.13); }
-
-    /* VIEW 1 - DANH SÁCH */
     #viewList { display:block; }
     #viewDetail { display:none; }
-
     .history-item {
       background:var(--card); border-radius:16px; border:1px solid var(--glass-border);
       margin-bottom:12px; cursor:pointer; transition:all 0.25s; backdrop-filter:blur(10px);
@@ -46,69 +41,63 @@
       align-items:center; gap:12px; padding:18px 22px;
     }
     .history-item:hover { background:rgba(79,172,254,0.08); border-color:var(--primary); transform:translateX(5px); }
-    .test-name  { font-weight:700; color:var(--accent); font-size:1rem; }
-    .test-time  { color:#94a3b8; font-size:0.78rem; margin-top:4px; }
-    .score-box  { text-align:center; font-size:1.5rem; font-weight:900; color:#fff; }
-    .score-lbl  { font-size:0.58rem; color:var(--primary); font-weight:400; display:block; margin-top:-2px; }
-    .total-box  { text-align:right; color:var(--accent); font-size:0.9rem; font-weight:700; white-space:nowrap; }
-    .arr        { color:#334155; }
+    .test-name { font-weight:700; color:var(--accent); font-size:1rem; }
+    .test-time { color:#94a3b8; font-size:0.78rem; margin-top:4px; }
+    .score-box { text-align:center; font-size:1.5rem; font-weight:900; color:#fff; }
+    .score-lbl { font-size:0.58rem; color:var(--primary); font-weight:400; display:block; margin-top:-2px; }
+    .total-box { text-align:right; color:var(--accent); font-size:0.9rem; font-weight:700; white-space:nowrap; }
+    .arr { color:#334155; }
     .history-item:hover .arr { color:var(--primary); }
-
     .loader  { text-align:center; padding:60px; }
     .no-data { text-align:center; padding:80px 20px; opacity:0.5; }
     .no-data i { font-size:2.5rem; margin-bottom:12px; display:block; }
-
-    /* VIEW 2 - CHI TIẾT BÀI */
-    .detail-back {
-      display:flex; align-items:center; gap:12px; margin-bottom:18px;
-    }
+    /* VIEW DETAIL */
+    .detail-back { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
     .btn-sm {
       padding:9px 18px; border-radius:11px; border:1px solid var(--glass-border);
       background:rgba(255,255,255,0.06); color:#fff; cursor:pointer;
       font-weight:700; display:flex; align-items:center; gap:7px; transition:0.2s;
+      font-family:'Inter',sans-serif;
     }
     .btn-sm:hover { background:rgba(255,255,255,0.12); }
-
     .detail-summary {
       background:var(--card); border:1px solid var(--glass-border);
       border-radius:18px; padding:20px 22px; margin-bottom:18px;
     }
     .detail-title { font-size:1.1rem; font-weight:800; color:#fff; margin-bottom:12px; }
     .chips { display:flex; gap:10px; flex-wrap:wrap; }
-    .chip {
-      padding:6px 14px; border-radius:10px; font-size:0.76rem; font-weight:700;
-      display:flex; align-items:center; gap:6px;
-    }
+    .chip { padding:6px 14px; border-radius:10px; font-size:0.76rem; font-weight:700; display:flex; align-items:center; gap:6px; }
     .chip-score   { background:rgba(79,172,254,0.12); color:var(--primary); border:1px solid rgba(79,172,254,0.3); }
     .chip-correct { background:rgba(0,255,204,0.1);   color:var(--correct); border:1px solid rgba(0,255,204,0.25); }
     .chip-wrong   { background:rgba(255,71,87,0.1);   color:var(--wrong);   border:1px solid rgba(255,71,87,0.25); }
     .chip-time    { background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid var(--glass-border); }
-
-    /* DANH SÁCH CÂU HỎI */
+    /* QUESTION LIST */
     .q-list { display:flex; flex-direction:column; gap:10px; }
     .q-item {
       border-radius:14px; border:1px solid var(--glass-border);
       background:rgba(255,255,255,0.02); overflow:hidden; cursor:pointer; transition:0.2s;
     }
-    .q-item:hover { background:rgba(255,255,255,0.05); }
+    .q-item:hover { background:rgba(255,255,255,0.04); }
+    .q-item.correct-bg { border-left:4px solid var(--correct); }
+    .q-item.wrong-bg   { border-left:4px solid var(--wrong); }
+    .q-item.skip-bg    { border-left:4px solid #475569; }
     .q-header { display:flex; align-items:center; gap:12px; padding:14px 18px; }
     .q-badge {
       min-width:32px; height:32px; border-radius:10px; flex-shrink:0;
-      display:flex; align-items:center; justify-content:center;
-      font-size:0.78rem; font-weight:800;
+      display:flex; align-items:center; justify-content:center; font-size:0.78rem; font-weight:800;
     }
-    .q-badge.correct { background:rgba(0,255,204,0.15); color:var(--correct); border:1px solid rgba(0,255,204,0.3); }
-    .q-badge.wrong   { background:rgba(255,71,87,0.15);  color:var(--wrong);   border:1px solid rgba(255,71,87,0.3); }
+    /* FIX: 3 trạng thái badge đủ: correct / wrong / skip */
+    .q-badge.correct  { background:rgba(0,255,204,0.15);  color:var(--correct); border:1px solid rgba(0,255,204,0.3); }
+    .q-badge.wrong    { background:rgba(255,71,87,0.15);   color:var(--wrong);   border:1px solid rgba(255,71,87,0.3); }
+    .q-badge.skip     { background:rgba(71,85,105,0.3);    color:#94a3b8;        border:1px solid rgba(148,163,184,0.2); }
     .q-preview { flex:1; font-size:0.9rem; color:#e2e8f0; line-height:1.4; }
     .q-pts     { font-size:0.72rem; font-weight:700; color:var(--primary); white-space:nowrap; }
     .q-arrow   { color:#475569; font-size:0.75rem; transition:transform 0.2s; }
     .q-item.open .q-arrow { transform:rotate(180deg); }
-
     .q-detail { display:none; padding:0 18px 16px; border-top:1px solid rgba(255,255,255,0.05); }
     .q-item.open .q-detail { display:block; }
     .detail-inner { padding-top:12px; }
     .d-label { font-size:0.67rem; text-transform:uppercase; letter-spacing:1px; color:#475569; margin-bottom:6px; font-weight:700; }
-
     .opt-item {
       padding:9px 13px; border-radius:10px; font-size:0.85rem;
       background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
@@ -123,7 +112,6 @@
     }
     .divider { height:1px; background:rgba(255,255,255,0.05); margin:10px 0; }
     .loading-questions { text-align:center; padding:40px; color:#475569; }
-
     @media(max-width:600px) {
       .history-item { grid-template-columns:1fr 70px; }
       .total-box, .arr { display:none; }
@@ -136,20 +124,23 @@
   <div id="viewList">
     <div class="header-box">
       <div>
-        <h2 style="color:#fff; font-size:1.3rem; font-weight:800">📋 Lịch Sử Bài Làm</h2>
-        <p id="studentDisplay" style="color:var(--primary); font-size:0.85rem; margin-top:4px;"></p>
+        <h2 style="color:#fff;font-size:1.3rem;font-weight:800">📋 Lịch Sử Bài Làm</h2>
+        <p id="studentDisplay" style="color:var(--primary);font-size:0.85rem;margin-top:4px"></p>
       </div>
       <a href="select.html" class="btn-back"><i class="fas fa-play-circle"></i> Tiếp tục thi</a>
     </div>
     <div id="historyList">
-      <div class="loader"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--primary);margin-bottom:12px;display:block"></i><p>Đang đồng bộ dữ liệu...</p></div>
+      <div class="loader">
+        <i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--primary);margin-bottom:12px;display:block"></i>
+        <p>Đang đồng bộ dữ liệu...</p>
+      </div>
     </div>
   </div>
 
   <div id="viewDetail">
     <div class="detail-back">
       <button class="btn-sm" onclick="backToList()"><i class="fas fa-arrow-left"></i> Quay lại</button>
-      <span id="detailTestName" style="font-weight:800; font-size:1rem; color:#fff"></span>
+      <span id="detailTestName" style="font-weight:800;font-size:1rem;color:#fff"></span>
     </div>
     <div class="detail-summary" id="detailSummary"></div>
     <div class="q-list" id="qDetailList">
@@ -161,7 +152,6 @@
 
 <script>
   const API = "https://script.google.com/macros/s/AKfycbyWQYM84IUA98xAJdUjEFTjnyGdDvQyI2GcIyI0BTZC8kcG5YGr1C1FjphqAttK0qjU/exec";
-
   let allResults = [];
   let currentRecord = null;
 
@@ -173,8 +163,8 @@
   }
 
   window.onload = () => {
-    const name = localStorage.getItem("studentName") || "Học sinh";
-    const school = localStorage.getItem("schoolName") || "";
+    const name   = localStorage.getItem("studentName") || "Học sinh";
+    const school = localStorage.getItem("schoolName")  || "";
     document.getElementById("studentDisplay").innerText = `🚀 ${name}${school ? " | " + school : ""}`;
     loadHistory(name);
   };
@@ -196,21 +186,18 @@
 
       el.innerHTML = mine.map((r, i) => {
         const name = r.testName || r.testname || "Bài thi";
-        
-        // FIX LỖI ĐIỂM: Xử lý an toàn cho cả string và number
         const rawScore = r.score;
         let scoreDisplay = "0";
         if (rawScore !== undefined && rawScore !== null) {
           const numScore = parseFloat(rawScore);
           scoreDisplay = isNaN(numScore) ? rawScore : numScore.toFixed(1).replace(/\.0$/, "");
         }
-
         const total = r.total || "—";
-        const time = r.time || "";
+        const time  = r.time  || "";
 
         return `
           <div class="history-item animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s"
-               onclick='prepareDetail(${i}, ${JSON.stringify(mine[i]).replace(/'/g, "&apos;")})'>
+               onclick='prepareDetail(${i})'>
             <div>
               <div class="test-name">${name}</div>
               <div class="test-time"><i class="far fa-clock"></i> ${fmtTime(time)}</div>
@@ -220,33 +207,35 @@
             <div class="arr"><i class="fas fa-chevron-right"></i></div>
           </div>`;
       }).join("");
+
+      // Lưu mine vào biến để prepareDetail truy cập an toàn (tránh JSON inline phức tạp)
+      window._historyMine = mine;
+
     } catch(e) {
       console.error(e);
       el.innerHTML = `<div class="no-data"><i class="fas fa-wifi"></i><p>Lỗi kết nối máy chủ.</p></div>`;
     }
   }
 
-  // Hàm trung gian để tránh lỗi truyền JSON phức tạp vào onclick
-  function prepareDetail(index, record) {
-    openDetail(record);
+  function prepareDetail(index) {
+    const mine = window._historyMine || [];
+    if (!mine[index]) return;
+    openDetail(mine[index]);
   }
 
   async function openDetail(record) {
     currentRecord = record;
-
-    document.getElementById("viewList").style.display = "none";
+    document.getElementById("viewList").style.display  = "none";
     document.getElementById("viewDetail").style.display = "block";
-    
+
     const tName = currentRecord.testName || currentRecord.testname || "Bài thi";
     document.getElementById("detailTestName").innerText = tName;
 
-    // Summary Score
     const numScore = parseFloat(currentRecord.score);
-    const scoreStr = isNaN(numScore) ? currentRecord.score : numScore.toFixed(1).replace(/\.0$/,"");
-    
-    const total = String(currentRecord.total || "");
+    const scoreStr = isNaN(numScore) ? currentRecord.score : numScore.toFixed(1).replace(/\.0$/, "");
+    const total    = String(currentRecord.total || "");
     const [correct, totalQ] = total.includes("/") ? total.split("/") : ["0","0"];
-    const wrong = (parseInt(totalQ) || 0) - (parseInt(correct) || 0);
+    const wrong    = (parseInt(totalQ)||0) - (parseInt(correct)||0);
 
     document.getElementById("detailSummary").innerHTML = `
       <div class="detail-title">${tName}</div>
@@ -265,55 +254,51 @@
     el.innerHTML = `<div class="loading-questions"><i class="fas fa-spinner fa-spin"></i> Đang tải câu hỏi...</div>`;
 
     try {
-      // 1. Tìm testId
       const testsRes = await fetch(`${API}?action=getTests`);
-      const tests = await testsRes.json();
-      const found = tests.find(t => (t.name || "").trim().toLowerCase() === (testName || "").trim().toLowerCase());
+      const tests    = await testsRes.json();
+      const found    = tests.find(t => (t.name||"").trim().toLowerCase() === (testName||"").trim().toLowerCase());
 
       if (!found) {
         el.innerHTML = `<div class="loading-questions" style="color:#ff4757">Không tìm thấy dữ liệu gốc của bài này.</div>`;
         return;
       }
 
-      // 2. Tải danh sách câu hỏi gốc
-      const qRes = await fetch(`${API}?action=getQuestions&testId=${encodeURIComponent(found.id)}`);
+      const qRes  = await fetch(`${API}?action=getQuestions&testId=${encodeURIComponent(found.id)}`);
       const qList = await qRes.json();
 
-      // 3. Lấy đáp án của học sinh (ƯU TIÊN TỪ DATABASE)
       let studentAnswers = {};
       if (currentRecord.answers) {
         try {
-          studentAnswers = typeof currentRecord.answers === 'string' ? JSON.parse(currentRecord.answers) : currentRecord.answers;
+          studentAnswers = typeof currentRecord.answers === 'string'
+            ? JSON.parse(currentRecord.answers) : currentRecord.answers;
         } catch(e) { studentAnswers = {}; }
       } else {
-        // Fallback cho bài thi vừa làm xong chưa kịp sync hết
         try { studentAnswers = JSON.parse(localStorage.getItem("quizAnswers") || "{}"); } catch(e) {}
       }
 
       el.innerHTML = qList.map((q, idx) => {
         const studentAns = studentAnswers[q.question] || "";
         const correctAns = String(q.correct || "").trim();
-        const pts = parseFloat(q.points) || 0;
+        const pts        = parseFloat(q.points) || 0;
 
         const isCorrect = checkAns(q, studentAns, correctAns);
-        const status = studentAns ? (isCorrect ? "correct" : "wrong") : "unanswered";
+        // FIX: 3 trạng thái rõ ràng
+        const status    = !studentAns ? "skip" : (isCorrect ? "correct" : "wrong");
 
-        const badgeClass = status === "correct" ? "correct" : "wrong";
-        const badgeIcon = status === "correct" ? "fa-check" : (status === "wrong" ? "fa-times" : "fa-minus");
+        // FIX: badge class dùng đúng status, không ép sang wrong khi skip
+        const badgeIcon = status === "correct" ? "fa-check" : status === "wrong" ? "fa-times" : "fa-minus";
 
         return `
-          <div class="q-item" id="qd${idx}">
+          <div class="q-item ${status}-bg" id="qd${idx}">
             <div class="q-header" onclick="toggleQ(${idx})">
-              <div class="q-badge ${badgeClass}">
-                <i class="fas ${badgeIcon}"></i>
-              </div>
+              <div class="q-badge ${status}"><i class="fas ${badgeIcon}"></i></div>
               <div class="q-preview">Câu ${idx+1}: ${q.question}</div>
               ${pts > 0 ? `<div class="q-pts">${pts}đ</div>` : ""}
               <i class="fas fa-chevron-down q-arrow"></i>
             </div>
             <div class="q-detail">
               <div class="detail-inner">
-                ${q.image ? `<img src="${q.image}" style="width:100%;border-radius:10px;margin-bottom:10px;max-height:200px;object-fit:contain;background:rgba(0,0,0,0.2)">` : ""}
+                ${q.image ? `<img src="${q.image}" style="width:100%;border-radius:10px;margin-bottom:10px;max-height:200px;object-fit:contain;background:rgba(0,0,0,0.2)" onerror="this.style.display='none'">` : ""}
                 ${renderDetail(q, studentAns, correctAns, status)}
               </div>
             </div>
@@ -326,55 +311,86 @@
     }
   }
 
-  function toggleQ(idx) {
-    document.getElementById(`qd${idx}`).classList.toggle("open");
-  }
+  function toggleQ(idx) { document.getElementById(`qd${idx}`).classList.toggle("open"); }
 
+  // FIX: checkAns xử lý đủ tất cả loại câu
   function checkAns(q, studentAns, correctAns) {
     if (!studentAns) return false;
     const type = (q.type || "single").toLowerCase();
-    if (type === "fill") return studentAns.toLowerCase().trim() === correctAns.toLowerCase().trim();
-    return String(studentAns).trim() === String(correctAns).trim();
+    const clean      = s => s ? s.toString().trim().toLowerCase() : "";
+    const cleanArr   = s => s ? s.toString().split('|').map(x=>x.trim().toLowerCase()).sort().join('|') : "";
+    const cleanOrder = s => s ? s.toString().split('|').map(x=>x.trim().toLowerCase()).join('|') : "";
+
+    if (type === "fill")                           return clean(studentAns) === clean(correctAns);
+    if (["single","mcq","tf"].includes(type))      return clean(studentAns) === clean(correctAns);
+    if (type === "multiple" || type === "matching") return cleanArr(studentAns) === cleanArr(correctAns);
+    if (type === "ordering")                        return cleanOrder(studentAns) === cleanOrder(correctAns);
+    return clean(studentAns) === clean(correctAns);
   }
 
   function renderDetail(q, studentAns, correctAns, status) {
     const type = (q.type || "single").toLowerCase();
     let html = "";
 
-    if (["single", "mcq", "tf"].includes(type)) {
+    // FIX: xử lý multiple riêng (dùng mảng, không so sánh thẳng)
+    if (["single","mcq","tf","multiple"].includes(type)) {
       let opts = [];
       try {
         const det = typeof q.answer === "string" ? JSON.parse(q.answer) : q.answer;
         opts = (det?.items || []).map(o => typeof o === "object" ? o.text : o);
       } catch(e) {}
-      if (type === "tf") opts = ["Đúng", "Sai"];
+      if (type === "tf") opts = ["Đúng","Sai"];
 
       if (opts.length) {
         html += `<div class="d-label">Các lựa chọn</div>`;
+        const uArr = studentAns.split("|").map(x => x.trim());
+        const cArr = correctAns.split("|").map(x => x.trim());
         opts.forEach(opt => {
-          const optText = String(opt).trim();
-          const isCorr = optText === correctAns;
-          const isChosen = optText === String(studentAns).trim();
-          
+          const optText    = String(opt).trim();
+          const isCorr     = cArr.includes(optText);
+          const isChosen   = uArr.includes(optText);
           let cls = "", icon = "fa-circle";
-          if (isCorr) { cls = "is-correct"; icon = "fa-circle-check"; }
-          else if (isChosen && !isCorr) { cls = "is-wrong"; icon = "fa-circle-xmark"; }
-          
+          if (isCorr)                  { cls = "is-correct"; icon = "fa-circle-check"; }
+          else if (isChosen && !isCorr){ cls = "is-wrong";   icon = "fa-circle-xmark"; }
           html += `<div class="opt-item ${cls}"><i class="fas ${icon}"></i>${opt}</div>`;
         });
         return html;
       }
     }
 
-    // Tự luận hoặc khác
-    if (studentAns) {
-      html += `<div class="d-label">Bài làm của bạn</div>`;
-      html += `<div class="opt-item ${status === 'correct' ? 'is-correct' : 'is-wrong'}">
-                 <i class="fas ${status === 'correct' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
-                 ${studentAns}
-               </div><div class="divider"></div>`;
+    // ordering
+    if (type === "ordering") {
+      html += `<div class="d-label">Thứ tự bạn chọn</div>`;
+      html += `<div class="opt-item ${status==='correct'?'is-correct':'is-wrong'}">
+        <i class="fas fa-list-ol"></i>${studentAns || "(Chưa sắp xếp)"}
+      </div>`;
+      if (status !== "correct") {
+        html += `<div class="divider"></div><div class="d-label">Đáp án đúng</div>`;
+        html += `<div class="correct-answer-box"><i class="fas fa-star"></i>${correctAns}</div>`;
+      }
+      return html;
     }
 
+    // matching
+    if (type === "matching") {
+      html += `<div class="d-label">Các cặp bạn ghép</div>`;
+      html += `<div class="opt-item ${status==='correct'?'is-correct':'is-wrong'}">
+        <i class="fas fa-link"></i>${studentAns || "(Chưa ghép)"}
+      </div>`;
+      if (status !== "correct") {
+        html += `<div class="divider"></div><div class="d-label">Đáp án đúng</div>`;
+        html += `<div class="correct-answer-box"><i class="fas fa-star"></i>${correctAns}</div>`;
+      }
+      return html;
+    }
+
+    // fill / tự luận / bỏ qua
+    if (studentAns) {
+      html += `<div class="d-label">Bài làm của bạn</div>`;
+      html += `<div class="opt-item ${status==='correct'?'is-correct':'is-wrong'}">
+        <i class="fas ${status==='correct'?'fa-circle-check':'fa-circle-xmark'}"></i>${studentAns}
+      </div><div class="divider"></div>`;
+    }
     html += `<div class="d-label">Đáp án đúng</div>`;
     html += `<div class="correct-answer-box"><i class="fas fa-star"></i>${correctAns || "—"}</div>`;
     return html;
@@ -382,7 +398,7 @@
 
   function backToList() {
     document.getElementById("viewDetail").style.display = "none";
-    document.getElementById("viewList").style.display = "block";
+    document.getElementById("viewList").style.display   = "block";
   }
 </script>
 </body>

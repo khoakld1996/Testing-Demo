@@ -7,107 +7,113 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-  
   <style>
     :root {
       --primary: #4facfe; --accent: #00ffcc; --bg: #0f172a;
-      --card: rgba(30, 41, 59, 0.95); --glass-border: rgba(255, 255, 255, 0.1);
-      --text: #f8fafc;
+      --card: rgba(30,41,59,0.95); --glass-border: rgba(255,255,255,0.1); --text: #f8fafc;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-    
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
     body {
-      min-height: 100vh;
-      background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), 
+      min-height:100vh;
+      background: linear-gradient(rgba(15,23,42,0.85),rgba(15,23,42,0.85)),
                   url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
-      background-size: cover; color: var(--text); padding: 20px; display: flex; flex-direction: column; align-items: center;
+      background-size:cover; color:var(--text); padding:20px;
+      display:flex; flex-direction:column; align-items:center;
     }
-
     .quiz-header {
-      width: 100%; max-width: 1100px; background: var(--card); backdrop-filter: blur(20px);
-      padding: 20px 30px; border-radius: 20px; display: flex; justify-content: space-between;
-      align-items: center; border: 1px solid var(--glass-border); position: sticky; top: 10px; z-index: 100; margin-bottom: 25px;
+      width:100%; max-width:1100px; background:var(--card); backdrop-filter:blur(20px);
+      padding:20px 30px; border-radius:20px; display:flex; justify-content:space-between;
+      align-items:center; border:1px solid var(--glass-border);
+      position:sticky; top:10px; z-index:100; margin-bottom:25px;
     }
-    #timer { font-size: 1.5rem; font-weight: 800; color: #ff4757; font-family: monospace; }
+    #timer { font-size:1.5rem; font-weight:800; color:#ff4757; font-family:monospace; transition:color 0.3s; }
+    #timer.warning { animation:blink 0.6s infinite alternate; }
+    @keyframes blink { from{color:#ff4757} to{color:#ffffff} }
 
-    .main-layout { display: grid; grid-template-columns: 1fr 300px; gap: 25px; width: 100%; max-width: 1100px; }
-    @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+    .main-layout { display:grid; grid-template-columns:1fr 300px; gap:25px; width:100%; max-width:1100px; }
+    @media(max-width:900px){ .main-layout { grid-template-columns:1fr; } }
 
     .question-card {
-      background: var(--card); border-radius: 25px; padding: 35px; border: 1px solid var(--glass-border);
-      display: none; animation: fadeIn 0.4s ease; min-height: 550px; backdrop-filter: blur(15px);
+      background:var(--card); border-radius:25px; padding:35px; border:1px solid var(--glass-border);
+      display:none; animation:fadeIn 0.4s ease; min-height:550px; backdrop-filter:blur(15px);
     }
-    .question-card.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .question-card.active { display:block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
 
-    .q-text { font-size: 1.3rem; margin-bottom: 25px; font-weight: 600; line-height: 1.6; color: #fff; }
-    .q-image { 
-      max-width: 100%; max-height: 280px; border-radius: 15px; 
-      margin: 0 auto 25px auto; display: block; object-fit: contain;
-      border: 1px solid var(--glass-border); box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    .q-text { font-size:1.3rem; margin-bottom:25px; font-weight:600; line-height:1.6; color:#fff; }
+    .q-image {
+      max-width:100%; max-height:280px; border-radius:15px; margin:0 auto 25px auto;
+      display:block; object-fit:contain; border:1px solid var(--glass-border);
+      box-shadow:0 10px 30px rgba(0,0,0,0.3);
     }
-
-    .drag-list { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
-    .drag-item { 
-      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--primary); 
-      padding: 15px 20px; border-radius: 12px; cursor: grab; color: #fff; 
-      display: flex; align-items: center; gap: 15px; transition: all 0.2s ease;
+    .drag-list { display:flex; flex-direction:column; gap:12px; margin-top:10px; }
+    .drag-item {
+      background:rgba(255,255,255,0.05); border:1px solid var(--primary);
+      padding:15px 20px; border-radius:12px; cursor:grab; color:#fff;
+      display:flex; align-items:center; gap:15px; transition:all 0.2s ease;
     }
-    .drag-item:hover { background: rgba(79, 172, 254, 0.15); transform: translateX(5px); }
-
-    .matching-row { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 20px; margin-bottom: 15px; }
-    .match-left { 
-      background: linear-gradient(135deg, rgba(79, 172, 254, 0.15), rgba(0, 255, 204, 0.05)); 
-      padding: 15px; border-radius: 12px; border: 1px solid rgba(79, 172, 254, 0.3);
-      display: flex; align-items: center; justify-content: center; text-align: center; color: var(--accent); font-weight: 700;
+    .drag-item:hover { background:rgba(79,172,254,0.15); transform:translateX(5px); }
+    .matching-row { display:grid; grid-template-columns:0.8fr 1.2fr; gap:20px; margin-bottom:15px; }
+    .match-left {
+      background:linear-gradient(135deg,rgba(79,172,254,0.15),rgba(0,255,204,0.05));
+      padding:15px; border-radius:12px; border:1px solid rgba(79,172,254,0.3);
+      display:flex; align-items:center; justify-content:center; text-align:center;
+      color:var(--accent); font-weight:700;
     }
-    .match-right-zone { 
-      min-height: 65px; background: rgba(0,0,0,0.25); border: 2px dashed rgba(255,255,255,0.15); 
-      border-radius: 12px; display: flex; align-items: center; justify-content: center; padding: 8px;
+    .match-right-zone {
+      min-height:65px; background:rgba(0,0,0,0.25); border:2px dashed rgba(255,255,255,0.15);
+      border-radius:12px; display:flex; align-items:center; justify-content:center; padding:8px;
     }
-    .match-pool { 
-      display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; padding: 20px; 
-      background: rgba(15, 23, 42, 0.5); border-radius: 20px; min-height: 100px; 
-      border: 1px solid var(--glass-border); justify-content: center;
+    .match-pool {
+      display:flex; flex-wrap:wrap; gap:12px; margin-top:30px; padding:20px;
+      background:rgba(15,23,42,0.5); border-radius:20px; min-height:100px;
+      border:1px solid var(--glass-border); justify-content:center;
     }
-
-    .options-grid { display: flex; flex-direction: column; gap: 12px; }
+    .options-grid { display:flex; flex-direction:column; gap:12px; }
     .option-label {
-      background: rgba(255,255,255,0.05); padding: 18px; border-radius: 15px; border: 2px solid transparent;
-      cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; color: #cbd5e1;
+      background:rgba(255,255,255,0.05); padding:18px; border-radius:15px;
+      border:2px solid transparent; cursor:pointer; transition:0.2s;
+      display:flex; align-items:center; gap:12px; color:#cbd5e1;
     }
-    .option-label:hover { background: rgba(255,255,255,0.1); border-color: var(--primary); }
-    .selected-card { border-color: var(--accent) !important; background: rgba(0, 255, 204, 0.1) !important; color: #fff; }
-    .option-label input { display: none; }
-
-    .nav-panel { background: var(--card); border-radius: 20px; padding: 25px; border: 1px solid var(--glass-border); position: sticky; top: 120px; }
-    .q-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 15px 0; }
+    .option-label:hover { background:rgba(255,255,255,0.1); border-color:var(--primary); }
+    .selected-card { border-color:var(--accent) !important; background:rgba(0,255,204,0.1) !important; color:#fff; }
+    .option-label input { display:none; }
+    .nav-panel {
+      background:var(--card); border-radius:20px; padding:25px;
+      border:1px solid var(--glass-border); position:sticky; top:120px;
+    }
+    .q-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:15px 0; }
     .q-num {
-      aspect-ratio: 1/1; display: flex; align-items: center; justify-content: center;
-      background: rgba(255,255,255,0.08); border-radius: 10px; cursor: pointer; transition: 0.3s;
+      aspect-ratio:1/1; display:flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,0.08); border-radius:10px; cursor:pointer;
+      transition:0.3s; font-size:0.85rem;
     }
-    .q-num.done { background: var(--accent); color: #000; font-weight: bold; }
-    .q-num.current { border: 2px solid #fff; }
-
-    .ctrl-btns { display: flex; gap: 12px; width: 100%; max-width: 1100px; margin-top: 20px; }
-    .btn { padding: 16px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; flex: 1; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
-    .submit-btn { width: 100%; background: #ef4444; color: white; padding: 18px; border-radius: 12px; border: none; cursor: pointer; font-weight: 800; margin-top: 15px; }
-
+    .q-num.done { background:var(--accent); color:#000; font-weight:bold; }
+    .q-num.current { border:2px solid #fff; }
+    .ctrl-btns { display:flex; gap:12px; width:100%; max-width:1100px; margin-top:20px; }
+    .btn {
+      padding:16px; border-radius:12px; border:none; cursor:pointer; font-weight:bold;
+      flex:1; color:white; display:flex; align-items:center; justify-content:center;
+      gap:10px; transition:0.3s; font-family:'Inter',sans-serif;
+    }
+    .submit-btn {
+      width:100%; background:#ef4444; color:white; padding:18px; border-radius:12px;
+      border:none; cursor:pointer; font-weight:800; margin-top:15px; font-family:'Inter',sans-serif;
+    }
     .input-fill {
-      width: 100%; padding: 18px; border-radius: 12px; background: rgba(255,255,255,0.05);
-      border: 2px solid var(--glass-border); color: #fff; font-size: 1.1rem; outline: none;
+      width:100%; padding:18px; border-radius:12px; background:rgba(255,255,255,0.05);
+      border:2px solid var(--glass-border); color:#fff; font-size:1.1rem; outline:none;
     }
-    .input-fill:focus { border-color: var(--primary); }
+    .input-fill:focus { border-color:var(--primary); }
   </style>
 </head>
 <body>
-
   <div class="quiz-header">
     <div>
-      <h3 id="quizTitle" style="color:var(--accent);">Đang tải...</h3>
-      <small id="studentInfo"></small>
+      <h3 id="quizTitle" style="color:var(--accent)">Đang tải...</h3>
+      <small id="studentInfo" style="opacity:0.6"></small>
     </div>
-    <div id="timer">⏱️ 00:00</div>
+    <div id="timer">⏱️ --:--</div>
   </div>
 
   <div class="main-layout">
@@ -122,19 +128,17 @@
         </button>
       </div>
     </div>
-
     <div class="nav-panel">
-      <div style="font-size:0.75rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Tiến độ bài làm</div>
+      <div style="font-size:0.75rem;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1px">Tiến độ bài làm</div>
       <div class="q-grid" id="qGrid"></div>
       <button class="submit-btn" onclick="checkBeforeSubmit()">NỘP BÀI THI</button>
     </div>
   </div>
 
 <script>
-  // URL API CHUẨN (đổi lại API của mình nếu cần)
-  const API = "https://script.google.com/macros/s/AKfycbyWQYM84IUA98xAJdUjEFTjnyGdDvQyI2GcIyI0BTZC8kcG5YGr1C1FjphqAttK0qjU/exec"; 
+  const API = "https://script.google.com/macros/s/AKfycbyWQYM84IUA98xAJdUjEFTjnyGdDvQyI2GcIyI0BTZC8kcG5YGr1C1FjphqAttK0qjU/exec";
   let questions = [], currentIdx = 0, timeLeft = 0, timerInterval;
-  let isSubmitting = false; 
+  let isSubmitting = false;
 
   function shuffle(array) {
     let arr = [...array];
@@ -153,9 +157,9 @@
     const testId = localStorage.getItem("currentTestId");
     if (!testId) return location.href = "select.html";
 
-    document.getElementById("studentInfo").innerText = 
+    document.getElementById("studentInfo").innerText =
       `${localStorage.getItem("studentName") || 'Thí sinh'} • ${localStorage.getItem("schoolName") || 'Tự do'}`;
-    
+
     await loadQuestions(testId);
   };
 
@@ -165,101 +169,86 @@
       const data = await res.json();
 
       if (!Array.isArray(data) || data.length === 0) {
-        document.getElementById("quizContent").innerHTML = `<div style="text-align:center;padding:60px;color:#94a3b8">Bài thi chưa có câu hỏi!</div>`;
+        document.getElementById("quizContent").innerHTML =
+          `<div style="text-align:center;padding:60px;color:#94a3b8"><i class="fas fa-inbox fa-3x" style="display:block;margin-bottom:16px"></i>Bài thi chưa có câu hỏi!</div>`;
+        document.getElementById("timer").innerText = "⏱️ 0:00";
         return;
       }
 
       questions = data.map(q => {
         let details = { items: [] };
-        try { 
-          details = (typeof q.answer === 'string') ? JSON.parse(q.answer) : (q.answer || { items: [] }); 
-        } catch (e) { details = { items: [] }; }
-        return { 
-          ...q, 
-          details,
-          correct: (q.correct || q.correctAnswer || "").toString().trim(),
-          points: parseFloat(q.points) || 0
-        };
+        try {
+          details = (typeof q.answer === 'string') ? JSON.parse(q.answer) : (q.answer || { items: [] });
+        } catch(e) { details = { items: [] }; }
+        return { ...q, details, correct: (q.correct || q.correctAnswer || "").toString().trim(), points: parseFloat(q.points) || 0 };
       });
 
-      timeLeft = (parseInt(data[0]?.testTime) || 20) * 60;
+      // FIX 1: Lấy duration từ localStorage trước (select.html đã lưu), fallback data
+      const durStorage = parseInt(localStorage.getItem("currentTestDuration") || "0");
+      const durData    = parseInt(data[0]?.testTime || "0");
+      const minutes    = durStorage > 0 ? durStorage : (durData > 0 ? durData : 20);
+      timeLeft = minutes * 60;
+
       document.getElementById("quizTitle").innerText = localStorage.getItem("currentTestName") || "Bài thi Nebula";
       renderQuiz();
       renderNavGrid();
       showQuestion(0);
       startTimer();
-    } catch (e) { 
-      Swal.fire("Lỗi", "Không thể tải dữ liệu câu hỏi!", "error"); 
+    } catch(e) {
+      Swal.fire({ title:'Lỗi kết nối', text:'Không tải được câu hỏi. Vui lòng thử lại.', icon:'error', confirmButtonText:'Quay lại', background:'#131c2f', color:'#fff' })
+        .then(() => location.href = "select.html");
     }
   }
 
   function renderQuiz() {
     const content = document.getElementById("quizContent");
     content.innerHTML = "";
-
     questions.forEach((q, idx) => {
       const card = document.createElement("div");
       card.className = "question-card";
       card.id = `qCard${idx}`;
-      
-      let html = `<div class="q-text"><b>Câu ${idx + 1}:</b> ${q.question}</div>`;
-      if (q.image && q.image.length > 10) html += `<img src="${q.image}" class="q-image">`;
+
+      let html = `<div class="q-text"><b>Câu ${idx+1}/${questions.length}:</b> ${q.question}</div>`;
+      if (q.image && q.image.length > 10) html += `<img src="${q.image}" class="q-image" onerror="this.style.display='none'">`;
       html += `<div class="ans-box">`;
 
       const type = (q.type || "single").toLowerCase();
       const items = q.details?.items || [];
 
-      // Single, MCQ, True/False
       if (["single", "mcq", "tf"].includes(type)) {
-        html += `<div class="options-grid">`;
         const opts = type === "tf" ? ["Đúng", "Sai"] : items.map(o => typeof o === 'object' ? o.text : o);
+        html += `<div class="options-grid">`;
         opts.forEach(txt => {
-          html += `<label class="option-label">
-                    <input type="radio" name="ans${idx}" value="${txt.replace(/"/g,"&quot;")}" onchange="markAsDone(${idx}); updateUI(this);">
-                    <span>${txt}</span>
-                  </label>`;
+          html += `<label class="option-label"><input type="radio" name="ans${idx}" value="${String(txt).replace(/"/g,'&quot;')}" onchange="markAsDone(${idx});updateUI(this)"><span>${txt}</span></label>`;
         });
         html += `</div>`;
       }
-      // Checkbox (Multiple Choices)
       else if (type === "multiple") {
         html += `<div class="options-grid">`;
-        items.forEach((opt) => {
+        items.forEach(opt => {
           const txt = typeof opt === 'object' ? opt.text : opt;
-          html += `<label class="option-label">
-                    <input type="checkbox" name="chk${idx}" value="${txt.replace(/"/g,"&quot;")}" onchange="markAsDone(${idx}); this.parentElement.classList.toggle('selected-card', this.checked);">
-                    <span>${txt}</span>
-                  </label>`;
+          html += `<label class="option-label"><input type="checkbox" name="chk${idx}" value="${String(txt).replace(/"/g,'&quot;')}" onchange="markAsDone(${idx});this.parentElement.classList.toggle('selected-card',this.checked)"><span>${txt}</span></label>`;
         });
         html += `</div>`;
       }
-      // Matching
       else if (type === "matching") {
         html += `<div class="matching-container">`;
         items.forEach((item, i) => {
-          html += `<div class="matching-row">
-                    <div class="match-left">${item.left || ''}</div>
-                    <div class="match-right-zone" id="zone_${idx}_${i}"></div>
-                  </div>`;
+          html += `<div class="matching-row"><div class="match-left">${item.left||''}</div><div class="match-right-zone" id="zone_${idx}_${i}"></div></div>`;
         });
         html += `<div class="match-pool" id="pool${idx}">`;
-        shuffle(items.map(it => it.right)).forEach(text => {
-          html += `<div class="drag-item">${text}</div>`;
-        });
+        shuffle(items.map(it => it.right)).forEach(text => { html += `<div class="drag-item">${text}</div>`; });
         html += `</div></div>`;
       }
-      // Ordering
       else if (type === "ordering") {
         html += `<div class="drag-list" id="sortList${idx}">`;
-        const orderItems = items.map(it => typeof it === 'object' ? it.text : it);
-        shuffle(orderItems).forEach((item) => {
-          html += `<div class="drag-item"><i class="fas fa-grip-lines"></i> <span>${item}</span></div>`;
+        shuffle(items.map(it => typeof it === 'object' ? it.text : it)).forEach(item => {
+          html += `<div class="drag-item"><i class="fas fa-grip-lines" style="opacity:0.4"></i><span>${item}</span></div>`;
         });
         html += `</div>`;
       }
-      // Fill-in-the-blank
       else if (type === "fill") {
-        html += `<input type="text" class="input-fill" id="fill${idx}" placeholder="Nhập đáp án..." oninput="if(this.value.trim()){markAsDone(${idx})}">`;
+        html += `<input type="text" class="input-fill" id="fill${idx}" placeholder="Nhập đáp án của bạn..." oninput="if(this.value.trim())markAsDone(${idx})">`;
       }
 
       card.innerHTML = html + `</div>`;
@@ -271,17 +260,18 @@
   function initDragDrop(qIdx, type, count) {
     if (type === 'ordering') {
       const el = document.getElementById(`sortList${qIdx}`);
-      if(el) new Sortable(el, { animation: 250, onEnd: () => markAsDone(qIdx) });
+      if (el) new Sortable(el, { animation:250, onEnd:()=>markAsDone(qIdx) });
     } else if (type === 'matching') {
       const pool = document.getElementById(`pool${qIdx}`);
-      if(!pool) return;
-      new Sortable(pool, { group: `match${qIdx}`, animation: 150 });
-      for(let i = 0; i < count; i++) {
+      if (!pool) return;
+      new Sortable(pool, { group:`match${qIdx}`, animation:150 });
+      for (let i = 0; i < count; i++) {
         const zone = document.getElementById(`zone_${qIdx}_${i}`);
-        if(zone) new Sortable(zone, {
-          group: `match${qIdx}`, animation: 150,
-          onAdd: (evt) => {
-            if (zone.children.length > 1) pool.appendChild(evt.item === zone.children[0] ? zone.children[1] : zone.children[0]);
+        if (zone) new Sortable(zone, {
+          group:`match${qIdx}`, animation:150,
+          onAdd:(evt) => {
+            if (zone.children.length > 1)
+              pool.appendChild(evt.item === zone.children[0] ? zone.children[1] : zone.children[0]);
             markAsDone(qIdx);
           }
         });
@@ -306,11 +296,12 @@
     document.getElementById(`qCard${index}`).classList.add("active");
     document.querySelectorAll(".q-num").forEach(n => n.classList.remove("current"));
     document.getElementById(`qNum${index}`).classList.add("current");
-    document.getElementById("prevBtn").style.visibility = (index === 0) ? "hidden" : "visible";
+    document.getElementById("prevBtn").style.visibility = index === 0 ? "hidden" : "visible";
     const nxt = document.getElementById("nextBtn");
-    nxt.innerHTML = (index === questions.length - 1) ? `HOÀN THÀNH <i class="fas fa-check-circle"></i>` : `TIẾP THEO <i class="fas fa-chevron-right"></i>`;
-    nxt.style.background = (index === questions.length - 1) ? "var(--accent)" : "var(--primary)";
-    nxt.style.color = (index === questions.length - 1) ? "#000" : "#fff";
+    const isLast = index === questions.length - 1;
+    nxt.innerHTML = isLast ? `HOÀN THÀNH <i class="fas fa-check-circle"></i>` : `TIẾP THEO <i class="fas fa-chevron-right"></i>`;
+    nxt.style.background = isLast ? "var(--accent)" : "var(--primary)";
+    nxt.style.color = isLast ? "#000" : "#fff";
   }
 
   function handleNextClick() {
@@ -318,76 +309,85 @@
     else showQuestion(currentIdx + 1);
   }
 
-  function changeQuestion(s) { if(questions[currentIdx + s]) showQuestion(currentIdx + s); }
+  function changeQuestion(s) { if (questions[currentIdx + s] !== undefined) showQuestion(currentIdx + s); }
   function markAsDone(i) { document.getElementById(`qNum${i}`)?.classList.add("done"); }
   function updateUI(input) {
     input.closest('.ans-box').querySelectorAll('.option-label').forEach(l => l.classList.remove('selected-card'));
     input.parentElement.classList.add('selected-card');
   }
 
+  // FIX 2: hiển thị trước rồi đếm ngược, tránh submit lúc còn 1s
   function startTimer() {
+    updateTimerDisplay();
     timerInterval = setInterval(() => {
-      let m = Math.floor(timeLeft / 60), s = timeLeft % 60;
-      document.getElementById("timer").innerText = `⏱️ ${m}:${s < 10 ? '0' : ''}${s}`;
-      if (timeLeft <= 0) { clearInterval(timerInterval); submitQuiz(); }
       timeLeft--;
+      updateTimerDisplay();
+      if (timeLeft <= 0) { clearInterval(timerInterval); submitQuiz(); }
     }, 1000);
+  }
+
+  function updateTimerDisplay() {
+    const m = Math.floor(timeLeft / 60), s = timeLeft % 60;
+    const el = document.getElementById("timer");
+    el.innerText = `⏱️ ${m}:${s < 10 ? '0' : ''}${s}`;
+    if (timeLeft <= 60 && timeLeft > 0) el.classList.add("warning");
+    else el.classList.remove("warning");
   }
 
   function checkBeforeSubmit() {
     const done = document.querySelectorAll(".q-num.done").length;
+    const skipped = questions.length - done;
     Swal.fire({
-      title: "Nộp bài?", text: `Hoàn thành ${done}/${questions.length} câu.`,
-      icon: "question", showCancelButton: true, confirmButtonColor: '#3085d6', cancelButtonColor: '#d33', confirmButtonText: "Nộp bài"
-    }).then(r => { if(r.isConfirmed) submitQuiz(); });
+      title: "Nộp bài thi?",
+      html: `<div style="font-size:0.9rem;line-height:2">Đã làm: <b style="color:#00ffcc">${done}/${questions.length}</b> câu${skipped>0?`<br><span style="color:#ff4757">Chưa làm: <b>${skipped}</b> câu</span>`:''}`,
+      icon: "question", showCancelButton: true,
+      confirmButtonColor:'#4facfe', cancelButtonColor:'#475569',
+      confirmButtonText:"NỘP BÀI", cancelButtonText:"LÀM TIẾP",
+      background:'#131c2f', color:'#fff'
+    }).then(r => { if (r.isConfirmed) submitQuiz(); });
   }
 
   async function submitQuiz() {
     if (isSubmitting) return;
     isSubmitting = true;
     clearInterval(timerInterval);
-    Swal.fire({ title: 'Đang chấm điểm...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    Swal.fire({ title:'Đang chấm điểm...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
 
-    // HÀM CHUẨN HÓA ĐÃ FIX TRIỆT ĐỂ LỖI LOGIC
-    const clean = (s) => s ? s.toString().toLowerCase().trim() : "";
-    const cleanArr = (s) => s ? s.toString().split('|').map(x => x.trim().toLowerCase()).sort().join('|') : "";
-    
-    // ĐÂY LÀ HÀM QUAN TRỌNG NHẤT VỪA ĐƯỢC THÊM ĐỂ FIX LỖI CHO CÂU SẮP XẾP! (Không sort)
-    const cleanOrder = (s) => s ? s.toString().split('|').map(x => x.trim().toLowerCase()).join('|') : "";
+    const clean      = s => s ? s.toString().toLowerCase().trim() : "";
+    const cleanArr   = s => s ? s.toString().split('|').map(x=>x.trim().toLowerCase()).sort().join('|') : "";
+    const cleanOrder = s => s ? s.toString().split('|').map(x=>x.trim().toLowerCase()).join('|') : "";
 
-    let scoreCount = 0; 
-    let totalScoreAchieved = 0;
+    // FIX 3: guard chia 0
+    if (!questions.length) {
+      Swal.fire("Lỗi","Không có câu hỏi!","error");
+      isSubmitting = false; return;
+    }
+
+    let scoreCount = 0, totalScoreAchieved = 0;
     const quizAnswers = {};
 
     questions.forEach((q, i) => {
-      let isCorrect = false; 
-      let studentAns = "";
+      let isCorrect = false, studentAns = "";
       const type = (q.type || "single").toLowerCase();
       const correctAns = q.correct || "";
-      const pts = parseFloat(q.points) || (10 / questions.length);
+      const pts = q.points > 0 ? q.points : (10 / questions.length);
 
-      // 1. Loại Single, MCQ, True/False, Fill
-      if (["single", "mcq", "tf", "fill"].includes(type)) {
-        if (type === "fill") {
-          studentAns = (document.getElementById(`fill${i}`)?.value || "").trim();
-        } else {
-          studentAns = (document.querySelector(`input[name="ans${i}"]:checked`)?.value || "").trim();
-        }
-        isCorrect = (studentAns !== "" && clean(studentAns) === clean(correctAns));
-      } 
-      // 2. Loại Checkbox (Multiple)
+      if (["single","mcq","tf","fill"].includes(type)) {
+        studentAns = type === "fill"
+          ? (document.getElementById(`fill${i}`)?.value || "").trim()
+          : (document.querySelector(`input[name="ans${i}"]:checked`)?.value || "").trim();
+        isCorrect = studentAns !== "" && clean(studentAns) === clean(correctAns);
+      }
       else if (type === "multiple") {
         studentAns = Array.from(document.querySelectorAll(`input[name="chk${i}"]:checked`))
-                          .map(el => el.value.trim()).sort().join("|");
-        isCorrect = (studentAns !== "" && cleanArr(studentAns) === cleanArr(correctAns));
+          .map(el => el.value.trim()).sort().join("|");
+        isCorrect = studentAns !== "" && cleanArr(studentAns) === cleanArr(correctAns);
       }
-      // 3. Loại Ordering (ĐÃ FIX: Dùng cleanOrder không tự ý sort lại thứ tự đáp án)
       else if (type === "ordering") {
         studentAns = Array.from(document.querySelectorAll(`#sortList${i} .drag-item span`))
-                          .map(el => el.innerText.trim()).join("|");
-        isCorrect = (studentAns !== "" && cleanOrder(studentAns) === cleanOrder(correctAns));
-      } 
-      // 4. Loại Matching
+          .map(el => el.innerText.trim()).join("|");
+        isCorrect = studentAns !== "" && cleanOrder(studentAns) === cleanOrder(correctAns);
+      }
       else if (type === "matching") {
         const pairs = [];
         document.querySelectorAll(`[id^="zone_${i}_"]`).forEach(z => {
@@ -396,47 +396,41 @@
           if (right) pairs.push(`${left}-${right}`);
         });
         studentAns = pairs.sort().join("|");
-        isCorrect = (studentAns !== "" && cleanArr(studentAns) === cleanArr(correctAns));
+        isCorrect = studentAns !== "" && cleanArr(studentAns) === cleanArr(correctAns);
       }
 
       quizAnswers[q.question] = studentAns;
-      if (isCorrect) { 
-        scoreCount++; 
-        totalScoreAchieved += pts; 
-      }
+      if (isCorrect) { scoreCount++; totalScoreAchieved += pts; }
     });
 
     const hasCustomPoints = questions.some(q => q.points > 0);
-    const finalScore = hasCustomPoints 
-      ? totalScoreAchieved.toFixed(1).replace(/\.0$/, "") 
-      : ((scoreCount / questions.length) * 10).toFixed(1);
+    const rawScore = hasCustomPoints ? totalScoreAchieved : (scoreCount / questions.length) * 10;
+    const finalScore = parseFloat(rawScore.toFixed(1));
 
     const submitData = {
-      action: "submitResult",
+      action:"submitResult",
       student: localStorage.getItem("studentName") || "Thí sinh",
-      school: localStorage.getItem("schoolName") || "",
-      testName: localStorage.getItem("currentTestName") || "Bài thi Nebula",
+      school:  localStorage.getItem("schoolName")  || "",
+      testName:localStorage.getItem("currentTestName") || "Bài thi Nebula",
       score: finalScore,
       total: `${scoreCount}/${questions.length}`,
-      answers: quizAnswers 
+      answers: quizAnswers
     };
 
+    // Lưu localStorage trước (để result.html hiển thị dù gửi API thất bại)
+    localStorage.setItem("lastScore",      finalScore);
+    localStorage.setItem("correctCount",   submitData.total);
+    localStorage.setItem("quizAnswers",    JSON.stringify(quizAnswers));
+    localStorage.setItem("quizQuestions",  JSON.stringify(questions));
+    localStorage.setItem("quiz_submitted", "true");
+
     try {
-      await fetch(API, { method: "POST", mode: "no-cors", body: JSON.stringify(submitData) });
-      
-      localStorage.setItem("lastScore", finalScore);
-      localStorage.setItem("correctCount", submitData.total);
-      localStorage.setItem("quizAnswers", JSON.stringify(quizAnswers));
-      localStorage.setItem("quizQuestions", JSON.stringify(questions));
-      localStorage.setItem("quiz_submitted", "true");
-      
-      window.location.replace("result.html");
-    } catch (e) { 
-      Swal.fire("Lỗi", "Gửi bài thất bại! Vui lòng chụp màn hình điểm số.", "error").then(() => {
-        window.location.replace("result.html");
-      });
-      isSubmitting = false;
+      await fetch(API, { method:"POST", mode:"no-cors", body:JSON.stringify(submitData) });
+    } catch(e) {
+      console.warn("Gửi kết quả lỗi:", e.message);
     }
+
+    window.location.replace("result.html");
   }
 </script>
 </body>
