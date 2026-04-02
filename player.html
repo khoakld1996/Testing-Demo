@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula iSpring Player</title>
+    <style>
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; background-color: #0b0f1a; }
+        iframe { width: 100%; height: 100%; border: none; }
+        #loading {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            background: #0b0f1a; color: white; z-index: 9999; font-family: sans-serif;
+        }
+        .spinner {
+            width: 50px; height: 50px; border: 5px solid rgba(255,255,255,0.1);
+            border-top-color: #4facfe; border-radius: 50%; animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loading">
+        <div class="spinner"></div>
+        <p>Đang tải bài học...</p>
+    </div>
+
+    <iframe id="quizFrame" allowfullscreen></iframe>
+
+    <script>
+        // 1. CẤU HÌNH API (Thay bằng URL AppScript của bạn nếu khác)
+        const API_URL = "https://script.google.com/macros/s/AKfycbzkKClxrADzE1MtpqewsuXNyfITcXkMkQWFaZ-YLigiaw_hxjtXMx94TamevEGJXl_i/exec";
+
+        // 2. LẤY THÔNG TIN TỪ URL VÀ LOCALSTORAGE
+        const urlParams = new URLSearchParams(window.location.search);
+        const quizPath = urlParams.get('path'); // Ví dụ: quizzes/bai-1/index.html
+        const studentName = localStorage.getItem("studentName") || "Ẩn danh";
+        const schoolName = localStorage.getItem("schoolName") || "Trường học";
+
+        const frame = document.getElementById('quizFrame');
+        const loader = document.getElementById('loading');
+
+        if (quizPath) {
+            frame.src = quizPath;
+            frame.onload = () => { loader.style.display = 'none'; };
+        } else {
+            document.body.innerHTML = "<h2 style='color:white; text-align:center; margin-top:50px;'>Lỗi: Không tìm thấy đường dẫn bài học!</h2>";
+        }
+
+        // 3. LẮNG NGHE KẾT QUẢ TỪ ISPRING (SCORM/LMS API)
+        // iSpring khi chạy sẽ cố gắng tìm đối tượng này để gửi điểm
+        window.API = {
+            LMSInitialize: function() { return "true"; },
+            LMSGetValue: function(varname) { return ""; },
+            LMSSetValue: function(varname, value) {
+                // Khi iSpring gửi điểm (cmi.core.score.raw)
+                if (varname === "cmi.core.score.raw") {
+                    window.currentScore = value;
+                }
+                // Khi iSpring gửi trạng thái hoàn thành
+                if (varname === "cmi.core.lesson_status") {
+                    window.currentStatus = value;
+                }
+                return "true";
+            },
+            LMSCommit: function() {
+                // Nếu trạng thái là hoàn thành hoặc đã đạt, tiến hành gửi về Google Sheet
+                if (window.currentStatus === "passed" || window.currentStatus === "completed" || window.currentStatus === "failed") {
+                    submitResult();
+                }
+                return "true";
+            },
+            LMSFinish: function() { return "true"; },
+            LMSGetLastError: function() { return "0"; },
+            LMSGetErrorString: function() { return "No error"; },
+            LMSGetDiagnostic: function() { return "No diagnostic"; }
+        };
+
+        // iSpring phiên bản mới hơn dùng chuẩn này
+        window.API_1484_11 = {
+            Initialize: function() { return "true"; },
+            GetValue: function(varname) { return ""; },
+            SetValue: function(varname, value) {
+                if (varname === "cmi.score.raw") window.currentScore = value;
+                if (varname === "cmi.success_status" || varname === "cmi.completion_status") window.currentStatus = value;
+                return "true";
+            },
+            Commit: function() {
+                submitResult();
+                return "true";
+            },
+            Terminate: function() { return "true"; },
+            GetLastError: function() { return "0"; },
+            GetErrorString: function() { return "No error"; },
+            GetDiagnostic: function() { return "No diagnostic"; }
+        };
+
+        // 4. GỬI ĐIỂM VỀ GOOGLE SHEET
+        let isSubmitted = false;
+        async function submitResult() {
+            if (isSubmitted) return; // Tránh gửi trùng
+            
+            const score = window.currentScore || 0;
+            // Tên bài thi sẽ được đánh dấu [iSpring] để history.html dễ nhận diện
+            const testName = "[iSpring] " + (quizPath.split('/').slice(-2, -1)[0] || "Bài tập");
+
+            try {
+                isSubmitted = true;
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        action: "submitResult",
+                        student: studentName,
+                        school: schoolName,
+                        testName: testName,
+                        score: score,
+                        total: score + "/100", // iSpring mặc định thường tính thang 100
+                        answers: JSON.stringify({ note: "iSpring Automated Submission" }),
+                        time: new Date().toLocaleString()
+                    })
+                });
+
+                console.log("Đã gửi điểm iSpring thành công!");
+                
+                // Hiển thị thông báo nhỏ cho học sinh
+                const alertDiv = document.createElement("div");
+                alertDiv.style = "position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:rgba(0,255,204,0.9); color:#000; padding:10px 20px; border-radius:30px; font-weight:bold; z-index:10000; font-family:sans-serif;";
+                alertDiv.innerText = "Hệ thống đã ghi nhận " + score + " điểm của bạn!";
+                document.body.appendChild(alertDiv);
+
+            } catch (error) {
+                console.error("Lỗi gửi điểm:", error);
+                isSubmitted = false;
+            }
+        }
+    </script>
+</body>
+</html>
