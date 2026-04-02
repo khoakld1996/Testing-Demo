@@ -14,7 +14,7 @@
     :root { 
       --primary: #4facfe; --secondary: #00f2fe; --accent: #00ffcc; 
       --glass: rgba(15, 23, 42, 0.6); --glass-border: rgba(255, 255, 255, 0.1); 
-      --bg-dark: #0f172a;
+      --bg-dark: #0f172a; --ispring: #f97316; --ispring-dim: rgba(249, 115, 22, 0.15);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -23,8 +23,8 @@
       min-height: 100vh; 
       background: #0f172a url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
       background-attachment: fixed;
-      display: flex; justify-content: center; align-items: center; 
-      color: white; padding: 20px; position: relative; overflow-x: hidden;
+      display: flex; justify-content: center; align-items: flex-start; 
+      color: white; padding: 20px; padding-top: 90px; position: relative; overflow-x: hidden;
     }
 
     body::before {
@@ -32,7 +32,7 @@
       background: radial-gradient(circle at 50% 50%, rgba(79, 172, 254, 0.15), rgba(15, 23, 42, 0.95)); z-index: 0;
     }
 
-    /* --- NAVIGATION --- */
+    /* NAV */
     .top-nav {
       position: fixed; top: 0; left: 0; right: 0; padding: 15px 30px;
       display: flex; justify-content: space-between; align-items: center; z-index: 100;
@@ -55,73 +55,161 @@
     }
     .btn-logout:hover { background: #ff4757; color: white; transform: scale(1.1); }
 
-    /* --- MAIN CONTAINER --- */
-    .container { position: relative; z-index: 10; width: 100%; max-width: 650px; margin-top: 80px; }
+    /* CONTAINER */
+    .container { position: relative; z-index: 10; width: 100%; max-width: 700px; padding-bottom: 40px; }
 
     .box { 
       background: var(--glass); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px);
-      border-radius: 30px; padding: 35px; border: 1px solid var(--glass-border); 
+      border-radius: 30px; padding: 30px 35px; border: 1px solid var(--glass-border); 
       box-shadow: 0 40px 80px rgba(0,0,0,0.4);
     }
 
     h2 { 
-      font-size: 1.7rem; margin-bottom: 8px; font-weight: 800; text-align: center;
+      font-size: 1.6rem; margin-bottom: 6px; font-weight: 800; text-align: center;
       background: linear-gradient(to right, #fff, var(--primary));
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
 
-    .welcome-text { text-align: center; color: rgba(255, 255, 255, 0.6); margin-bottom: 25px; font-size: 0.95rem; }
+    .welcome-text { text-align: center; color: rgba(255, 255, 255, 0.6); margin-bottom: 22px; font-size: 0.95rem; }
 
-    /* --- SEARCH --- */
-    .search-bar { position: relative; margin-bottom: 20px; }
+    /* SEARCH */
+    .search-bar { position: relative; margin-bottom: 16px; }
     .search-bar input {
       width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
-      padding: 14px 20px 14px 45px; border-radius: 15px; color: white; font-size: 0.95rem;
+      padding: 13px 20px 13px 45px; border-radius: 15px; color: white; font-size: 0.92rem;
       outline: none; transition: 0.3s;
     }
     .search-bar input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
     .search-bar i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--primary); }
 
-    /* --- TEST LIST --- */
-    #testList { 
-      display: flex; flex-direction: column; gap: 12px; 
-      max-height: 420px; overflow-y: auto; padding-right: 5px;
+    /* === SECTION HEADERS === */
+    .section-header {
+      display: flex; align-items: center; gap: 10px; margin: 20px 0 12px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--glass-border);
     }
-    #testList::-webkit-scrollbar { width: 4px; }
-    #testList::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+    .section-header .section-icon {
+      width: 32px; height: 32px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
+    }
+    .section-header .section-title { font-weight: 800; font-size: 0.82rem; letter-spacing: 1.5px; text-transform: uppercase; }
+    .section-header .section-count {
+      margin-left: auto; font-size: 0.68rem; font-weight: 700;
+      padding: 3px 10px; border-radius: 20px;
+    }
+
+    /* System section */
+    .section-system .section-icon { background: rgba(79,172,254,0.15); color: var(--primary); }
+    .section-system .section-title { color: var(--primary); }
+    .section-system .section-count { background: rgba(79,172,254,0.1); color: var(--primary); border: 1px solid rgba(79,172,254,0.2); }
+
+    /* iSpring section */
+    .section-ispring .section-icon { background: rgba(249,115,22,0.15); color: var(--ispring); }
+    .section-ispring .section-title { color: var(--ispring); }
+    .section-ispring .section-count { background: rgba(249,115,22,0.1); color: var(--ispring); border: 1px solid rgba(249,115,22,0.2); }
+
+    /* DIVIDER */
+    .section-divider {
+      display: flex; align-items: center; gap: 12px; margin: 22px 0;
+    }
+    .section-divider::before, .section-divider::after {
+      content: ""; flex: 1; height: 1px; background: var(--glass-border);
+    }
+    .section-divider span {
+      font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; opacity: 0.35; font-weight: 700;
+    }
+
+    /* TEST CARDS */
+    #testList, #ispringTestList { 
+      display: flex; flex-direction: column; gap: 10px; 
+    }
 
     .test-card { 
       background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); 
-      padding: 18px; border-radius: 20px; cursor: pointer; 
+      padding: 16px 18px; border-radius: 18px; cursor: pointer; 
       transition: all 0.3s ease; 
       display: flex; justify-content: space-between; align-items: center;
     }
-
     .test-card:hover { 
       background: rgba(255, 255, 255, 0.07); border-color: var(--primary);
       transform: translateX(5px);
     }
 
-    .test-name { font-weight: 700; color: #fff; font-size: 1.05rem; display: block; margin-bottom: 5px; }
-    .test-meta { display: flex; gap: 15px; font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); }
+    /* iSpring card style */
+    .ispring-test-card {
+      background: rgba(249, 115, 22, 0.03); border: 1px solid rgba(249,115,22,0.12);
+    }
+    .ispring-test-card:hover { 
+      background: rgba(249, 115, 22, 0.08); border-color: var(--ispring);
+      transform: translateX(5px);
+    }
+    .ispring-test-card .play-btn { background: rgba(249,115,22,0.15); color: var(--ispring); }
+    .ispring-test-card:hover .play-btn { background: var(--ispring); color: #0f172a; }
+
+    .test-name { font-weight: 700; color: #fff; font-size: 1rem; display: block; margin-bottom: 4px; }
+    .test-meta { display: flex; gap: 14px; font-size: 0.73rem; color: rgba(255, 255, 255, 0.45); flex-wrap: wrap; }
     .test-meta span i { color: var(--primary); margin-right: 4px; }
+    .ispring-test-card .test-meta span i { color: var(--ispring); }
+
+    /* iSpring badge */
+    .ispring-badge {
+      font-size: 0.6rem; padding: 2px 7px; border-radius: 20px; font-weight: 700;
+      background: rgba(249,115,22,0.15); color: var(--ispring); border: 1px solid rgba(249,115,22,0.25);
+      margin-left: 8px; vertical-align: middle; display: inline-block;
+    }
 
     .play-btn {
-      width: 40px; height: 40px; border-radius: 12px;
+      width: 38px; height: 38px; border-radius: 11px; flex-shrink: 0;
       background: rgba(79, 172, 254, 0.15); color: var(--primary);
-      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
       transition: 0.3s;
     }
     .test-card:hover .play-btn { background: var(--primary); color: #0f172a; }
 
-    .footer-actions { margin-top: 25px; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 20px; }
+    .footer-actions { margin-top: 22px; text-align: center; border-top: 1px solid var(--glass-border); padding-top: 18px; }
     .btn-history { color: var(--accent); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 8px; }
     .btn-history:hover { filter: brightness(1.2); letter-spacing: 0.5px; }
 
     /* Skeleton */
-    .skeleton { background: rgba(255,255,255,0.05); height: 80px; border-radius: 15px; margin-bottom: 10px; position: relative; overflow: hidden; }
+    .skeleton { background: rgba(255,255,255,0.05); height: 74px; border-radius: 15px; margin-bottom: 10px; position: relative; overflow: hidden; }
     .skeleton::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent); animation: loading 1.5s infinite; }
     @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
+    .empty-section { text-align: center; padding: 20px; font-size: 0.82rem; opacity: 0.3; }
+
+    /* === iSPRING MODAL === */
+    #ispringModal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.88); z-index: 9999;
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+    .modal-inner {
+      background: #0a1628; border: 1px solid rgba(249,115,22,0.25);
+      border-radius: 22px; width: 95vw; max-width: 1050px; height: 88vh;
+      display: flex; flex-direction: column; overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6);
+      animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    @keyframes modalIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 22px; border-bottom: 1px solid rgba(255,255,255,0.07);
+      background: rgba(249,115,22,0.05);
+    }
+    .modal-header .title-wrap { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .modal-header .title-wrap i { color: var(--ispring); font-size: 1.1rem; }
+    .modal-header h3 { font-size: 1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .btn-close-modal {
+      background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.2);
+      color: #ff4757; padding: 8px 16px; border-radius: 10px; cursor: pointer;
+      font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 6px;
+      transition: 0.2s; font-family: inherit;
+    }
+    .btn-close-modal:hover { background: #ff4757; color: white; }
+
+    #ispringFrame { flex: 1; border: none; width: 100%; }
   </style>
 </head>
 <body>
@@ -144,7 +232,14 @@
 
       <div class="search-bar">
         <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Tìm kiếm bài thi..." oninput="renderTests()">
+        <input type="text" id="searchInput" placeholder="Tìm kiếm tất cả bài thi..." oninput="renderAll()">
+      </div>
+
+      <!-- PHẦN 1: HỆ THỐNG -->
+      <div class="section-header section-system">
+        <div class="section-icon"><i class="fas fa-database"></i></div>
+        <span class="section-title">Hệ Thống</span>
+        <span class="section-count" id="sysCount">0 đề</span>
       </div>
 
       <div id="testList">
@@ -153,17 +248,51 @@
         <div class="skeleton"></div>
       </div>
 
+      <!-- DIVIDER -->
+      <div class="section-divider"><span>hoặc chọn từ</span></div>
+
+      <!-- PHẦN 2: iSPRING -->
+      <div class="section-header section-ispring">
+        <div class="section-icon"><i class="fas fa-rocket"></i></div>
+        <span class="section-title">iSpring</span>
+        <span class="section-count" id="ispringCount">0 bài</span>
+      </div>
+
+      <div id="ispringTestList">
+        <div class="empty-section">
+          <i class="fas fa-rocket" style="opacity:0.2; font-size:1.5rem; display:block; margin-bottom:8px"></i>
+          Chưa có bài thi iSpring
+        </div>
+      </div>
+
       <div class="footer-actions">
         <a href="history.html" class="btn-history"><i class="fas fa-history"></i> Xem lịch sử bài làm</a>
       </div>
     </div>
   </div>
 
+  <!-- iSpring Modal -->
+  <div id="ispringModal">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <div class="title-wrap">
+          <i class="fas fa-rocket"></i>
+          <h3 id="modalTitle">Bài thi iSpring</h3>
+        </div>
+        <button class="btn-close-modal" onclick="closeModal()">
+          <i class="fas fa-times"></i> Đóng
+        </button>
+      </div>
+      <iframe id="ispringFrame" src="" allowfullscreen></iframe>
+    </div>
+  </div>
+
   <script>
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWQYM84IUA98xAJdUjEFTjnyGdDvQyI2GcIyI0BTZC8kcG5YGr1C1FjphqAttK0qjU/exec";
     let allTests = [];
+    let ispringTests = [];
 
-    // Khởi tạo thông tin từ localStorage
+    // === INIT USER ===
     function initUser() {
       const name = localStorage.getItem("studentName") || "Người dùng";
       const userClass = localStorage.getItem("className") || localStorage.getItem("studentClass") || "";
@@ -171,37 +300,51 @@
       
       document.getElementById("topNavName").innerText = name;
       document.getElementById("topNavClass").innerText = userClass ? `Lớp: ${userClass}` : school;
-      document.getElementById("welcomeMsg").innerHTML = `Bạn đã sẵn sàng để chinh phục, <b style="color:var(--accent)">${name}</b>?`;
+      document.getElementById("welcomeMsg").innerHTML = `Bạn đã sẵn sàng chinh phục, <b style="color:var(--accent)">${name}</b>?`;
     }
 
-    // Lấy danh sách từ server
+    // === LOAD iSPRING TỪ LOCALSTORAGE (admin đã nhập) ===
+    function loadIspringTests() {
+      try {
+        const all = JSON.parse(localStorage.getItem("ispringTests") || "[]");
+        // Chỉ hiển thị bài visible === true (hoặc không có trường visible)
+        ispringTests = all.filter(t => t.visible !== false);
+      } catch(e) {
+        ispringTests = [];
+      }
+    }
+
+    // === FETCH HỆ THỐNG ===
     async function fetchTests() {
       try {
         const response = await fetch(`${SCRIPT_URL}?action=getTests`);
         allTests = await response.json();
-        renderTests();
+        renderAll();
       } catch (err) {
-        document.getElementById("testList").innerHTML = `<p style="text-align:center;color:#ff4757;padding:20px;">Không thể kết nối đến máy chủ!</p>`;
+        document.getElementById("testList").innerHTML = `<p style="text-align:center;color:#ff4757;padding:20px;"><i class="fas fa-wifi" style="margin-right:8px"></i>Không thể kết nối máy chủ!</p>`;
       }
     }
 
-    function renderTests() {
-      const list = document.getElementById("testList");
+    // === RENDER TẤT CẢ ===
+    function renderAll() {
       const search = document.getElementById("searchInput").value.toLowerCase();
-      list.innerHTML = "";
+      renderSystemTests(search);
+      renderIspringTests(search);
+    }
 
+    function renderSystemTests(search = "") {
+      const list = document.getElementById("testList");
       const filtered = allTests.filter(t => t.name.toLowerCase().includes(search));
 
-      if (filtered.length === 0) {
-        list.innerHTML = `<p style="text-align:center; opacity:0.5; padding:30px;">Không có bài thi nào phù hợp</p>`;
+      document.getElementById("sysCount").innerText = filtered.length + " đề";
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty-section">Không có đề thi phù hợp</div>`;
         return;
       }
 
-      filtered.forEach((test, i) => {
-        const card = document.createElement("div");
-        card.className = "test-card animate__animated animate__fadeInUp";
-        card.style.animationDelay = `${i * 0.05}s`;
-        card.innerHTML = `
+      list.innerHTML = filtered.map((test, i) => `
+        <div class="test-card animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s" onclick='confirmLaunch(${JSON.stringify(JSON.stringify(test))})'>
           <div class="test-info">
             <span class="test-name">${test.name}</span>
             <div class="test-meta">
@@ -211,13 +354,42 @@
             </div>
           </div>
           <div class="play-btn"><i class="fas fa-play"></i></div>
-        `;
-        card.onclick = () => confirmLaunch(test);
-        list.appendChild(card);
-      });
+        </div>
+      `).join('');
     }
 
-    function confirmLaunch(test) {
+    function renderIspringTests(search = "") {
+      const list = document.getElementById("ispringTestList");
+      const filtered = ispringTests.filter(t => t.name.toLowerCase().includes(search));
+
+      document.getElementById("ispringCount").innerText = filtered.length + " bài";
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty-section"><i class="fas fa-rocket" style="opacity:0.2; font-size:1.5rem; display:block; margin-bottom:8px"></i>${search ? 'Không tìm thấy bài iSpring phù hợp' : 'Chưa có bài thi iSpring'}</div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map((test, i) => `
+        <div class="test-card ispring-test-card animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s" onclick='launchIspring(${JSON.stringify(JSON.stringify(test))})'>
+          <div class="test-info">
+            <span class="test-name">
+              ${test.name}
+              <span class="ispring-badge"><i class="fas fa-rocket" style="margin-right:3px"></i>iSpring</span>
+            </span>
+            <div class="test-meta">
+              ${test.duration ? `<span><i class="far fa-clock"></i> ${test.duration}p</span>` : ''}
+              ${test.subject ? `<span><i class="fas fa-book"></i> ${test.subject}</span>` : ''}
+              ${test.desc ? `<span><i class="fas fa-info-circle"></i> ${test.desc}</span>` : ''}
+            </div>
+          </div>
+          <div class="play-btn"><i class="fas fa-play"></i></div>
+        </div>
+      `).join('');
+    }
+
+    // === LAUNCH SYSTEM TEST ===
+    function confirmLaunch(testJson) {
+      const test = JSON.parse(testJson);
       if (!test.qCount || test.qCount === 0) {
         Swal.fire({ icon: 'info', title: 'Thông báo', text: 'Đề thi này đang được cập nhật câu hỏi.', background: '#131c2f', color: '#fff' });
         return;
@@ -225,8 +397,8 @@
 
       Swal.fire({
         title: 'Bắt đầu bài thi?',
-        html: `<div style="text-align:left; font-size:0.9rem; opacity:0.9">
-                <p>Bài thi: <b style="color:var(--primary)">${test.name}</b></p>
+        html: `<div style="text-align:left; font-size:0.9rem; opacity:0.9; line-height:2">
+                <p>Bài thi: <b style="color:#4facfe">${test.name}</b></p>
                 <p>Thời gian: <b>${test.duration} phút</b></p>
                 <p>Số lượng: <b>${test.qCount} câu hỏi</b></p>
                </div>`,
@@ -235,8 +407,7 @@
         confirmButtonText: 'BẮT ĐẦU NGAY',
         cancelButtonText: 'ĐỂ SAU',
         confirmButtonColor: '#4facfe',
-        background: '#131c2f',
-        color: '#fff'
+        background: '#131c2f', color: '#fff'
       }).then((res) => {
         if (res.isConfirmed) {
           localStorage.setItem("currentTestId", test.id);
@@ -248,21 +419,54 @@
       });
     }
 
-    // Logic Đăng xuất quay về trang chủ index.html
+    // === LAUNCH iSPRING (mở modal iframe) ===
+    function launchIspring(testJson) {
+      const test = JSON.parse(testJson);
+
+      Swal.fire({
+        title: 'Mở bài thi iSpring?',
+        html: `<div style="text-align:left; font-size:0.9rem; opacity:0.9; line-height:2">
+                <p>Bài thi: <b style="color:#f97316">${test.name}</b></p>
+                ${test.duration ? `<p>Thời gian: <b>${test.duration} phút</b></p>` : ''}
+                ${test.subject ? `<p>Môn học: <b>${test.subject}</b></p>` : ''}
+               </div>`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fas fa-rocket"></i> MỞ BÀI THI',
+        cancelButtonText: 'HỦY',
+        confirmButtonColor: '#f97316',
+        background: '#131c2f', color: '#fff'
+      }).then((res) => {
+        if (res.isConfirmed) {
+          document.getElementById("modalTitle").innerText = test.name;
+          document.getElementById("ispringFrame").src = test.path;
+          document.getElementById("ispringModal").style.display = "flex";
+        }
+      });
+    }
+
+    function closeModal() {
+      document.getElementById("ispringModal").style.display = "none";
+      document.getElementById("ispringFrame").src = "";
+    }
+
+    // Close on backdrop
+    document.getElementById("ispringModal").addEventListener("click", function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    // === LOGOUT ===
     function handleLogout() {
       Swal.fire({
         title: 'Đăng xuất?',
         text: "Hành động này sẽ kết thúc phiên làm việc của bạn.",
-        icon: 'warning',
-        showCancelButton: true,
+        icon: 'warning', showCancelButton: true,
         confirmButtonColor: '#ff4757',
-        confirmButtonText: 'ĐĂNG XUẤT',
-        cancelButtonText: 'HỦY',
+        confirmButtonText: 'ĐĂNG XUẤT', cancelButtonText: 'HỦY',
         background: '#131c2f', color: '#fff'
       }).then((result) => {
         if (result.isConfirmed) {
           localStorage.clear();
-          // Chuyển hướng về trang chủ index.html
           window.location.href = "index.html";
         }
       });
@@ -270,6 +474,8 @@
 
     window.onload = () => {
       initUser();
+      loadIspringTests();
+      renderIspringTests();
       fetchTests();
     };
   </script>
