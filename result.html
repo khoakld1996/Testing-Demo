@@ -23,9 +23,8 @@
       background:var(--card); backdrop-filter:blur(30px); border-radius:35px;
       padding:45px 35px; border:1px solid var(--glass-border); text-align:center;
       width:100%; max-width:500px; box-shadow:0 25px 80px rgba(0,0,0,0.6);
-      position:relative; overflow:hidden;
     }
-    .trophy-box { font-size:5rem; margin-bottom:10px; filter:drop-shadow(0 0 20px var(--accent)); animation:float 3s ease-in-out infinite; }
+    .trophy-box { font-size:5rem; margin-bottom:10px; animation:float 3s ease-in-out infinite; }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
     h2 { font-size:2.2rem; font-weight:800; background:linear-gradient(to right,#fff,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:5px; }
     .status-text { color:#94a3b8; font-size:0.8rem; text-transform:uppercase; letter-spacing:3px; margin-bottom:25px; }
@@ -33,26 +32,25 @@
       width:160px; height:160px; margin:0 auto 30px; border-radius:50%;
       background:rgba(0,0,0,0.4); border:4px solid var(--glass-border);
       display:flex; flex-direction:column; justify-content:center; align-items:center;
-      box-shadow:inset 0 0 20px rgba(79,172,254,0.2);
     }
     .score-big { font-size:3.8rem; font-weight:900; background:linear-gradient(135deg,#fff 30%,var(--primary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
     .score-label { font-size:0.75rem; color:var(--primary); font-weight:bold; margin-top:5px; }
     .info-list { background:rgba(0,0,0,0.25); border-radius:24px; padding:20px; margin-bottom:22px; border:1px solid var(--glass-border); }
-    .info-item { display:flex; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.95rem; }
+    .info-item { display:flex; justify-content:space-between; align-items:center; padding:14px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:0.95rem; }
     .info-item:last-child { border:none; }
     .label-box { color:#94a3b8; display:flex; align-items:center; gap:12px; }
-    .val-box { font-weight:600; color:#fff; }
+    .val-box { font-weight:600; color:#fff; text-align:right; max-width:58%; }
     #syncStatus { font-size:0.8rem; font-weight:700; color:var(--accent); display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:22px; }
     .btn-group { display:grid; grid-template-columns:1fr; gap:12px; }
     .btn { width:100%; padding:18px; border-radius:18px; border:none; font-weight:800; cursor:pointer; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; text-transform:uppercase; letter-spacing:1px; font-size:0.9rem; font-family:'Inter',sans-serif; }
-    .btn-main { background:linear-gradient(135deg,var(--primary),#00f2fe); color:#0b0f1a; box-shadow:0 10px 20px rgba(79,172,254,0.3); }
-    .btn-review { background:rgba(255,200,0,0.1); color:#ffc800; border:1px solid rgba(255,200,0,0.2); }
+    .btn-main    { background:linear-gradient(135deg,var(--primary),#00f2fe); color:#0b0f1a; box-shadow:0 10px 20px rgba(79,172,254,0.3); }
+    .btn-review  { background:rgba(255,200,0,0.1); color:#ffc800; border:1px solid rgba(255,200,0,0.2); }
     .btn-outline { background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--glass-border); }
-    .btn:hover { transform:translateY(-4px); filter:brightness(1.1); }
+    .btn:hover   { transform:translateY(-4px); filter:brightness(1.1); }
 
-    /* MODAL — FIX: dùng class animate__ đúng cách trên element HTML, không trong CSS property */
+    /* MODAL */
     .modal-overlay {
-      position:fixed; inset:0; background:rgba(5,8,18,0.9);
+      position:fixed; inset:0; background:rgba(5,8,18,0.92);
       backdrop-filter:blur(12px); z-index:1000;
       display:none; justify-content:center; align-items:flex-start;
       padding:20px; overflow-y:auto;
@@ -62,43 +60,45 @@
       background:#0f172a; border:1px solid var(--glass-border);
       border-radius:32px; width:100%; max-width:720px;
       padding:32px; margin:auto; box-shadow:0 40px 120px rgba(0,0,0,0.8);
-      /* FIX: đây là CSS — animate__ là class HTML, không dùng trong animation property */
-      animation: modalSlideIn 0.3s ease;
+      animation:slideUp 0.3s ease;
     }
-    @keyframes modalSlideIn { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-
+    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
     .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.08); }
-    .modal-title { font-size:1.2rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:10px; }
-    .modal-close { width:38px; height:38px; border-radius:12px; border:none; background:rgba(255,71,87,0.1); color:#ff4757; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; }
+    .modal-title  { font-size:1.2rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:10px; }
+    .modal-close  { width:38px; height:38px; border-radius:12px; border:none; background:rgba(255,71,87,0.1); color:#ff4757; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; flex-shrink:0; }
     .modal-close:hover { background:#ff4757; color:#fff; }
     .modal-chips { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
-    .m-chip { padding:14px; border-radius:18px; text-align:center; font-weight:800; }
+    .m-chip { padding:14px; border-radius:18px; text-align:center; font-weight:800; font-size:1.4rem; }
     .m-chip small { display:block; font-size:0.65rem; font-weight:500; opacity:0.7; margin-top:3px; text-transform:uppercase; }
     .mc-correct { background:rgba(0,255,204,0.1); border:1px solid rgba(0,255,204,0.2); color:var(--correct); }
     .mc-wrong   { background:rgba(255,71,87,0.1);  border:1px solid rgba(255,71,87,0.2);  color:var(--wrong); }
     .mc-skip    { background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:#94a3b8; }
-    .q-list { display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; padding-right:8px; }
+    .q-list { display:flex; flex-direction:column; gap:10px; max-height:60vh; overflow-y:auto; padding-right:6px; }
     .q-list::-webkit-scrollbar { width:5px; }
     .q-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:10px; }
     .q-item { border-radius:18px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.02); overflow:hidden; }
     .q-item.correct-bg { border-left:4px solid var(--correct); }
     .q-item.wrong-bg   { border-left:4px solid var(--wrong); }
     .q-item.skip-bg    { border-left:4px solid #475569; }
-    .q-header { display:flex; align-items:center; gap:14px; padding:16px 20px; cursor:pointer; }
+    .q-header { display:flex; align-items:flex-start; gap:14px; padding:16px 20px; cursor:pointer; user-select:none; }
     .q-header:hover { background:rgba(255,255,255,0.02); }
-    .q-badge { min-width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; }
+    .q-badge { min-width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; flex-shrink:0; margin-top:2px; }
     .q-badge.correct { background:var(--correct); color:#0b0f1a; }
     .q-badge.wrong   { background:var(--wrong);   color:#fff; }
     .q-badge.skip    { background:#475569;         color:#fff; }
-    .q-text { flex:1; font-size:0.92rem; color:#e2e8f0; font-weight:500; }
-    .q-pts  { font-size:0.75rem; color:var(--primary); font-weight:800; padding:4px 8px; background:rgba(79,172,254,0.1); border-radius:6px; white-space:nowrap; }
-    .q-detail { display:none; padding:5px 20px 20px 66px; background:rgba(0,0,0,0.1); border-top:1px solid rgba(255,255,255,0.03); }
+    .q-text { flex:1; font-size:0.92rem; color:#e2e8f0; font-weight:500; line-height:1.5; }
+    .q-pts  { font-size:0.75rem; color:var(--primary); font-weight:800; padding:4px 8px; background:rgba(79,172,254,0.1); border-radius:6px; white-space:nowrap; flex-shrink:0; }
+    .q-detail { display:none; padding:0 20px 18px 66px; background:rgba(0,0,0,0.1); border-top:1px solid rgba(255,255,255,0.04); }
     .q-item.open .q-detail { display:block; }
-    .opt { padding:10px 14px; border-radius:10px; font-size:0.85rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:10px; color:#94a3b8; margin-bottom:6px; }
+    .detail-inner { padding-top:12px; }
+    .detail-label { font-size:0.65rem; color:#475569; text-transform:uppercase; margin-bottom:8px; font-weight:700; letter-spacing:1px; }
+    .opt { padding:10px 14px; border-radius:10px; font-size:0.85rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:10px; color:#94a3b8; margin-bottom:6px; word-break:break-word; }
     .opt.is-correct { background:rgba(0,255,204,0.1); border-color:rgba(0,255,204,0.3); color:var(--correct); }
     .opt.is-wrong   { background:rgba(255,71,87,0.1); border-color:rgba(255,71,87,0.3); color:var(--wrong); }
+    .opt i { flex-shrink:0; }
     .q-img-review { width:100%; border-radius:12px; margin:10px 0; max-height:220px; object-fit:contain; background:#000; border:1px solid var(--glass-border); }
-    .detail-label { font-size:0.65rem; color:#475569; text-transform:uppercase; margin-bottom:8px; font-weight:700; letter-spacing:1px; }
+    .empty-review { text-align:center; padding:40px; color:#475569; font-size:0.9rem; }
+    .empty-review i { font-size:2rem; margin-bottom:10px; display:block; }
   </style>
 </head>
 <body>
@@ -107,10 +107,12 @@
   <div class="trophy-box" id="trophyIcon">🏆</div>
   <h2 id="congratsTitle">HOÀN THÀNH!</h2>
   <p class="status-text">KẾT QUẢ CHUYẾN DU HÀNH</p>
+
   <div class="score-circle animate__animated animate__bounceIn animate__delay-1s">
     <div class="score-big" id="displayScore">0</div>
     <div class="score-label">ĐIỂM SỐ</div>
   </div>
+
   <div class="info-list">
     <div class="info-item">
       <div class="label-box"><i class="fas fa-user-astronaut"></i> Thí sinh</div>
@@ -129,200 +131,308 @@
       <div class="val-box" id="resTestName" style="font-size:0.85rem;opacity:0.8">...</div>
     </div>
   </div>
+
   <div id="syncStatus"><i class="fas fa-circle-check"></i> Đã lưu kết quả</div>
+
   <div class="btn-group">
-    <button class="btn btn-review" onclick="openReview()"><i class="fas fa-list-check"></i> Xem lại bài làm</button>
-    <button class="btn btn-main"   onclick="location.href='select.html'"><i class="fas fa-rocket"></i> Về trang bài thi</button>
-    <button class="btn btn-outline" onclick="location.href='history.html'"><i class="fas fa-clock-rotate-left"></i> Lịch sử làm bài</button>
+    <button class="btn btn-review"  onclick="openReview()">
+      <i class="fas fa-list-check"></i> Xem lại bài làm
+    </button>
+    <button class="btn btn-main" onclick="location.href='select.html'">
+      <i class="fas fa-rocket"></i> Về trang bài thi
+    </button>
+    <button class="btn btn-outline" onclick="location.href='history.html'">
+      <i class="fas fa-clock-rotate-left"></i> Lịch sử làm bài
+    </button>
   </div>
 </div>
 
 <div class="modal-overlay" id="reviewModal">
   <div class="modal-box">
     <div class="modal-header">
-      <div class="modal-title"><i class="fas fa-file-invoice" style="color:var(--accent)"></i> Chi tiết bài làm</div>
-      <button class="modal-close" onclick="closeReview()"><i class="fas fa-times"></i></button>
+      <div class="modal-title">
+        <i class="fas fa-file-invoice" style="color:var(--accent)"></i> Chi tiết bài làm
+      </div>
+      <button class="modal-close" onclick="closeReview()">
+        <i class="fas fa-times"></i>
+      </button>
     </div>
     <div class="modal-chips" id="modalChips"></div>
     <div class="q-list" id="qReviewList">
-      <div style="text-align:center;padding:50px;color:#64748b"><i class="fas fa-circle-notch fa-spin"></i> Đang chuẩn bị dữ liệu...</div>
+      <div class="empty-review">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <p>Đang chuẩn bị dữ liệu...</p>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
-  let quizData = { questions:[], answers:{} };
-  let reviewLoaded = false;
+var API = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
+var quizData     = { questions: [], answers: {} };
+var reviewLoaded = false;
 
-  window.onload = () => {
-    const name      = localStorage.getItem("studentName")    || "Người dùng";
-    const school    = localStorage.getItem("schoolName")     || "Tự do";
-    const testName  = localStorage.getItem("currentTestName")|| "Bài thi";
-    const score     = parseFloat(localStorage.getItem("lastScore") || "0");
-    const correctStr= localStorage.getItem("correctCount")   || "0/0";
+// ══════════════════════════════════════════
+//  KHỞI TẠO
+// ══════════════════════════════════════════
+window.onload = function() {
+  var name       = localStorage.getItem("studentName")     || "Người dùng";
+  var school     = localStorage.getItem("schoolName")      || "Tự do";
+  var className  = localStorage.getItem("className")       || "";
+  var testName   = localStorage.getItem("currentTestName") || "Bài thi";
+  var score      = parseFloat(localStorage.getItem("lastScore") || "0");
+  var correctStr = localStorage.getItem("correctCount")    || "0/0";
 
-    document.getElementById("resName").innerText     = name;
-    document.getElementById("resSchool").innerText   = school.replace(/^'+/, "");
-    document.getElementById("resCorrect").innerText  = correctStr;
-    document.getElementById("resTestName").innerText = testName;
+  document.getElementById("resName").innerText     = name;
+  document.getElementById("resSchool").innerText   = school.replace(/^'+/, "") + (className ? " · " + className : "");
+  document.getElementById("resCorrect").innerText  = correctStr;
+  document.getElementById("resTestName").innerText = testName;
 
-    animateValue("displayScore", 0, score, 1200);
+  animateScore(score);
 
-    const title  = document.getElementById("congratsTitle");
-    const trophy = document.getElementById("trophyIcon");
-    if (score >= 8)      { title.innerText = "XUẤT SẮC!";      trophy.innerText = "👑"; }
-    else if (score >= 5) { title.innerText = "TỐT LẮM!";       trophy.innerText = "🚀"; }
-    else                 { title.innerText = "CỐ GẮNG LÊN!";   trophy.innerText = "🎯"; }
+  var title  = document.getElementById("congratsTitle");
+  var trophy = document.getElementById("trophyIcon");
+  if (score >= 8)      { title.innerText = "XUẤT SẮC!";    trophy.innerText = "👑"; }
+  else if (score >= 5) { title.innerText = "TỐT LẮM!";     trophy.innerText = "🚀"; }
+  else                 { title.innerText = "CỐ GẮNG LÊN!"; trophy.innerText = "🎯"; }
 
+  try {
+    quizData.answers   = JSON.parse(localStorage.getItem("quizAnswers")   || "{}");
+    quizData.questions = JSON.parse(localStorage.getItem("quizQuestions") || "[]");
+  } catch(e) {
+    quizData.answers   = {};
+    quizData.questions = [];
+  }
+};
+
+// ══════════════════════════════════════════
+//  MỞ / ĐÓNG MODAL
+// ══════════════════════════════════════════
+async function openReview() {
+  document.getElementById("reviewModal").classList.add("open");
+  if (reviewLoaded) return;
+
+  var listEl = document.getElementById("qReviewList");
+
+  if (!quizData.questions || quizData.questions.length === 0) {
+    var tid = localStorage.getItem("currentTestId");
+    if (!tid) {
+      listEl.innerHTML = '<div class="empty-review" style="color:var(--wrong)"><i class="fas fa-exclamation-circle"></i><p>Không tìm thấy dữ liệu đề thi.</p></div>';
+      return;
+    }
+    listEl.innerHTML = '<div class="empty-review"><i class="fas fa-spinner fa-spin"></i><p>Đang tải câu hỏi...</p></div>';
     try {
-      quizData.answers   = JSON.parse(localStorage.getItem("quizAnswers")   || "{}");
-      quizData.questions = JSON.parse(localStorage.getItem("quizQuestions") || "[]");
-    } catch(e) { console.error("Data error", e); }
-  };
-
-  async function openReview() {
-    document.getElementById("reviewModal").classList.add("open");
-    if (reviewLoaded) return;
-
-    const listEl = document.getElementById("qReviewList");
-
-    if (quizData.questions.length === 0) {
-      const tid = localStorage.getItem("currentTestId");
-      if (!tid) {
-        listEl.innerHTML = `<div style="text-align:center;color:var(--wrong);padding:20px">Không tìm thấy dữ liệu đề thi.</div>`;
-        return;
-      }
-      try {
-        const res = await fetch(`${API}?action=getQuestions&testId=${tid}`);
-        quizData.questions = await res.json();
-      } catch(e) {
-        listEl.innerHTML = `<div style="text-align:center;color:var(--wrong);padding:20px">Lỗi kết nối máy chủ.</div>`;
-        return;
-      }
+      var res  = await fetch(API + "?action=getQuestions&testId=" + encodeURIComponent(tid));
+      var data = await res.json();
+      quizData.questions = Array.isArray(data) ? data : [];
+    } catch(e) {
+      listEl.innerHTML = '<div class="empty-review" style="color:var(--wrong)"><i class="fas fa-wifi"></i><p>Lỗi kết nối máy chủ.</p></div>';
+      return;
     }
-
-    renderReview();
-    reviewLoaded = true;
   }
 
-  function renderReview() {
-    let c = 0, w = 0, s = 0;
-    const clean      = str => str ? str.toString().trim().toLowerCase() : "";
-    const cleanSort  = str => str ? str.toString().split('|').map(x=>x.trim().toLowerCase()).sort().join('|') : "";
-    const cleanOrder = str => str ? str.toString().split('|').map(x=>x.trim().toLowerCase()).join('|') : "";
-
-    const html = quizData.questions.map((q, i) => {
-      const userAns   = quizData.answers[q.question] || "";
-      const correctAns= q.correct ? q.correct.toString().trim() : "";
-      const type      = (q.type || "single").toLowerCase();
-
-      let isCorrect = false;
-      if (userAns) {
-        if (["single","mcq","tf","fill"].includes(type))
-          isCorrect = clean(userAns) === clean(correctAns);
-        else if (type === "ordering")
-          isCorrect = cleanOrder(userAns) === cleanOrder(correctAns);
-        else  // multiple, matching
-          isCorrect = cleanSort(userAns) === cleanSort(correctAns);
-      }
-
-      const status = userAns === "" ? "skip" : (isCorrect ? "correct" : "wrong");
-      if (status === "correct") c++; else if (status === "wrong") w++; else s++;
-
-      const iconMap = { correct:"fa-check", wrong:"fa-times", skip:"fa-minus" };
-      const pts = q.points > 0 ? q.points : 0;
-
-      return `
-        <div class="q-item ${status}-bg" id="q${i}">
-          <div class="q-header" onclick="document.getElementById('q${i}').classList.toggle('open')">
-            <div class="q-badge ${status}"><i class="fas ${iconMap[status]}"></i></div>
-            <div class="q-text">Câu ${i+1}: ${q.question}</div>
-            ${pts > 0 ? `<div class="q-pts">${isCorrect ? '+'+pts : 0}đ</div>` : ''}
-          </div>
-          <div class="q-detail">
-            ${q.image ? `<img src="${q.image}" class="q-img-review" onerror="this.style.display='none'">` : ""}
-            ${renderOptions(q, userAns, correctAns, status, type)}
-          </div>
-        </div>`;
-    }).join("");
-
-    document.getElementById("modalChips").innerHTML = `
-      <div class="m-chip mc-correct">${c}<small>Đúng</small></div>
-      <div class="m-chip mc-wrong">${w}<small>Sai</small></div>
-      <div class="m-chip mc-skip">${s}<small>Bỏ qua</small></div>`;
-    document.getElementById("qReviewList").innerHTML = html;
+  if (!quizData.questions.length) {
+    listEl.innerHTML = '<div class="empty-review"><i class="fas fa-inbox"></i><p>Không có câu hỏi.</p></div>';
+    return;
   }
 
-  function renderOptions(q, userAns, correctAns, status, type) {
-    let html = `<div class="detail-label">Chi tiết đáp án</div>`;
+  renderReview();
+  reviewLoaded = true;
+}
 
-    if (["single","mcq","tf","multiple"].includes(type)) {
-      let options = [];
-      try {
-        const d = typeof q.answer === "string" ? JSON.parse(q.answer) : q.answer;
-        options = (d.items || []).map(o => typeof o === 'object' ? o.text : o);
-      } catch(e) {}
-      if (type === "tf") options = ["Đúng", "Sai"];
+function closeReview() {
+  document.getElementById("reviewModal").classList.remove("open");
+}
 
-      if (options.length) {
-        const uArr = userAns.split("|").map(x => x.trim());
-        const cArr = correctAns.split("|").map(x => x.trim());
-        options.forEach(opt => {
-          const isUserChosen = uArr.includes(String(opt).trim());
-          const isRight      = cArr.includes(String(opt).trim());
-          let cls = "", icon = "fa-circle";
-          if (isRight)                    { cls = "is-correct"; icon = "fa-circle-check"; }
-          else if (isUserChosen && !isRight) { cls = "is-wrong";   icon = "fa-circle-xmark"; }
-          html += `<div class="opt ${cls}"><i class="fas ${icon}"></i> ${opt}</div>`;
-        });
-        return html;
+document.getElementById("reviewModal").addEventListener("click", function(e) {
+  if (e.target === this) closeReview();
+});
+
+function toggleItem(i) {
+  document.getElementById("qi" + i).classList.toggle("open");
+}
+
+// ══════════════════════════════════════════
+//  RENDER DANH SÁCH CÂU HỎI
+// ══════════════════════════════════════════
+function renderReview() {
+  var cntCorrect = 0, cntWrong = 0, cntSkip = 0;
+  var iconMap = { correct: "fa-check", wrong: "fa-times", skip: "fa-minus" };
+
+  var rows = quizData.questions.map(function(q, i) {
+    var userAns    = String(quizData.answers[q.question] || "");
+    var correctAns = String(q.correct || q.correctAnswer || "").trim();
+    var type       = String(q.type || "single").toLowerCase();
+    var isCorrect  = checkAnswer(type, userAns, correctAns);
+    var status     = !userAns ? "skip" : (isCorrect ? "correct" : "wrong");
+
+    if (status === "correct") cntCorrect++;
+    else if (status === "wrong") cntWrong++;
+    else cntSkip++;
+
+    var pts    = parseFloat(q.points) || 0;
+    var ptsStr = (pts > 0) ? ('<div class="q-pts">' + (isCorrect ? "+" + pts : "0") + "đ</div>") : "";
+    var imgStr = (q.image && q.image.length > 10)
+      ? '<img src="' + esc(q.image) + '" class="q-img-review" onerror="this.style.display=\'none\'">'
+      : "";
+
+    return ''
+      + '<div class="q-item ' + status + '-bg" id="qi' + i + '">'
+      +   '<div class="q-header" onclick="toggleItem(' + i + ')">'
+      +     '<div class="q-badge ' + status + '"><i class="fas ' + iconMap[status] + '"></i></div>'
+      +     '<div class="q-text">Câu ' + (i + 1) + ': ' + esc(q.question) + '</div>'
+      +     ptsStr
+      +   '</div>'
+      +   '<div class="q-detail">'
+      +     '<div class="detail-inner">' + imgStr + buildDetail(q, userAns, correctAns, status, type) + '</div>'
+      +   '</div>'
+      + '</div>';
+  });
+
+  document.getElementById("modalChips").innerHTML =
+      '<div class="m-chip mc-correct">' + cntCorrect + '<small>Đúng</small></div>'
+    + '<div class="m-chip mc-wrong">'   + cntWrong   + '<small>Sai</small></div>'
+    + '<div class="m-chip mc-skip">'    + cntSkip    + '<small>Bỏ qua</small></div>';
+
+  document.getElementById("qReviewList").innerHTML = rows.join("");
+}
+
+// ══════════════════════════════════════════
+//  KIỂM TRA ĐÁP ÁN
+// ══════════════════════════════════════════
+function checkAnswer(type, userAns, correctAns) {
+  if (!userAns) return false;
+  var norm  = function(s) { return String(s).trim().toLowerCase().replace(/\s+/g, " "); };
+  var sort  = function(s) { return String(s).split("|").map(function(x) { return norm(x); }).sort().join("|"); };
+  var order = function(s) { return String(s).split("|").map(function(x) { return norm(x); }).join("|"); };
+  if (type === "ordering")                          return order(userAns) === order(correctAns);
+  if (type === "multiple" || type === "matching")   return sort(userAns)  === sort(correctAns);
+  return norm(userAns) === norm(correctAns);
+}
+
+// ══════════════════════════════════════════
+//  BUILD HTML CHI TIẾT ĐÁP ÁN
+// ══════════════════════════════════════════
+function buildDetail(q, userAns, correctAns, status, type) {
+  var html = '<div class="detail-label">Chi tiết đáp án</div>';
+
+  // ── Trắc nghiệm / Đúng-Sai / Nhiều đáp án ──
+  if (type === "single" || type === "mcq" || type === "tf" || type === "multiple") {
+    var opts = getOptions(q, type);
+    if (opts.length > 0) {
+      var uArr = userAns ? userAns.split("|").map(function(x) { return x.trim(); }) : [];
+      var cArr = correctAns ? correctAns.split("|").map(function(x) { return x.trim(); }) : [];
+      for (var j = 0; j < opts.length; j++) {
+        var optStr   = String(opts[j]).trim();
+        var chosen   = uArr.indexOf(optStr) >= 0;
+        var right    = cArr.indexOf(optStr) >= 0;
+        var cls  = "";
+        var icon = "fa-circle";
+        if (right) {
+          cls  = "is-correct";
+          icon = "fa-circle-check";
+        } else if (chosen && !right) {
+          cls  = "is-wrong";
+          icon = "fa-circle-xmark";
+        }
+        html += '<div class="opt ' + cls + '"><i class="fas ' + icon + '"></i> ' + esc(optStr) + '</div>';
       }
-    }
-
-    // FIX: ordering — hiển thị thứ tự học sinh chọn vs đáp án đúng
-    if (type === "ordering") {
-      html += `<div class="opt ${status==='correct'?'is-correct':'is-wrong'}" style="margin-bottom:6px">
-        <i class="fas fa-list-ol"></i> Thứ tự bạn chọn: ${userAns || "(Chưa sắp xếp)"}
-      </div>`;
-      html += `<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: ${correctAns}</div>`;
       return html;
     }
-
-    // FIX: matching — hiển thị các cặp học sinh ghép
-    if (type === "matching") {
-      html += `<div class="opt ${status==='correct'?'is-correct':'is-wrong'}" style="margin-bottom:6px">
-        <i class="fas fa-link"></i> Bạn ghép: ${userAns || "(Chưa ghép)"}
-      </div>`;
-      html += `<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: ${correctAns}</div>`;
-      return html;
+    // Không có options → fallback hiện thô
+    html += '<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: ' + esc(correctAns || "—") + '</div>';
+    if (userAns) {
+      var rawCls = (status === "correct") ? "is-correct" : "is-wrong";
+      html += '<div class="opt ' + rawCls + '"><i class="fas fa-pen"></i> Bài làm: ' + esc(userAns) + '</div>';
     }
-
-    // fill / khác
-    html += `
-      <div class="opt ${status==='correct'?'is-correct':'is-wrong'}" style="margin-bottom:6px">
-        <i class="fas ${status==='correct'?'fa-check-circle':'fa-times-circle'}"></i>
-        Bài làm: ${userAns || "(Trống)"}
-      </div>
-      <div class="opt is-correct"><i class="fas fa-star"></i> Đáp án: ${correctAns}</div>`;
     return html;
   }
 
-  function closeReview() { document.getElementById("reviewModal").classList.remove("open"); }
-
-  function animateValue(id, start, end, duration) {
-    const obj = document.getElementById(id);
-    if (!obj) return;
-    let startTimestamp = null;
-    const step = (timestamp) => {
-      if (!startTimestamp) startTimestamp = timestamp;
-      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      const val = (progress * (end - start) + start).toFixed(1);
-      obj.innerHTML = val.endsWith(".0") ? val.slice(0,-2) : val;
-      if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
+  // ── Sắp xếp ──
+  if (type === "ordering") {
+    var oCls = (status === "correct") ? "is-correct" : "is-wrong";
+    html += '<div class="opt ' + oCls + '" style="margin-bottom:6px">'
+      + '<i class="fas fa-list-ol"></i> Thứ tự bạn chọn: '
+      + esc(userAns ? userAns.replace(/\|/g, " → ") : "(Chưa sắp xếp)")
+      + '</div>';
+    if (status !== "correct") {
+      html += '<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: '
+        + esc(correctAns.replace(/\|/g, " → ")) + '</div>';
+    }
+    return html;
   }
+
+  // ── Nối chéo ──
+  if (type === "matching") {
+    var mCls = (status === "correct") ? "is-correct" : "is-wrong";
+    html += '<div class="opt ' + mCls + '" style="margin-bottom:6px">'
+      + '<i class="fas fa-link"></i> Bạn ghép: '
+      + esc(userAns ? userAns.replace(/\|/g, " | ") : "(Chưa ghép)")
+      + '</div>';
+    if (status !== "correct") {
+      html += '<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: '
+        + esc(correctAns.replace(/\|/g, " | ")) + '</div>';
+    }
+    return html;
+  }
+
+  // ── Fill / Khác ──
+  var fCls  = (status === "correct") ? "is-correct" : "is-wrong";
+  var fIcon = (status === "correct") ? "fa-check-circle" : "fa-times-circle";
+  html += '<div class="opt ' + fCls + '" style="margin-bottom:6px">'
+    + '<i class="fas ' + fIcon + '"></i> Bài làm: ' + esc(userAns || "(Trống)") + '</div>';
+  html += '<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: ' + esc(correctAns || "—") + '</div>';
+  return html;
+}
+
+// ══════════════════════════════════════════
+//  LẤY DANH SÁCH OPTION
+// ══════════════════════════════════════════
+function getOptions(q, type) {
+  if (type === "tf") return ["Đúng", "Sai"];
+  try {
+    var det = q.details;
+    if (!det) {
+      det = (typeof q.answer === "string") ? JSON.parse(q.answer) : (q.answer || {});
+    }
+    var items = det.items || det.options || [];
+    return items.map(function(o) {
+      if (typeof o === "object" && o !== null) return o.text || JSON.stringify(o);
+      return String(o);
+    });
+  } catch(e) {
+    return [];
+  }
+}
+
+// ══════════════════════════════════════════
+//  ESCAPE HTML
+// ══════════════════════════════════════════
+function esc(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+// ══════════════════════════════════════════
+//  ANIMATE ĐIỂM
+// ══════════════════════════════════════════
+function animateScore(end) {
+  var el = document.getElementById("displayScore");
+  if (!el) return;
+  var startTime = null;
+  var duration  = 1200;
+  function step(ts) {
+    if (!startTime) startTime = ts;
+    var progress = Math.min((ts - startTime) / duration, 1);
+    var val = (progress * end).toFixed(1);
+    el.innerHTML = val.endsWith(".0") ? val.slice(0, -2) : val;
+    if (progress < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
 </script>
 </body>
 </html>

@@ -149,7 +149,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_C8-ifdrwU4V4peQITzXC1-zbxZGAwtOvfFkMisr9kUk2nvNx-DkBXH_4W5CDICWs/exec";
     let allTests = [], ispringTests = [];
 
     function initUser() {
@@ -168,7 +168,7 @@
           ispringTests = data.filter(t => t.visible !== false);
         }
       } catch(e) {
-        console.warn("Không load được iSpring từ server:", e);
+        console.error("Không load được iSpring từ server:", e);
         ispringTests = [];
       }
       renderIspringTests();
@@ -221,21 +221,30 @@
         list.innerHTML = `<div class="empty-section"><i class="fas fa-rocket" style="opacity:0.2;font-size:1.5rem;display:block;margin-bottom:8px"></i>${search ? 'Không tìm thấy bài iSpring phù hợp' : 'Chưa có bài thi iSpring'}</div>`;
         return;
       }
-      list.innerHTML = filtered.map((test, i) => `
-        <div class="test-card ispring-test-card animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s" onclick='launchIspring(${JSON.stringify(JSON.stringify(test))})'>
+      list.innerHTML = filtered.map((test, i) => {
+        // Normalize: hỗ trợ cả tên field cũ (nameIPS) và mới (name)
+        const name = test.name || test.nameIPS || test.nameips || "Bài thi iSpring";
+        const path = test.path || test.pathIPS || "";
+        const duration = test.duration || test.durationIPS || test.durationips || "";
+        const subject = test.subject || test.typeIPS || test.typeips || "";
+        const desc = test.desc || test.descriptionIPS || test.descriptionips || "";
+        const safeTest = {...test, name, path, duration, subject, desc};
+        return `
+        <div class="test-card ispring-test-card animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s" onclick='launchIspring(${JSON.stringify(JSON.stringify(safeTest))})'>
           <div class="test-info">
             <span class="test-name">
-              ${test.name}
+              ${name}
               <span class="ispring-badge"><i class="fas fa-rocket" style="margin-right:3px"></i>iSpring</span>
             </span>
             <div class="test-meta">
-              ${test.duration ? `<span><i class="far fa-clock"></i> ${test.duration}p</span>` : ''}
-              ${test.subject ? `<span><i class="fas fa-book"></i> ${test.subject}</span>` : ''}
-              ${test.desc ? `<span><i class="fas fa-info-circle"></i> ${test.desc}</span>` : ''}
+              ${duration ? `<span><i class="far fa-clock"></i> ${duration}p</span>` : ''}
+              ${subject ? `<span><i class="fas fa-book"></i> ${subject}</span>` : ''}
+              ${desc ? `<span><i class="fas fa-info-circle"></i> ${desc}</span>` : ''}
             </div>
           </div>
           <div class="play-btn"><i class="fas fa-play"></i></div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
 
     function confirmLaunch(testJson) {
@@ -265,21 +274,27 @@
 
     function launchIspring(testJson) {
       const test = JSON.parse(testJson);
+      const name = test.name || "Bài thi iSpring";
+      const path = test.path || "";
+      const duration = test.duration || "";
+      const subject = test.subject || "";
+      if (!path) {
+        Swal.fire({icon:"warning",title:"Thiếu đường dẫn",text:"Bài thi này chưa có path. Liên hệ admin.",background:"#131c2f",color:"#fff"});
+        return;
+      }
       Swal.fire({
         title:'Mở bài thi iSpring?',
         html:`<div style="text-align:left;font-size:0.9rem;opacity:0.9;line-height:2">
-               <p>Bài thi: <b style="color:#f97316">${test.name}</b></p>
-               ${test.duration?`<p>Thời gian: <b>${test.duration} phút</b></p>`:''}
-               ${test.subject?`<p>Môn học: <b>${test.subject}</b></p>`:''}
+               <p>Bài thi: <b style="color:#f97316">${name}</b></p>
+               ${duration?`<p>Thời gian: <b>${duration} phút</b></p>`:''}
+               ${subject?`<p>Môn học: <b>${subject}</b></p>`:''}
               </div>`,
         icon:'question',showCancelButton:true,confirmButtonText:'<i class="fas fa-rocket"></i> MỞ BÀI THI',
         cancelButtonText:'HỦY',confirmButtonColor:'#f97316',background:'#131c2f',color:'#fff'
       }).then(res=>{
         if(res.isConfirmed){
-          // Lưu tên bài để player.html dùng khi submit điểm
-          localStorage.setItem("currentIspringName", test.name);
-          // Mở player.html thay vì dùng modal inline (tránh CORS iFrame)
-          window.location.href = `player.html?path=${encodeURIComponent(test.path)}`;
+          localStorage.setItem("currentIspringName", name);
+          window.location.href = `player.html?path=${encodeURIComponent(path)}`;
         }
       });
     }

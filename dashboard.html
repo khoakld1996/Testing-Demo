@@ -277,7 +277,7 @@
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
+const API = "https://script.google.com/macros/s/AKfycbx_C8-ifdrwU4V4peQITzXC1-zbxZGAwtOvfFkMisr9kUk2nvNx-DkBXH_4W5CDICWs/exec";
 let tests=[], results=[], pending=[], chartInst=null, ispringList=[];
 
 if(localStorage.getItem("userRole") !== "admin") location.replace("index.html");
@@ -304,7 +304,14 @@ function renderIspringList() {
     el.innerHTML = `<div class="empty-state"><i class="fas fa-${ispringList.length ? 'search' : 'folder-plus'}"></i><p>${ispringList.length ? 'Không tìm thấy' : 'Chưa có bài iSpring nào.<br>Thêm từ form bên phải.'}</p></div>`;
     return;
   }
-  el.innerHTML = filtered.map((item, i) => `
+  el.innerHTML = filtered.map((item, i) => {
+    // Normalize old sheet header names
+    item.name     = item.name     || item.nameIPS     || item.nameips     || "?";
+    item.path     = item.path     || item.pathIPS     || item.pathips     || "";
+    item.duration = item.duration || item.durationIPS || item.durationips || "";
+    item.subject  = item.subject  || item.typeIPS     || item.typeips     || "";
+    item.desc     = item.desc     || item.descriptionIPS || item.descriptionips || "";
+    return `
     <div class="ispring-card animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s">
       <div style="min-width:0;flex:1">
         <h4>
@@ -325,7 +332,7 @@ function renderIspringList() {
         <button class="btn btn-outline" style="color:var(--danger)" onclick="deleteIspring(${i})"><i class="fas fa-trash"></i></button>
       </div>
     </div>
-  `).join('');
+  `;}).join('');
 }
 
 async function addIspring() {

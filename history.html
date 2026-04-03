@@ -172,7 +172,7 @@
   // ==========================================
   // URL CỦA GOOGLE APPS SCRIPT CỦA BẠN
   // ==========================================
-  const API = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
+  const API = "https://script.google.com/macros/s/AKfycbx_C8-ifdrwU4V4peQITzXC1-zbxZGAwtOvfFkMisr9kUk2nvNx-DkBXH_4W5CDICWs/exec";
 
   let allResults = [];
   let currentRecord = null;
@@ -182,14 +182,24 @@
   function fmtTime(val) {
     if (!val) return "—";
     try {
-      // Fix lỗi ngày của Safari/iOS bằng cách thay khoảng trắng thành chữ 'T'
-      const cleanVal = val.toString().replace(" ", "T");
-      const d = new Date(cleanVal);
-      if (isNaN(d.getTime())) return val; // Trả về text gốc nếu vẫn lỗi
-      return d.toLocaleString("vi-VN", { hour:"2-digit", minute:"2-digit", day:"2-digit", month:"2-digit", year:"numeric" });
-    } catch(e) {
-      return val;
-    }
+      let s = String(val).trim();
+      // AppScript format: "yyyy-MM-dd HH:mm:ss" hoặc "dd/MM/yyyy HH:mm:ss"
+      // Safari không parse "yyyy-MM-dd HH:mm:ss" → thay space bằng T, bỏ giây nếu cần
+      if (/^\d{4}-\d{2}-\d{2}\s/.test(s)) {
+        s = s.replace(" ", "T"); // "2026-04-03T14:30:00"
+      } else if (/^\d{2}\/\d{2}\/\d{4}\s/.test(s)) {
+        // Đổi dd/MM/yyyy HH:mm:ss → yyyy-MM-ddTHH:mm:ss
+        const [datePart, timePart] = s.split(" ");
+        const [d2, m2, y2] = datePart.split("/");
+        s = `${y2}-${m2}-${d2}T${timePart || "00:00:00"}`;
+      }
+      const d = new Date(s);
+      if (isNaN(d.getTime())) return val;
+      return d.toLocaleString("vi-VN", {
+        hour: "2-digit", minute: "2-digit",
+        day: "2-digit", month: "2-digit", year: "numeric"
+      });
+    } catch(e) { return val; }
   }
 
   // ── INIT ──
