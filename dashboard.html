@@ -235,20 +235,14 @@
           </div>
         </div>
 
-        <!-- Export / Import config -->
-        <div class="glass-card" style="border-top:4px solid rgba(139,92,246,0.5);margin-bottom:25px">
-          <h3 style="font-size:0.9rem;margin-bottom:6px;color:#a78bfa"><i class="fas fa-file-export"></i> Xuất / Nhập cấu hình</h3>
-          <p style="font-size:0.72rem;opacity:0.45;margin-bottom:14px;line-height:1.6">Sao chép JSON rồi dán vào <b>ispring-config.js</b> để dữ liệu hiển thị trên mọi trình duyệt, không phụ thuộc localStorage.</p>
-          <button class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:10px" onclick="exportConfig()">
-            <i class="fas fa-copy"></i> Sao chép cấu hình iSpring
+        <!-- Kết quả iSpring -->
+        <div class="glass-card" style="border-top:4px solid rgba(249,115,22,0.5);margin-bottom:25px">
+          <h3 style="font-size:0.9rem;margin-bottom:6px;color:var(--ispring)"><i class="fas fa-chart-bar"></i> Kết quả bài thi iSpring</h3>
+          <p style="font-size:0.72rem;opacity:0.45;margin-bottom:14px;line-height:1.6">Xem điểm học sinh đã nộp qua SCORM. Dữ liệu lưu thẳng vào Google Sheet.</p>
+          <button class="btn btn-orange" style="width:100%;justify-content:center;" onclick="viewIspringResults()">
+            <i class="fas fa-table"></i> Xem kết quả iSpring
           </button>
-          <div class="config-io">
-            <p>Hoặc dán JSON vào đây để nhập:</p>
-            <textarea id="importJson" placeholder='[{"name":"Đề thi 1","path":"quizzes/ten-bai/index.html",...}]'></textarea>
-            <button class="btn btn-outline" style="width:100%;justify-content:center;margin-top:8px" onclick="importConfig()">
-              <i class="fas fa-file-import"></i> Nhập từ JSON
-            </button>
-          </div>
+          <p style="font-size:0.68rem;opacity:0.35;margin-top:10px;text-align:center">Sheet <b>Results</b>, cột testName có prefix <code>[iSpring]</code></p>
         </div>
 
         <!-- Test path -->
@@ -283,26 +277,23 @@
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbzkKClxrADzE1MtpqewsuXNyfITcXkMkQWFaZ-YLigiaw_hxjtXMx94TamevEGJXl_i/exec";
+const API = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
 let tests=[], results=[], pending=[], chartInst=null, ispringList=[];
 
 if(localStorage.getItem("userRole") !== "admin") location.replace("index.html");
 
-// ===== iSPRING STORAGE =====
-function loadIspring() {
-  try { ispringList = JSON.parse(localStorage.getItem("ispringTests") || "[]"); }
-  catch(e) { ispringList = []; }
-  // Cũng load từ ispring-config.js nếu có (window.ISPRING_CONFIG)
-  if(ispringList.length === 0 && window.ISPRING_CONFIG && Array.isArray(window.ISPRING_CONFIG)) {
-    ispringList = window.ISPRING_CONFIG;
-    localStorage.setItem("ispringTests", JSON.stringify(ispringList));
-  }
+// ===== iSPRING - DÙNG GOOGLE SHEET QUA API =====
+async function loadIspring() {
+  try {
+    const data = await callAPI("getIspring");
+    if(Array.isArray(data)) {
+      ispringList = data;
+      document.getElementById("cIspring").innerText = ispringList.length;
+      renderIspringList();
+    }
+  } catch(e) { log("Lỗi loadIspring: " + e.message, "err"); }
 }
-
-function saveIspring() {
-  localStorage.setItem("ispringTests", JSON.stringify(ispringList));
-  document.getElementById("cIspring").innerText = ispringList.length;
-}
+function saveIspring() { document.getElementById("cIspring").innerText = ispringList.length; }
 
 function renderIspringList() {
   const el = document.getElementById("ispringList");
@@ -337,7 +328,7 @@ function renderIspringList() {
   `).join('');
 }
 
-function addIspring() {
+async function addIspring() {
   const name = document.getElementById("iName").value.trim();
   const path = document.getElementById("iPath").value.trim();
   const desc = document.getElementById("iDesc").value.trim();
@@ -346,24 +337,34 @@ function addIspring() {
   const visible = document.getElementById("visToggle").classList.contains("on");
   if(!name) return Swal.fire({icon:'warning',title:'Thiếu tên',background:'#131c2f',color:'#fff'});
   if(!path) return Swal.fire({icon:'warning',title:'Thiếu đường dẫn',text:'VD: quizzes/FullIOT1GS6LV1/index.html',background:'#131c2f',color:'#fff'});
-  ispringList.push({id:Date.now(),name,path,desc,duration,subject,visible,addedAt:new Date().toLocaleDateString('vi-VN')});
-  saveIspring();
-  renderIspringList();
-  ["iName","iPath","iDesc","iSubject"].forEach(id=>document.getElementById(id).value="");
-  document.getElementById("iDuration").value=45;
-  document.getElementById("visToggle").classList.add("on");
-  Swal.fire({icon:'success',title:'Đã thêm!',html:`<b style="color:#f97316">${name}</b> đã được thêm.<br><small style="opacity:0.6">Nhớ nhấn "Sao chép cấu hình" để lưu vào ispring-config.js</small>`,timer:2500,showConfirmButton:false,background:'#131c2f',color:'#fff'});
+  Swal.fire({title:'Đang lưu...',didOpen:()=>Swal.showLoading(),background:'#131c2f',color:'#fff'});
+  const res = await postAPI({action:"addIspring",name,path,desc,duration,subject,visible});
+  if(res && res.status === "success") {
+    ["iName","iPath","iDesc","iSubject"].forEach(id=>document.getElementById(id).value="");
+    document.getElementById("iDuration").value=45;
+    document.getElementById("visToggle").classList.add("on");
+    await loadIspring();
+    Swal.fire({icon:'success',title:'Đã thêm!',html:`<b style="color:#f97316">${name}</b> đã được lưu vào Google Sheet!`,timer:2000,showConfirmButton:false,background:'#131c2f',color:'#fff'});
+  } else {
+    Swal.fire({icon:'error',title:'Lỗi!',text:'Không thể lưu. Kiểm tra lại AppScript.',background:'#131c2f',color:'#fff'});
+  }
 }
 
-function deleteIspring(idx) {
-  Swal.fire({title:'Xóa bài iSpring?',text:`"${ispringList[idx].name}"`,icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444',confirmButtonText:'XÓA',cancelButtonText:'HỦY',background:'#131c2f',color:'#fff'})
-  .then(r=>{if(r.isConfirmed){ispringList.splice(idx,1);saveIspring();renderIspringList();}});
+async function deleteIspring(idx) {
+  const item = ispringList[idx];
+  const r = await Swal.fire({title:'Xóa bài iSpring?',text:`"${item.name}"`,icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444',confirmButtonText:'XÓA',cancelButtonText:'HỦY',background:'#131c2f',color:'#fff'});
+  if(r.isConfirmed) {
+    Swal.fire({title:'Đang xóa...',didOpen:()=>Swal.showLoading(),background:'#131c2f',color:'#fff'});
+    await postAPI({action:"deleteIspring",id:item.id});
+    await loadIspring();
+    Swal.fire({icon:'success',title:'Đã xóa!',timer:1000,showConfirmButton:false,background:'#131c2f',color:'#fff'});
+  }
 }
 
-function toggleIspringVisible(idx) {
-  ispringList[idx].visible = ispringList[idx].visible===false;
-  saveIspring();
-  renderIspringList();
+async function toggleIspringVisible(idx) {
+  const item = ispringList[idx];
+  await postAPI({action:"updateIspring",id:item.id,visible:item.visible===false});
+  await loadIspring();
 }
 
 function previewIspring(idx) {
@@ -379,36 +380,30 @@ function closeIspringModal() {
   document.getElementById("ispringFrame").src = "";
 }
 
-// Export / Import
-function exportConfig() {
-  const json = JSON.stringify(ispringList, null, 2);
-  const content = `// ispring-config.js — Tự động tạo bởi Nebula Admin\n// Copy file này vào cùng thư mục với select.html\nwindow.ISPRING_CONFIG = ${json};\n`;
-  navigator.clipboard.writeText(content).then(()=>{
-    Swal.fire({icon:'success',title:'Đã sao chép!',html:`<div style="text-align:left;font-size:0.82rem;opacity:0.8;line-height:1.8">
-      1. Mở Notepad, dán nội dung vừa copy<br>
-      2. Lưu file tên: <b style="color:#f97316">ispring-config.js</b><br>
-      3. Đặt file vào cùng thư mục với <b>select.html</b><br>
-      4. Trong select.html đã có sẵn đoạn load file này ✅
-    </div>`,background:'#131c2f',color:'#fff'});
-  }).catch(()=>{
-    Swal.fire({icon:'info',title:'Nội dung cấu hình',html:`<textarea style="width:100%;height:200px;background:#0f172a;color:#94a3b8;border:1px solid #333;border-radius:8px;padding:10px;font-family:monospace;font-size:0.7rem">${`window.ISPRING_CONFIG = ${JSON.stringify(ispringList, null, 2)};`}</textarea>`,background:'#131c2f',color:'#fff'});
-  });
-}
-
-function importConfig() {
-  const raw = document.getElementById("importJson").value.trim();
-  if(!raw) return;
-  try {
-    const data = JSON.parse(raw);
-    if(!Array.isArray(data)) throw new Error("Phải là array");
-    ispringList = data;
-    saveIspring();
-    renderIspringList();
-    document.getElementById("importJson").value = "";
-    Swal.fire({icon:'success',title:`Đã nhập ${data.length} bài iSpring!`,timer:1500,showConfirmButton:false,background:'#131c2f',color:'#fff'});
-  } catch(e) {
-    Swal.fire({icon:'error',title:'JSON không hợp lệ',text:e.message,background:'#131c2f',color:'#fff'});
+// Xem kết quả iSpring
+async function viewIspringResults() {
+  Swal.fire({title:'Đang tải...',didOpen:()=>Swal.showLoading(),background:'#131c2f',color:'#fff'});
+  const data = await callAPI("getIspringResults");
+  if(!data || !Array.isArray(data) || data.length === 0) {
+    Swal.fire({icon:'info',title:'Chưa có kết quả iSpring',background:'#131c2f',color:'#fff'});
+    return;
   }
+  const rows = data.slice(-50).reverse().map(r=>`
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
+      <td style="padding:8px 6px;font-weight:700">${r.student}</td>
+      <td style="padding:8px 6px;opacity:0.7;font-size:0.8rem">${String(r.testName).replace('[iSpring] ','')}</td>
+      <td style="padding:8px 6px;color:#f97316;font-weight:800">${r.score}đ</td>
+      <td style="padding:8px 6px;opacity:0.5;font-size:0.72rem">${r.time}</td>
+    </tr>`).join('');
+  Swal.fire({
+    title:'Kết quả bài thi iSpring',
+    html:`<div style="overflow-x:auto"><table style="width:100%;color:#fff;font-size:0.82rem;border-collapse:collapse">
+      <thead><tr style="color:#f97316;border-bottom:2px solid rgba(249,115,22,0.3)">
+        <th style="padding:8px 6px;text-align:left">Học sinh</th><th style="padding:8px 6px;text-align:left">Bài thi</th>
+        <th style="padding:8px 6px;text-align:left">Điểm</th><th style="padding:8px 6px;text-align:left">Thời gian</th>
+      </tr></thead><tbody>${rows}</tbody></table></div>`,
+    width:'700px',background:'#131c2f',color:'#fff',showCloseButton:true,showConfirmButton:false
+  });
 }
 
 async function testIspringPath() {
@@ -537,7 +532,7 @@ function goTo(page,id,name){localStorage.setItem("currentTest",JSON.stringify({i
 
 document.getElementById("ispringModal").addEventListener("click",function(e){if(e.target===this)closeIspringModal();});
 
-window.onload=()=>{loadIspring();renderIspringList();loadData();};
+window.onload=async()=>{await loadIspring();loadData();};
 </script>
 </body>
 </html>

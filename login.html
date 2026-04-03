@@ -179,7 +179,7 @@
   </div>
 
 <script>
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkKClxrADzE1MtpqewsuXNyfITcXkMkQWFaZ-YLigiaw_hxjtXMx94TamevEGJXl_i/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
   const params = new URLSearchParams(window.location.search);
   const roleFromUrl = params.get('role') || 'admin'; 
   
@@ -257,7 +257,10 @@
         if (action === 'login') {
           localStorage.setItem('userRole', result.role || 'student');
           localStorage.setItem('studentName', result.name);
-          localStorage.setItem('username', userVal); 
+          localStorage.setItem('username', userVal);
+          localStorage.setItem('schoolName', result.school || '');
+          localStorage.setItem('className', (result.class || '').replace(/^'+/, ''));
+          localStorage.setItem('studentClass', (result.class || '').replace(/^'+/, ''));
 
           Swal.fire({
             icon: 'success',

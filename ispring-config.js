@@ -14,8 +14,8 @@
 window.ISPRING_CONFIG = [
   {
     "id": 1,
-    "name": "Full OT1 GS6 LV1",
-    "path": "quizzes/FinalGS6LV1/index.html",
+    "name": "Final GS6 LV1",
+    "path": "quizzes/FullOTGS6LV1/index.html",
     "desc": "",
     "duration": "45",
     "subject": "IOT",

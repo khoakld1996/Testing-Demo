@@ -37,7 +37,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         const quizPath = urlParams.get('path'); // Ví dụ: quizzes/bai-1/index.html
         const studentName = localStorage.getItem("studentName") || "Ẩn danh";
-        const schoolName = localStorage.getItem("schoolName") || "Trường học";
+        const schoolName = localStorage.getItem("schoolName") || localStorage.getItem("school") || "Trường học";
 
         const frame = document.getElementById('quizFrame');
         const loader = document.getElementById('loading');
@@ -104,13 +104,12 @@
             
             const score = window.currentScore || 0;
             // Tên bài thi sẽ được đánh dấu [iSpring] để history.html dễ nhận diện
-            const testName = "[iSpring] " + (quizPath.split('/').slice(-2, -1)[0] || "Bài tập");
+            const testName = "[iSpring] " + (localStorage.getItem("currentIspringName") || quizPath.split('/').slice(-2, -1)[0] || "Bài tập");
 
             try {
                 isSubmitted = true;
                 const response = await fetch(API_URL, {
                     method: "POST",
-                    mode: "no-cors",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         action: "submitResult",
@@ -118,12 +117,11 @@
                         school: schoolName,
                         testName: testName,
                         score: score,
-                        total: score + "/100", // iSpring mặc định thường tính thang 100
+                        total: score + "/100",
                         answers: JSON.stringify({ note: "iSpring Automated Submission" }),
                         time: new Date().toLocaleString()
                     })
                 });
-
                 console.log("Đã gửi điểm iSpring thành công!");
                 
                 // Hiển thị thông báo nhỏ cho học sinh

@@ -172,7 +172,7 @@
   // ==========================================
   // URL CỦA GOOGLE APPS SCRIPT CỦA BẠN
   // ==========================================
-  const API = "https://script.google.com/macros/s/AKfycbzkKClxrADzE1MtpqewsuXNyfITcXkMkQWFaZ-YLigiaw_hxjtXMx94TamevEGJXl_i/exec";
+  const API = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
 
   let allResults = [];
   let currentRecord = null;
@@ -204,10 +204,12 @@
   async function loadHistory(studentName) {
     const el = document.getElementById("historyList");
     try {
-      const res  = await fetch(`${API}?action=getResults`);
-      allResults = await res.json();
+      // Gọi API với filter student để giảm dữ liệu trả về
+      const res  = await fetch(`${API}?action=getResults&student=${encodeURIComponent(studentName)}`);
+      const data = await res.json();
+      allResults = Array.isArray(data) ? data : [];
 
-      // Lọc ra các bài của học sinh hiện tại
+      // Lọc thêm phòng khi API chưa hỗ trợ param student
       const mine = allResults
         .filter(r => String(r.student || "").trim().toLowerCase() === studentName.trim().toLowerCase())
         .reverse();

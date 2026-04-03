@@ -136,7 +136,7 @@
   </div>
 
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbzkKClxrADzE1MtpqewsuXNyfITcXkMkQWFaZ-YLigiaw_hxjtXMx94TamevEGJXl_i/exec";
+  const API = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
   let questions = [], currentIdx = 0, timeLeft = 0, timerInterval;
   let isSubmitting = false;
 
@@ -180,7 +180,8 @@
         try {
           details = (typeof q.answer === 'string') ? JSON.parse(q.answer) : (q.answer || { items: [] });
         } catch(e) { details = { items: [] }; }
-        return { ...q, details, correct: (q.correct || q.correctAnswer || "").toString().trim(), points: parseFloat(q.points) || 0 };
+        const correctVal = (q.correct || q.correctAnswer || q.correctanswer || "").toString().trim();
+        return { ...q, details, correct: correctVal, points: parseFloat(q.points) || 0 };
       });
 
       // FIX 1: Lấy duration từ localStorage trước (select.html đã lưu), fallback data
@@ -425,7 +426,21 @@
     localStorage.setItem("quiz_submitted", "true");
 
     try {
-      await fetch(API, { method:"POST", mode:"no-cors", body:JSON.stringify(submitData) });
+      // Đổi thành text/plain để vượt qua rào cản CORS của Google Apps Script
+      // Thêm mode: "no-cors" để trình duyệt không chặn khi Apps Script phản hồi
+      await fetch(API, { 
+        method: "POST", 
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        }, 
+        body: JSON.stringify(submitData) 
+      });
+      
+      // Mẹo nhỏ: Thêm 1 khoảng trễ ngắn (500ms) để đảm bảo Google Sheet kịp ghi dữ liệu 
+      // trước khi trình duyệt chuyển trang
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
     } catch(e) {
       console.warn("Gửi kết quả lỗi:", e.message);
     }

@@ -164,61 +164,58 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkKClxrADzE1MtpqewsuXNyfITcXkMkQWFaZ-YLigiaw_hxjtXMx94TamevEGJXl_i/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec"; 
 
     window.onload = async () => {
-      // Ưu tiên lấy username từ localStorage (đã lưu ở login.html)
-      const loggedInUser = localStorage.getItem("username") || localStorage.getItem("user"); 
+      const loggedInUser = localStorage.getItem("username") || localStorage.getItem("user");
 
       if (!loggedInUser) {
         Swal.fire({
-            icon: 'error',
-            title: 'Hết phiên làm việc',
-            text: 'Vui lòng đăng nhập để tiếp tục.',
-            background: '#131c2f', color: '#fff', confirmButtonColor: '#4facfe'
+          icon: 'error', title: 'Hết phiên làm việc',
+          text: 'Vui lòng đăng nhập để tiếp tục.',
+          background: '#131c2f', color: '#fff', confirmButtonColor: '#4facfe'
         }).then(() => { window.location.href = 'login.html'; });
         return;
       }
 
-      const nameInput = document.getElementById("username_display");
-      const schoolInput = document.getElementById("school");
+      const nameInput  = document.getElementById("username_display");
+      const schoolInput= document.getElementById("school");
       const classInput = document.getElementById("class_name");
 
-      // Bật hiệu ứng loading
-      [nameInput, schoolInput, classInput].forEach(el => el.classList.add("loading-input"));
+      // Nếu login.html đã lưu sẵn → điền ngay, không cần gọi API
+      const cachedName   = localStorage.getItem("studentName");
+      const cachedSchool = localStorage.getItem("schoolName");
+      const cachedClass  = localStorage.getItem("className");
 
+      if (cachedName && cachedSchool && cachedClass) {
+        nameInput.value   = cachedName;
+        schoolInput.value = cachedSchool;
+        classInput.value  = cachedClass;
+        nameInput.readOnly = schoolInput.readOnly = classInput.readOnly = true;
+        return; // Không cần gọi API
+      }
+
+      // Chưa có cache → gọi API
+      [nameInput, schoolInput, classInput].forEach(el => el.classList.add("loading-input"));
       try {
         const response = await fetch(`${SCRIPT_URL}?action=getUserInfo&username=${encodeURIComponent(loggedInUser)}`);
         const data = await response.json();
-
-        // Tắt hiệu ứng loading
         [nameInput, schoolInput, classInput].forEach(el => el.classList.remove("loading-input"));
 
         if (data.status === "success") {
-          nameInput.value = data.name || "";
+          nameInput.value   = data.name   || "";
           schoolInput.value = data.school || "";
-          classInput.value = data.class || ""; 
-          
-          // Cập nhật Cache
-          localStorage.setItem("studentName", data.name);
-          localStorage.setItem("schoolName", data.school);
-          localStorage.setItem("className", data.class);
-
-          // Nếu đã có dữ liệu từ hệ thống, khóa lại để tránh học sinh sửa nhầm
-          if(data.name) nameInput.readOnly = true;
-          if(data.school) schoolInput.readOnly = true;
-          if(data.class) classInput.readOnly = true;
-
+          classInput.value  = (data.class || "").replace(/^'+/, "");
+          localStorage.setItem("studentName", data.name   || "");
+          localStorage.setItem("schoolName",  data.school || "");
+          localStorage.setItem("className",   (data.class || "").replace(/^'+/, ""));
+          if (data.name)   nameInput.readOnly   = true;
+          if (data.school) schoolInput.readOnly = true;
+          if (data.class)  classInput.readOnly  = true;
         } else {
-          nameInput.placeholder = "Nhập họ tên...";
-          schoolInput.placeholder = "Nhập tên trường...";
+          nameInput.placeholder  = "Nhập họ tên...";
+          schoolInput.placeholder= "Nhập tên trường...";
           classInput.placeholder = "Nhập lớp...";
-          
-          Swal.fire({
-            title: 'Chào bạn mới!',
-            text: 'Dữ liệu chưa có sẵn, vui lòng bổ sung thông tin cá nhân nhé.',
-            icon: 'info', background: '#131c2f', color: '#fff'
-          });
         }
       } catch (err) {
         [nameInput, schoolInput, classInput].forEach(el => el.classList.remove("loading-input"));

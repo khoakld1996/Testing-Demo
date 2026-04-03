@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <!-- Load iSpring config — admin tạo file này từ Dashboard -->
-  <script src="ispring-config.js" onerror="console.log('ispring-config.js chưa tồn tại, dùng localStorage')"></script>
   <style>
     :root{
       --primary:#4facfe;--secondary:#00f2fe;--accent:#00ffcc;
@@ -151,37 +149,29 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzkKClxrADzE1MtpqewsuXNyfITcXkMkQWFaZ-YLigiaw_hxjtXMx94TamevEGJXl_i/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrNQOUtf90RqWXoetDhDCaYnAY5ZFTuIzitQS3xAljPfcfPkPTtNZK6YtfU_BqnzlM/exec";
     let allTests = [], ispringTests = [];
 
     function initUser() {
       const name = localStorage.getItem("studentName") || "Người dùng";
-      const userClass = localStorage.getItem("className") || localStorage.getItem("studentClass") || "";
+      const userClass = localStorage.getItem("className") || "";
       const school = localStorage.getItem("schoolName") || "";
       document.getElementById("topNavName").innerText = name;
       document.getElementById("topNavClass").innerText = userClass ? `Lớp: ${userClass}` : school;
       document.getElementById("welcomeMsg").innerHTML = `Bạn đã sẵn sàng chinh phục, <b style="color:var(--accent)">${name}</b>?`;
     }
 
-    function loadIspringTests() {
-      // Ưu tiên 1: file ispring-config.js (window.ISPRING_CONFIG)
-      if (window.ISPRING_CONFIG && Array.isArray(window.ISPRING_CONFIG) && window.ISPRING_CONFIG.length > 0) {
-        // Merge với localStorage (localStorage có thể có bài mới hơn)
-        const fromStorage = (() => { try { return JSON.parse(localStorage.getItem("ispringTests") || "[]"); } catch(e) { return []; } })();
-        // Dùng config file làm base, override bằng localStorage nếu có cùng path
-        const merged = [...window.ISPRING_CONFIG];
-        fromStorage.forEach(item => {
-          const exists = merged.find(m => m.path === item.path);
-          if (!exists) merged.push(item);
-        });
-        ispringTests = merged.filter(t => t.visible !== false);
-      } else {
-        // Ưu tiên 2: localStorage
-        try {
-          const all = JSON.parse(localStorage.getItem("ispringTests") || "[]");
-          ispringTests = all.filter(t => t.visible !== false);
-        } catch(e) { ispringTests = []; }
+    async function loadIspringTests() {
+      try {
+        const data = await fetch(`${SCRIPT_URL}?action=getIspring`).then(r => r.json());
+        if (Array.isArray(data)) {
+          ispringTests = data.filter(t => t.visible !== false);
+        }
+      } catch(e) {
+        console.warn("Không load được iSpring từ server:", e);
+        ispringTests = [];
       }
+      renderIspringTests();
     }
 
     async function fetchTests() {
@@ -286,9 +276,10 @@
         cancelButtonText:'HỦY',confirmButtonColor:'#f97316',background:'#131c2f',color:'#fff'
       }).then(res=>{
         if(res.isConfirmed){
-          document.getElementById("modalTitle").innerText=test.name;
-          document.getElementById("ispringFrame").src=test.path;
-          document.getElementById("ispringModal").style.display="flex";
+          // Lưu tên bài để player.html dùng khi submit điểm
+          localStorage.setItem("currentIspringName", test.name);
+          // Mở player.html thay vì dùng modal inline (tránh CORS iFrame)
+          window.location.href = `player.html?path=${encodeURIComponent(test.path)}`;
         }
       });
     }
@@ -307,8 +298,7 @@
 
     window.onload = () => {
       initUser();
-      loadIspringTests();
-      renderIspringTests();
+      loadIspringTests(); // async, calls renderIspringTests when done
       fetchTests();
     };
   </script>
