@@ -149,7 +149,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx_C8-ifdrwU4V4peQITzXC1-zbxZGAwtOvfFkMisr9kUk2nvNx-DkBXH_4W5CDICWs/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyz8u7Uv-v_7Woe5M1Rfb6-PYnHsBfQ6-lpsqNZxIvmX9uyMu-26PjLhnehbZ3-xtLl/exec";
     let allTests = [], ispringTests = [];
 
     function initUser() {
@@ -163,12 +163,19 @@
 
     async function loadIspringTests() {
       try {
-        const data = await fetch(`${SCRIPT_URL}?action=getIspring`).then(r => r.json());
+        const res  = await fetch(SCRIPT_URL + "?action=getIspring");
+        const data = await res.json();
+        console.log("[iSpring] raw data:", data);
         if (Array.isArray(data)) {
-          ispringTests = data.filter(t => t.visible !== false);
+          // Filter visible và đảm bảo có name + path
+          ispringTests = data.filter(t => t.visible !== false && t.name);
+          console.log("[iSpring] loaded:", ispringTests.length, "bài");
+        } else {
+          console.warn("[iSpring] API không trả về array:", data);
+          ispringTests = [];
         }
       } catch(e) {
-        console.error("Không load được iSpring từ server:", e);
+        console.error("[iSpring] Lỗi load:", e);
         ispringTests = [];
       }
       renderIspringTests();
@@ -215,7 +222,7 @@
 
     function renderIspringTests(search = "") {
       const list = document.getElementById("ispringTestList");
-      const filtered = ispringTests.filter(t => t.name.toLowerCase().includes(search));
+      const filtered = ispringTests.filter(t => t.name && t.name.toLowerCase().includes(search));
       document.getElementById("ispringCount").innerText = filtered.length + " bài";
       if (!filtered.length) {
         list.innerHTML = `<div class="empty-section"><i class="fas fa-rocket" style="opacity:0.2;font-size:1.5rem;display:block;margin-bottom:8px"></i>${search ? 'Không tìm thấy bài iSpring phù hợp' : 'Chưa có bài thi iSpring'}</div>`;
