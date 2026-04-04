@@ -149,7 +149,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyz8u7Uv-v_7Woe5M1Rfb6-PYnHsBfQ6-lpsqNZxIvmX9uyMu-26PjLhnehbZ3-xtLl/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
     let allTests = [], ispringTests = [];
 
     function initUser() {
@@ -167,9 +167,15 @@
         const data = await res.json();
         console.log("[iSpring] raw data:", data);
         if (Array.isArray(data)) {
-          // Filter visible và đảm bảo có name + path
-          ispringTests = data.filter(t => t.visible !== false && t.name);
-          console.log("[iSpring] loaded:", ispringTests.length, "bài");
+          // Normalize + filter: visible, có name, có path hợp lệ
+          ispringTests = data
+            .filter(t => t.visible !== false && t.name)
+            .map(t => ({
+              ...t,
+              // Đảm bảo path sạch (trim, bỏ dấu / đầu nếu là relative path)
+              path: String(t.path || "").trim()
+            }));
+          console.log("[iSpring] loaded:", ispringTests.length, "bài", ispringTests);
         } else {
           console.warn("[iSpring] API không trả về array:", data);
           ispringTests = [];
