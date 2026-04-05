@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Làm Bài Thi | Nebula Quiz 2026</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -12,7 +12,7 @@
       --primary: #4facfe; --accent: #00ffcc; --bg: #0f172a;
       --card: rgba(30,41,59,0.95); --glass-border: rgba(255,255,255,0.1); --text: #f8fafc;
     }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent;font-family:'Inter',sans-serif; }
     body {
       min-height:100vh;
       background: linear-gradient(rgba(15,23,42,0.85),rgba(15,23,42,0.85)),
@@ -105,6 +105,24 @@
       border:2px solid var(--glass-border); color:#fff; font-size:1.1rem; outline:none;
     }
     .input-fill:focus { border-color:var(--primary); }
+    @media(max-width:600px){
+      body{padding:10px}
+      .quiz-header{padding:12px 14px;margin-bottom:14px;border-radius:14px}
+      #timer{font-size:1.15rem}
+      .question-card{padding:20px 14px;min-height:auto;border-radius:18px}
+      .q-text{font-size:1.05rem;margin-bottom:16px}
+      .option-label{padding:13px 14px}
+      .nav-panel{position:fixed;bottom:0;left:0;right:0;z-index:90;
+        border-radius:18px 18px 0 0;padding:12px 14px}
+      .main-layout{margin-bottom:130px}
+      .q-grid{grid-template-columns:repeat(5,1fr)}
+      .ctrl-btns{flex-direction:row}
+      .submit-btn{margin-top:10px}
+    }
+    @media(max-width:380px){
+      .q-grid{grid-template-columns:repeat(4,1fr)}
+      .option-label{padding:11px 12px;font-size:.9rem}
+    }
   </style>
 </head>
 <body>

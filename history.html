@@ -2,523 +2,583 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lịch Sử Bài Làm | Nebula Quiz</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Lịch Sử Bài Làm | Nebula</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <style>
-    :root {
-      --primary: #4facfe; --accent: #00ffcc; --bg: #0b0f1a;
-      --card: rgba(30,41,59,0.75); --glass-border: rgba(255,255,255,0.1);
-      --text: #f8fafc; --correct: #00ffcc; --wrong: #ff4757; --ispring: #f97316;
+    :root{
+      --p:#4facfe;--a:#00ffcc;--o:#f97316;--d:#ff4757;
+      --bg:#0b0f1a;--bg2:#0f172a;
+      --sf:rgba(15,23,42,.85);--bd:rgba(255,255,255,.1);--bd2:rgba(255,255,255,.06);
+      --tx:#f1f5f9;--mu:rgba(255,255,255,.45);--mu2:rgba(255,255,255,.25);
+      --r:18px;--r2:12px;
     }
-    * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
-    body {
-      min-height:100vh;
-      background: var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
-      background-size:cover; background-blend-mode:overlay; color:var(--text); padding:20px;
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent}
+    html{scroll-behavior:smooth}
+    body{
+      min-height:100vh;color:var(--tx);font-size:16px;
+      font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+      background:var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072')
+        no-repeat center/cover fixed;
+      -webkit-overflow-scrolling:touch;
     }
-    .container { width:100%; max-width:850px; margin:0 auto; }
+    body::before{content:"";position:fixed;inset:0;
+      background:linear-gradient(135deg,rgba(11,15,26,.92),rgba(11,15,26,.88));
+      z-index:0;pointer-events:none}
 
-    /* HEADER */
-    .header-box {
-      background:var(--card); backdrop-filter:blur(15px);
-      padding:20px 25px; border-radius:20px; border:1px solid var(--glass-border);
-      display:flex; justify-content:space-between; align-items:center;
-      margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,0.3);
+    /* ─ SCROLL ─ */
+    ::-webkit-scrollbar{width:4px}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:4px}
+
+    /* ─ NAV ─ */
+    .nav{
+      position:sticky;top:0;z-index:100;
+      background:rgba(11,15,26,.95);border-bottom:1px solid var(--bd);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 16px;gap:12px;
     }
-    .btn-back {
-      padding:11px 22px; background:rgba(255,255,255,0.07);
-      color:#fff; border:1px solid var(--glass-border); border-radius:12px;
-      cursor:pointer; font-weight:700; display:flex; align-items:center; gap:8px; transition:0.3s;
-      text-decoration:none;
+    .nav-info h2{font-size:1.1rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px}
+    .nav-info p{font-size:.74rem;color:var(--p);margin-top:3px}
+    .nav-btns{display:flex;gap:8px;flex-shrink:0}
+    .nbtn{
+      display:flex;align-items:center;gap:6px;
+      padding:9px 14px;border-radius:var(--r2);border:1px solid var(--bd);
+      background:rgba(255,255,255,.06);color:#fff;
+      cursor:pointer;font-size:.76rem;font-weight:700;font-family:inherit;
+      transition:.2s;white-space:nowrap;text-decoration:none;
     }
-    .btn-back:hover { background:rgba(255,255,255,0.13); }
+    .nbtn:hover{background:rgba(255,255,255,.12)}
+    .nbtn.primary{background:rgba(79,172,254,.14);color:var(--p);
+      border-color:rgba(79,172,254,.25)}
+    .nbtn.primary:hover{background:var(--p);color:#0b0f1a}
 
-    /* VIEW 1 - DANH SÁCH */
-    #viewList { display:block; }
-    #viewDetail { display:none; }
+    /* ─ MAIN ─ */
+    .main{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:16px 14px 40px}
 
-    .history-item {
-      background:var(--card); border-radius:16px; border:1px solid var(--glass-border);
-      margin-bottom:12px; cursor:pointer; transition:all 0.25s; backdrop-filter:blur(10px);
-      display:grid; grid-template-columns:1fr 80px 110px 36px;
-      align-items:center; gap:12px; padding:18px 22px;
+    /* TABS */
+    .tabs{display:flex;gap:6px;margin-bottom:16px;
+      background:rgba(0,0,0,.25);padding:5px;border-radius:14px;border:1px solid var(--bd)}
+    .tab{flex:1;padding:9px;border-radius:10px;border:none;cursor:pointer;
+      font-size:.76rem;font-weight:700;font-family:inherit;transition:.2s;
+      background:transparent;color:var(--mu)}
+    .tab.on{background:var(--sf);color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+    .tab.on.t-sys{color:var(--p)}
+    .tab.on.t-isp{color:var(--o)}
+    .tab-cnt{font-size:.6rem;margin-left:4px;opacity:.7}
+
+    /* STATS BAR */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+    .stat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);
+      padding:12px 10px;text-align:center}
+    .stat-n{font-size:1.4rem;font-weight:900;line-height:1}
+    .stat-l{font-size:.64rem;color:var(--mu);margin-top:3px;text-transform:uppercase;
+      letter-spacing:.5px}
+    .stat-n.c-p{color:var(--p)} .stat-n.c-a{color:var(--a)} .stat-n.c-o{color:var(--o)}
+
+    /* LIST VIEW */
+    #viewList{display:block}
+    #viewDetail{display:none}
+
+    /* HISTORY ITEM */
+    .hi{
+      background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
+      margin-bottom:10px;cursor:pointer;
+      transition:background .2s,border-color .2s,transform .15s;
+      display:grid;grid-template-columns:1fr auto auto auto;
+      align-items:center;gap:12px;padding:16px 18px;
+      -webkit-tap-highlight-color:transparent;
     }
-    .history-item:hover { background:rgba(79,172,254,0.08); border-color:var(--primary); transform:translateX(5px); }
-    .test-name  { font-weight:700; color:var(--accent); font-size:1rem; }
-    .test-time  { color:#94a3b8; font-size:0.78rem; margin-top:4px; display: flex; gap: 8px; align-items: center; }
-    .ispring-badge { background: rgba(249, 115, 22, 0.15); color: var(--ispring); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: bold; border: 1px solid rgba(249, 115, 22, 0.3); }
-    
-    .score-box  { text-align:center; font-size:1.5rem; font-weight:900; color:#fff; }
-    .score-lbl  { font-size:0.58rem; color:var(--primary); font-weight:400; display:block; margin-top:-2px; }
-    .total-box  { text-align:right; color:var(--accent); font-size:0.9rem; font-weight:700; white-space:nowrap; }
-    .arr        { color:#334155; text-align: right; }
-    .history-item:hover .arr { color:var(--primary); }
+    .hi:hover{background:rgba(79,172,254,.07);border-color:var(--p);transform:translateX(3px)}
+    .hi:active{transform:scale(.99)}
+    .hi.isp:hover{background:rgba(249,115,22,.07);border-color:var(--o)}
 
-    .loader  { text-align:center; padding:60px; }
-    .no-data { text-align:center; padding:80px 20px; opacity:0.5; }
-    .no-data i { font-size:2.5rem; margin-bottom:12px; display:block; color: var(--primary); }
+    .hi-name{font-weight:700;color:var(--a);font-size:.95rem;
+      display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .hi-meta{font-size:.72rem;color:var(--mu);margin-top:4px;
+      display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .isbdg{font-size:.58rem;padding:2px 6px;border-radius:6px;font-weight:700;
+      background:rgba(249,115,22,.15);color:var(--o);border:1px solid rgba(249,115,22,.3)}
 
-    /* VIEW 2 - CHI TIẾT BÀI */
-    .detail-back {
-      display:flex; align-items:center; gap:12px; margin-bottom:18px;
+    .hi-score{text-align:center}
+    .hi-sn{font-size:1.4rem;font-weight:900;color:#fff;line-height:1}
+    .hi-sl{font-size:.55rem;color:var(--p);font-weight:400}
+    .hi.isp .hi-sl{color:var(--o)}
+
+    .hi-tot{font-size:.82rem;font-weight:700;color:var(--a);text-align:right;
+      white-space:nowrap}
+    .hi.isp .hi-tot{color:var(--o)}
+
+    .hi-arr{color:#334155;font-size:.8rem;transition:color .2s}
+    .hi:hover .hi-arr{color:var(--p)}
+    .hi.isp:hover .hi-arr{color:var(--o)}
+
+    /* LOADER */
+    .loader{text-align:center;padding:50px 20px;color:var(--mu)}
+    .loader i{font-size:1.8rem;margin-bottom:10px;display:block}
+    .nodata{text-align:center;padding:60px 20px}
+    .nodata i{font-size:2.5rem;margin-bottom:12px;display:block;color:var(--p)}
+    .nodata h3{font-size:1rem;font-weight:700;margin-bottom:6px}
+    .nodata p{font-size:.82rem;color:var(--mu)}
+
+    /* ─ DETAIL VIEW ─ */
+    .det-back{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+    .det-name{font-weight:800;font-size:.95rem;color:#fff;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+    .det-sum{background:var(--sf);border:1px solid var(--bd);
+      border-radius:var(--r);padding:18px 20px;margin-bottom:16px}
+    .det-title{font-size:1rem;font-weight:800;color:#fff;margin-bottom:10px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{padding:5px 12px;border-radius:10px;font-size:.73rem;font-weight:700;
+      display:flex;align-items:center;gap:5px}
+    .ch-p{background:rgba(79,172,254,.12);color:var(--p);border:1px solid rgba(79,172,254,.3)}
+    .ch-g{background:rgba(0,255,204,.1);color:var(--a);border:1px solid rgba(0,255,204,.25)}
+    .ch-d{background:rgba(255,71,87,.1);color:var(--d);border:1px solid rgba(255,71,87,.25)}
+    .ch-t{background:rgba(255,255,255,.05);color:var(--mu);border:1px solid var(--bd)}
+    .ch-o{background:rgba(249,115,22,.1);color:var(--o);border:1px solid rgba(249,115,22,.25)}
+
+    /* Q LIST */
+    .qlist{display:flex;flex-direction:column;gap:9px}
+    .qi{border-radius:14px;border:1px solid var(--bd);
+      background:rgba(255,255,255,.02);overflow:hidden;cursor:pointer;transition:.15s}
+    .qi:hover{background:rgba(255,255,255,.04)}
+    .qi-hdr{display:flex;align-items:center;gap:10px;padding:13px 16px}
+    .qbdg{min-width:30px;height:30px;border-radius:9px;flex-shrink:0;
+      display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:800}
+    .qbdg.c{background:rgba(0,255,204,.15);color:var(--a);border:1px solid rgba(0,255,204,.3)}
+    .qbdg.w{background:rgba(255,71,87,.15);color:var(--d);border:1px solid rgba(255,71,87,.3)}
+    .qbdg.u{background:rgba(255,255,255,.08);color:var(--mu);border:1px solid var(--bd)}
+    .qpv{flex:1;font-size:.87rem;color:#e2e8f0;line-height:1.4}
+    .qpt{font-size:.7rem;font-weight:700;color:var(--p);white-space:nowrap}
+    .qarr{color:#475569;font-size:.72rem;transition:transform .2s}
+    .qi.open .qarr{transform:rotate(180deg)}
+    .qdtl{display:none;padding:0 16px 14px;border-top:1px solid var(--bd2)}
+    .qi.open .qdtl{display:block}
+    .dinn{padding-top:10px}
+    .dlbl{font-size:.63rem;text-transform:uppercase;letter-spacing:1px;
+      color:#475569;margin-bottom:5px;font-weight:700}
+    .opt{padding:8px 12px;border-radius:9px;font-size:.82rem;
+      background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);
+      display:flex;align-items:center;gap:8px;color:var(--mu);margin-bottom:5px}
+    .opt.ok{background:rgba(0,255,204,.08);border-color:rgba(0,255,204,.3);color:var(--a)}
+    .opt.ng{background:rgba(255,71,87,.08);border-color:rgba(255,71,87,.3);color:var(--d)}
+    .ans-box{background:rgba(0,255,204,.07);border:1px solid rgba(0,255,204,.2);
+      border-radius:9px;padding:8px 12px;font-size:.82rem;color:var(--a);
+      display:flex;align-items:center;gap:8px}
+    .divdr{height:1px;background:var(--bd2);margin:8px 0}
+
+    /* ISPRING DETAIL */
+    .isp-card{background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);
+      border-radius:var(--r);padding:24px;text-align:center;margin-top:6px}
+    .isp-icon{font-size:2.5rem;margin-bottom:10px}
+    .isp-card h3{font-size:1rem;font-weight:800;color:#fff;margin-bottom:6px}
+    .isp-card p{font-size:.82rem;color:var(--mu);line-height:1.6}
+
+    /* SCORE color helper */
+    .s-great{color:var(--a)}
+    .s-ok   {color:var(--p)}
+    .s-bad  {color:var(--d)}
+
+    @media(max-width:520px){
+      .hi{grid-template-columns:1fr auto auto;padding:14px 14px;gap:8px}
+      .hi-tot{display:none}
+      .stats{grid-template-columns:repeat(3,1fr);gap:7px}
+      .stat-n{font-size:1.15rem}
+      .det-sum{padding:14px 14px}
     }
-    .btn-sm {
-      padding:9px 18px; border-radius:11px; border:1px solid var(--glass-border);
-      background:rgba(255,255,255,0.06); color:#fff; cursor:pointer;
-      font-weight:700; display:flex; align-items:center; gap:7px; transition:0.2s;
-    }
-    .btn-sm:hover { background:rgba(255,255,255,0.12); }
-
-    .detail-summary {
-      background:var(--card); border:1px solid var(--glass-border);
-      border-radius:18px; padding:20px 22px; margin-bottom:18px;
-    }
-    .detail-title { font-size:1.1rem; font-weight:800; color:#fff; margin-bottom:12px; }
-    .chips { display:flex; gap:10px; flex-wrap:wrap; }
-    .chip {
-      padding:6px 14px; border-radius:10px; font-size:0.76rem; font-weight:700;
-      display:flex; align-items:center; gap:6px;
-    }
-    .chip-score   { background:rgba(79,172,254,0.12); color:var(--primary); border:1px solid rgba(79,172,254,0.3); }
-    .chip-correct { background:rgba(0,255,204,0.1);   color:var(--correct); border:1px solid rgba(0,255,204,0.25); }
-    .chip-wrong   { background:rgba(255,71,87,0.1);   color:var(--wrong);   border:1px solid rgba(255,71,87,0.25); }
-    .chip-time    { background:rgba(255,255,255,0.05); color:#94a3b8; border:1px solid var(--glass-border); }
-    .chip-ispring { background:rgba(249,115,22,0.1);  color:var(--ispring); border:1px solid rgba(249,115,22,0.25); }
-
-    /* DANH SÁCH CÂU HỎI */
-    .q-list { display:flex; flex-direction:column; gap:10px; }
-
-    .q-item {
-      border-radius:14px; border:1px solid var(--glass-border);
-      background:rgba(255,255,255,0.02); overflow:hidden; cursor:pointer; transition:0.2s;
-    }
-    .q-item:hover { background:rgba(255,255,255,0.05); }
-    .q-header { display:flex; align-items:center; gap:12px; padding:14px 18px; }
-    .q-badge {
-      min-width:32px; height:32px; border-radius:10px; flex-shrink:0;
-      display:flex; align-items:center; justify-content:center;
-      font-size:0.78rem; font-weight:800;
-    }
-    .q-badge.correct { background:rgba(0,255,204,0.15); color:var(--correct); border:1px solid rgba(0,255,204,0.3); }
-    .q-badge.wrong   { background:rgba(255,71,87,0.15);  color:var(--wrong);   border:1px solid rgba(255,71,87,0.3); }
-    .q-badge.unanswered { background:rgba(255,255,255,0.1); color:#94a3b8; border:1px solid var(--glass-border); }
-    
-    .q-preview { flex:1; font-size:0.9rem; color:#e2e8f0; line-height:1.4; }
-    .q-pts     { font-size:0.72rem; font-weight:700; color:var(--primary); white-space:nowrap; }
-    .q-arrow   { color:#475569; font-size:0.75rem; transition:transform 0.2s; }
-    .q-item.open .q-arrow { transform:rotate(180deg); }
-
-    .q-detail { display:none; padding:0 18px 16px; border-top:1px solid rgba(255,255,255,0.05); }
-    .q-item.open .q-detail { display:block; }
-    .detail-inner { padding-top:12px; }
-
-    .d-label { font-size:0.67rem; text-transform:uppercase; letter-spacing:1px; color:#475569; margin-bottom:6px; font-weight:700; }
-
-    .opt-item {
-      padding:9px 13px; border-radius:10px; font-size:0.85rem;
-      background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07);
-      display:flex; align-items:center; gap:8px; color:#94a3b8; margin-bottom:6px;
-    }
-    .opt-item.is-correct { background:rgba(0,255,204,0.08); border-color:rgba(0,255,204,0.3); color:var(--correct); }
-    .opt-item.is-wrong   { background:rgba(255,71,87,0.08);  border-color:rgba(255,71,87,0.3);  color:var(--wrong); }
-
-    .correct-answer-box {
-      background:rgba(0,255,204,0.07); border:1px solid rgba(0,255,204,0.2);
-      border-radius:10px; padding:9px 13px; font-size:0.85rem;
-      color:var(--correct); display:flex; align-items:center; gap:8px;
-    }
-    .divider { height:1px; background:rgba(255,255,255,0.05); margin:10px 0; }
-    .loading-questions { text-align:center; padding:40px; color:#475569; }
-
-    @media(max-width:600px) {
-      .history-item { grid-template-columns:1fr 60px; }
-      .total-box, .arr { display:none; }
+    @media(max-width:380px){
+      .hi-meta{gap:5px}
+      .chips{gap:6px}
     }
   </style>
 </head>
 <body>
-<div class="container">
 
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-info">
+    <h2><i class="fas fa-history" style="color:var(--p)"></i> Lịch Sử Bài Làm</h2>
+    <p id="navSub">Đang tải...</p>
+  </div>
+  <div class="nav-btns">
+    <a href="select.html" class="nbtn primary"><i class="fas fa-play-circle"></i> Thi tiếp</a>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab on t-sys" id="tabAll"  onclick="switchTab('all')">
+      <i class="fas fa-layer-group"></i> Tất cả <span class="tab-cnt" id="cntAll"></span>
+    </button>
+    <button class="tab t-sys" id="tabSys"  onclick="switchTab('sys')">
+      <i class="fas fa-database"></i> Hệ thống <span class="tab-cnt" id="cntSys"></span>
+    </button>
+    <button class="tab t-isp" id="tabIsp"  onclick="switchTab('isp')">
+      <i class="fas fa-rocket"></i> iSpring <span class="tab-cnt" id="cntIsp"></span>
+    </button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="stat-n c-p" id="stTotal">—</div><div class="stat-l">Bài làm</div></div>
+    <div class="stat"><div class="stat-n c-a" id="stAvg">—</div><div class="stat-l">ĐTB</div></div>
+    <div class="stat"><div class="stat-n c-o" id="stBest">—</div><div class="stat-l">Cao nhất</div></div>
+  </div>
+
+  <!-- LIST VIEW -->
   <div id="viewList">
-    <div class="header-box">
-      <div>
-        <h2 style="color:#fff; font-size:1.3rem; font-weight:800">📋 Lịch Sử Bài Làm</h2>
-        <p id="studentDisplay" style="color:var(--primary); font-size:0.85rem; margin-top:4px;"></p>
-      </div>
-      <a href="select.html" class="btn-back"><i class="fas fa-play-circle"></i> Tiếp tục thi</a>
-    </div>
-    <div id="historyList">
-      <div class="loader"><i class="fas fa-spinner fa-spin" style="font-size:2rem;color:var(--primary);margin-bottom:12px;display:block"></i><p>Đang đồng bộ dữ liệu...</p></div>
+    <div id="histList">
+      <div class="loader"><i class="fas fa-spinner fa-spin" style="color:var(--p)"></i>Đang tải dữ liệu...</div>
     </div>
   </div>
 
+  <!-- DETAIL VIEW -->
   <div id="viewDetail">
-    <div class="detail-back">
-      <button class="btn-sm" onclick="backToList()"><i class="fas fa-arrow-left"></i> Quay lại</button>
-      <span id="detailTestName" style="font-weight:800; font-size:1rem; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></span>
+    <div class="det-back">
+      <button class="nbtn" onclick="backToList()"><i class="fas fa-arrow-left"></i> Quay lại</button>
+      <span class="det-name" id="detName"></span>
     </div>
-
-    <div class="detail-summary" id="detailSummary"></div>
-
-    <div class="q-list" id="qDetailList">
-      </div>
+    <div class="det-sum"  id="detSum"></div>
+    <div class="qlist"    id="detQs"></div>
   </div>
 
 </div>
 
 <script>
-  // ==========================================
-  // URL CỦA GOOGLE APPS SCRIPT CỦA BẠN
-  // ==========================================
-  const API = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
+var API = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
+var studentName = localStorage.getItem("studentName") || "Học sinh";
+var schoolName  = localStorage.getItem("schoolName")  || "";
 
-  let allResults = [];
-  let currentRecord = null;
+var allRecs   = []; /* filtered records for this student */
+var curRec    = null;
+var curTab    = "all";
 
-  // ── FORMAT TIME CHUẨN ──
-  // Xử lý tốt cả định dạng yyyy-MM-dd HH:mm:ss của AppScript và ISO
-  function fmtTime(val) {
-    if (!val) return "—";
+/* ─ INIT ─ */
+window.onload = async function() {
+  var nav = document.getElementById("navSub");
+  nav.textContent = "🚀 " + studentName + (schoolName ? " | " + schoolName : "");
+  await loadHistory();
+};
+
+/* ─ LOAD: gọi cả 2 API song song ─ */
+async function loadHistory() {
+  var el = document.getElementById("histList");
+  try {
+    /* Gọi song song getResults (Nebula) và getIspringResults (iSpring) */
+    var [sysRes, ispRes] = await Promise.all([
+      fetch(API + "?action=getResults&student=" + encodeURIComponent(studentName)).then(r=>r.json()),
+      fetch(API + "?action=getIspringResults&student=" + encodeURIComponent(studentName)).then(r=>r.json())
+    ]);
+
+    /* Merge và đánh dấu loại */
+    var sysRecs = (Array.isArray(sysRes) ? sysRes : [])
+      .filter(r => {
+        var n = String(r.student||"").trim().toLowerCase();
+        return n === studentName.trim().toLowerCase();
+      })
+      .map(r => ({ ...r, _type: "sys" }));
+
+    var ispRecs = (Array.isArray(ispRes) ? ispRes : [])
+      .filter(r => {
+        var n = String(r.student||"").trim().toLowerCase();
+        return n === studentName.trim().toLowerCase();
+      })
+      .map(r => ({ ...r, _type: "isp" }));
+
+    /* Merge, sort mới nhất trên đầu */
+    allRecs = [...sysRecs, ...ispRecs].sort(function(a,b){
+      return parseDate(b.time) - parseDate(a.time);
+    });
+
+    updateStats();
+    updateCounts();
+    renderList(curTab);
+
+  } catch(e) {
+    console.error(e);
+    el.innerHTML = '<div class="nodata"><i class="fas fa-wifi"></i><h3>Lỗi kết nối</h3><p>Không thể tải lịch sử.</p></div>';
+  }
+}
+
+/* ─ STATS ─ */
+function updateStats() {
+  var total = allRecs.length;
+  var scores = allRecs.map(r=>parseFloat(r.score)||0).filter(s=>s>0);
+  var avg  = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : "—";
+  var best = scores.length ? Math.max(...scores).toFixed(1) : "—";
+  avg  = avg  !== "—" && avg.endsWith(".0")  ? avg.slice(0,-2)  : avg;
+  best = best !== "—" && best.endsWith(".0") ? best.slice(0,-2) : best;
+  document.getElementById("stTotal").textContent = total;
+  document.getElementById("stAvg").textContent   = avg;
+  document.getElementById("stBest").textContent  = best;
+}
+
+function updateCounts() {
+  var sys = allRecs.filter(r=>r._type==="sys").length;
+  var isp = allRecs.filter(r=>r._type==="isp").length;
+  document.getElementById("cntAll").textContent = "("+allRecs.length+")";
+  document.getElementById("cntSys").textContent = "("+sys+")";
+  document.getElementById("cntIsp").textContent = "("+isp+")";
+}
+
+/* ─ TABS ─ */
+function switchTab(tab) {
+  curTab = tab;
+  ["all","sys","isp"].forEach(function(t){
+    var b = document.getElementById("tab"+t.charAt(0).toUpperCase()+t.slice(1));
+    b.classList.toggle("on", t===tab);
+  });
+  renderList(tab);
+}
+
+/* ─ RENDER LIST ─ */
+function renderList(tab) {
+  var el = document.getElementById("histList");
+  var recs = allRecs.filter(function(r) {
+    if (tab==="sys") return r._type==="sys";
+    if (tab==="isp") return r._type==="isp";
+    return true;
+  });
+
+  if (!recs.length) {
+    var msgs = {all:"Bạn chưa làm bài nào.", sys:"Chưa có bài hệ thống.", isp:"Chưa có bài iSpring."};
+    el.innerHTML = '<div class="nodata"><i class="fas fa-ghost"></i><h3>Trống</h3><p>'+msgs[tab]+'</p></div>';
+    return;
+  }
+
+  el.innerHTML = recs.map(function(r, i) {
+    var isIsp  = r._type === "isp";
+    var rawName= r.testName || r.testname || "Bài thi";
+    var dname  = rawName.replace(/\[iSpring\]/ig,"").replace(/iSpring:/ig,"").trim();
+    var sc     = parseFloat(r.score) || 0;
+    var scStr  = sc.toFixed(1).replace(/\.0$/,"");
+    var scCls  = sc>=8?"s-great":sc>=5?"s-ok":"s-bad";
+    var tot    = r.total || "—";
+    var idx    = allRecs.indexOf(r);
+
+    return '<div class="hi'+(isIsp?" isp":"")+'" onclick="openDetail('+idx+')">'
+      +'<div>'
+      +  '<div class="hi-name">'+esc(dname)
+      +    (isIsp?'<span class="isbdg"><i class="fas fa-rocket" style="margin-right:2px"></i>iSpring</span>':'')
+      +  '</div>'
+      +  '<div class="hi-meta"><i class="far fa-clock"></i>'+fmtTime(r.time)+'</div>'
+      +'</div>'
+      +'<div class="hi-score"><div class="hi-sn '+scCls+'">'+scStr+'</div>'
+      +  '<div class="hi-sl">ĐIỂM</div>'
+      +'</div>'
+      +'<div class="hi-tot">'+esc(tot)+'</div>'
+      +'<div class="hi-arr"><i class="fas fa-chevron-right"></i></div>'
+      +'</div>';
+  }).join("");
+}
+
+/* ─ OPEN DETAIL ─ */
+async function openDetail(idx) {
+  curRec = allRecs[idx];
+  document.getElementById("viewList").style.display   = "none";
+  document.getElementById("viewDetail").style.display = "block";
+  window.scrollTo(0,0);
+
+  var rawName= curRec.testName || curRec.testname || "";
+  var dname  = rawName.replace(/\[iSpring\]/ig,"").replace(/iSpring:/ig,"").trim();
+  document.getElementById("detName").textContent = dname;
+
+  /* Summary chips */
+  var sc      = parseFloat(curRec.score) || 0;
+  var scStr   = sc.toFixed(1).replace(/\.0$/,"");
+  var tot     = String(curRec.total || "");
+  var parts   = tot.includes("/") ? tot.split("/") : ["0","0"];
+  var corr    = parseInt(parts[0]) || 0;
+  var ttl     = parseInt(parts[1]) || 0;
+  var wrong   = ttl - corr;
+  var isIsp   = curRec._type === "isp";
+
+  var sum = '<div class="det-title">'+esc(dname)+'</div><div class="chips">';
+  sum += '<span class="chip ch-p"><i class="fas fa-trophy"></i> '+scStr+' điểm</span>';
+  if (isIsp) {
+    sum += '<span class="chip ch-o"><i class="fas fa-rocket"></i> iSpring SCORM</span>';
+    if (tot && tot!=="—") sum += '<span class="chip ch-g"><i class="fas fa-bullseye"></i> '+esc(tot)+'</span>';
+  } else {
+    if (ttl>0) {
+      sum += '<span class="chip ch-g"><i class="fas fa-check"></i> '+corr+' đúng</span>';
+      sum += '<span class="chip ch-d"><i class="fas fa-times"></i> '+wrong+' sai</span>';
+    }
+  }
+  sum += '<span class="chip ch-t"><i class="far fa-clock"></i> '+fmtTime(curRec.time)+'</span>';
+  sum += '</div>';
+  document.getElementById("detSum").innerHTML = sum;
+
+  /* Questions */
+  var qEl = document.getElementById("detQs");
+  if (isIsp) {
+    qEl.innerHTML = '<div class="isp-card">'
+      +'<div class="isp-icon">🎯</div>'
+      +'<h3>Bài thi iSpring / SCORM</h3>'
+      +'<p>Hệ thống đã ghi nhận điểm số của bạn.<br>'
+      +'Chi tiết từng câu hỏi được quản lý bên trong bài giảng iSpring.</p>'
+      +'</div>';
+  } else {
+    await loadNebulaDetail(rawName, qEl);
+  }
+}
+
+/* ─ LOAD NEBULA QUESTIONS ─ */
+async function loadNebulaDetail(testName, qEl) {
+  qEl.innerHTML = '<div class="loader"><i class="fas fa-spinner fa-spin" style="color:var(--p)"></i>Đang tải đáp án...</div>';
+  try {
+    var testsRes = await fetch(API + "?action=getTests");
+    var tests    = await testsRes.json();
+    var found    = tests.find(function(t){ return (t.name||"").trim().toLowerCase() === testName.trim().toLowerCase(); });
+    if (!found) {
+      qEl.innerHTML = '<div class="nodata"><i class="fas fa-search"></i><h3>Không tìm thấy</h3><p>Bài thi này đã bị thay đổi.</p></div>';
+      return;
+    }
+    var qRes  = await fetch(API + "?action=getQuestions&testId=" + encodeURIComponent(found.id));
+    var qlist = await qRes.json();
+    if (!qlist.length) {
+      qEl.innerHTML = '<div class="nodata"><i class="fas fa-inbox"></i><p>Không có câu hỏi.</p></div>';
+      return;
+    }
+
+    var ansSrc = {};
+    if (curRec.answers) {
+      try { ansSrc = typeof curRec.answers==="string" ? JSON.parse(curRec.answers) : curRec.answers; }
+      catch(e) { ansSrc = {}; }
+    }
+
+    qEl.innerHTML = qlist.map(function(q, i) {
+      var sa  = ansSrc[q.question] || "";
+      var ca  = String(q.correct||q.correctAnswer||"").trim();
+      var tp  = (q.type||"single").toLowerCase();
+      var ok  = checkAns(tp, sa, ca);
+      var st  = !sa ? "u" : (ok ? "c" : "w");
+      var pts = parseFloat(q.points) || 0;
+      var icon= st==="c"?"fa-check":st==="w"?"fa-times":"fa-minus";
+
+      return '<div class="qi" id="qd'+i+'">'
+        +'<div class="qi-hdr" onclick="toggleQ('+i+')">'
+        +  '<div class="qbdg '+st+'"><i class="fas '+icon+'"></i></div>'
+        +  '<div class="qpv">Câu '+(i+1)+': '+esc(q.question)+'</div>'
+        +  (pts>0?'<div class="qpt">'+pts+'đ</div>':'')
+        +  '<i class="fas fa-chevron-down qarr"></i>'
+        +'</div>'
+        +'<div class="qdtl"><div class="dinn">'
+        +  (q.image&&q.image.length>10?'<img src="'+esc(q.image)+'" style="width:100%;border-radius:9px;margin-bottom:8px;max-height:180px;object-fit:contain">':'')
+        +  renderAns(q, sa, ca, st, tp)
+        +'</div></div>'
+        +'</div>';
+    }).join("");
+
+  } catch(e) {
+    qEl.innerHTML = '<div class="nodata"><i class="fas fa-wifi"></i><h3>Lỗi</h3><p>Không tải được chi tiết.</p></div>';
+  }
+}
+
+function toggleQ(i) { document.getElementById("qd"+i).classList.toggle("open"); }
+
+/* ─ CHẤM LẠI ─ */
+function checkAns(type, sa, ca) {
+  if (!sa) return false;
+  var norm  = function(s){ return String(s).trim().toLowerCase(); };
+  var sort  = function(s){ return String(s).split("|").map(function(x){return norm(x);}).sort().join("|"); };
+  var order = function(s){ return String(s).split("|").map(function(x){return norm(x);}).join("|"); };
+  if (type==="ordering")                      return order(sa)===order(ca);
+  if (type==="multiple"||type==="matching")   return sort(sa)===sort(ca);
+  return norm(sa)===norm(ca);
+}
+
+/* ─ RENDER ANS ─ */
+function renderAns(q, sa, ca, st, type) {
+  var html = '<div class="dlbl">Chi tiết đáp án</div>';
+  if (["single","mcq","tf","multiple"].includes(type)) {
+    var opts = [];
     try {
-      let s = String(val).trim();
-      // AppScript format: "yyyy-MM-dd HH:mm:ss" hoặc "dd/MM/yyyy HH:mm:ss"
-      // Safari không parse "yyyy-MM-dd HH:mm:ss" → thay space bằng T, bỏ giây nếu cần
-      if (/^\d{4}-\d{2}-\d{2}\s/.test(s)) {
-        s = s.replace(" ", "T"); // "2026-04-03T14:30:00"
-      } else if (/^\d{2}\/\d{2}\/\d{4}\s/.test(s)) {
-        // Đổi dd/MM/yyyy HH:mm:ss → yyyy-MM-ddTHH:mm:ss
-        const [datePart, timePart] = s.split(" ");
-        const [d2, m2, y2] = datePart.split("/");
-        s = `${y2}-${m2}-${d2}T${timePart || "00:00:00"}`;
-      }
-      const d = new Date(s);
-      if (isNaN(d.getTime())) return val;
-      return d.toLocaleString("vi-VN", {
-        hour: "2-digit", minute: "2-digit",
-        day: "2-digit", month: "2-digit", year: "numeric"
+      var det = typeof q.answer==="string" ? JSON.parse(q.answer) : (q.answer||{});
+      opts = (det.items||det.options||[]).map(function(o){ return typeof o==="object"?(o.text||""):String(o); });
+    } catch(e) {}
+    if (type==="tf") opts=["Đúng","Sai"];
+    if (opts.length) {
+      var ua = sa ? sa.split("|").map(function(x){return x.trim();}) : [];
+      var ca2= ca ? ca.split("|").map(function(x){return x.trim();}) : [];
+      opts.forEach(function(opt){
+        var os   = String(opt).trim();
+        var chosen = ua.indexOf(os)>=0;
+        var right  = ca2.indexOf(os)>=0;
+        var cls="", icon="fa-circle";
+        if (right) { cls="ok"; icon="fa-check-circle"; }
+        else if (chosen&&!right) { cls="ng"; icon="fa-times-circle"; }
+        html+='<div class="opt '+cls+'"><i class="fas '+icon+'"></i>'+esc(os)+'</div>';
       });
-    } catch(e) { return val; }
-  }
-
-  // ── INIT ──
-  window.onload = () => {
-    const name   = localStorage.getItem("studentName") || "Học sinh";
-    const school = localStorage.getItem("schoolName")  || "";
-    document.getElementById("studentDisplay").innerText = `🚀 ${name}${school ? " | " + school : ""}`;
-    loadHistory(name);
-  };
-
-  // ── LOAD DANH SÁCH BÀI LÀM TỪ GOOGLE SHEET ──
-  async function loadHistory(studentName) {
-    const el = document.getElementById("historyList");
-    try {
-      // Gọi API với filter student để giảm dữ liệu trả về
-      const res  = await fetch(`${API}?action=getResults&student=${encodeURIComponent(studentName)}`);
-      const data = await res.json();
-      allResults = Array.isArray(data) ? data : [];
-
-      // Lọc thêm phòng khi API chưa hỗ trợ param student
-      const mine = allResults
-        .filter(r => String(r.student || "").trim().toLowerCase() === studentName.trim().toLowerCase())
-        .reverse();
-
-      if (!mine.length) {
-        el.innerHTML = `<div class="no-data"><i class="fas fa-ghost"></i><p>Bạn chưa thực hiện bài thi nào.</p></div>`;
-        return;
-      }
-
-      el.innerHTML = mine.map((r, i) => {
-        const name = r.testName || r.testname || "Bài thi";
-        const isIspring = name.toLowerCase().includes("[ispring]") || name.toLowerCase().includes("ispring:");
-        
-        // Hiển thị tên (bỏ chữ [iSpring] nếu có để UI đẹp hơn)
-        const displayName = name.replace(/\[iSpring\]/ig, '').replace(/iSpring:/ig, '').trim();
-
-        // Xử lý điểm (tránh lỗi NaN)
-        const rawScore = r.score;
-        let scoreDisplay = "0";
-        if (rawScore !== undefined && rawScore !== null) {
-          const numScore = parseFloat(rawScore);
-          scoreDisplay = isNaN(numScore) ? rawScore : numScore.toFixed(1).replace(/\.0$/, "");
-        }
-
-        const total = r.total || "—";
-        const time  = r.time || "";
-        
-        const rec = { ...r, displayName, isIspring };
-
-        return `
-          <div class="history-item animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s"
-               onclick='prepareDetail(${i})'>
-            <div>
-              <div class="test-name">${displayName}</div>
-              <div class="test-time">
-                <i class="far fa-clock"></i> ${fmtTime(time)}
-                ${isIspring ? `<span class="ispring-badge">iSpring</span>` : ""}
-              </div>
-            </div>
-            <div class="score-box">${scoreDisplay}<span class="score-lbl">ĐIỂM</span></div>
-            <div class="total-box"><i class="fas fa-check-double"></i> ${total}</div>
-            <div class="arr"><i class="fas fa-chevron-right"></i></div>
-          </div>`;
-      }).join("");
-
-      // Gán lại mine vào biến toàn cục để truy xuất khi click
-      window.mineResults = mine;
-
-    } catch(e) {
-      console.error("Lỗi:", e);
-      el.innerHTML = `<div class="no-data"><i class="fas fa-wifi"></i><p>Lỗi kết nối máy chủ.</p></div>`;
-    }
-  }
-
-  // Hàm trung gian truyền index thay vì string JSON để tránh lỗi
-  function prepareDetail(index) {
-    if (window.mineResults && window.mineResults[index]) {
-      const rec = window.mineResults[index];
-      // Tự bổ sung thêm flag isIspring để openDetail xử lý
-      const name = rec.testName || rec.testname || "";
-      rec.isIspring = name.toLowerCase().includes("[ispring]") || name.toLowerCase().includes("ispring:");
-      rec.displayName = name.replace(/\[iSpring\]/ig, '').replace(/iSpring:/ig, '').trim();
-      openDetail(rec);
-    }
-  }
-
-  // ── MỞ CHI TIẾT BÀI ──
-  async function openDetail(record) {
-    currentRecord = record;
-
-    document.getElementById("viewList").style.display   = "none";
-    document.getElementById("viewDetail").style.display = "block";
-    document.getElementById("detailTestName").innerText = record.displayName || "Bài thi";
-
-    // Format điểm
-    const numScore = parseFloat(record.score);
-    const scoreStr = isNaN(numScore) ? record.score : numScore.toFixed(1).replace(/\.0$/,"");
-    
-    // Tách câu đúng / tổng số câu
-    const total = String(record.total || "");
-    const [correctStr, totalStr] = total.includes("/") ? total.split("/") : ["0", "0"];
-    const correctCount = parseInt(correctStr) || 0;
-    const totalQCount = parseInt(totalStr) || 0;
-    const wrongCount = totalQCount - correctCount;
-
-    // RENDER BẢNG TÓM TẮT (SUMMARY)
-    let summaryHtml = `<div class="detail-title">${record.displayName}</div><div class="chips">`;
-    summaryHtml += `<span class="chip chip-score"><i class="fas fa-trophy"></i> ${scoreStr} điểm</span>`;
-    
-    // Nếu là bài Nebula thì hiện chi tiết đúng sai, nếu là iSpring thì hiện Tag iSpring
-    if (record.isIspring) {
-      summaryHtml += `<span class="chip chip-ispring"><i class="fas fa-gamepad"></i> Bài tập iSpring</span>`;
-      summaryHtml += `<span class="chip chip-correct"><i class="fas fa-bullseye"></i> Tỉ lệ: ${total}</span>`;
-    } else {
-      summaryHtml += `<span class="chip chip-correct"><i class="fas fa-check"></i> ${correctCount} câu đúng</span>`;
-      summaryHtml += `<span class="chip chip-wrong"><i class="fas fa-times"></i> ${wrongCount} câu sai</span>`;
-    }
-    
-    summaryHtml += `<span class="chip chip-time"><i class="far fa-clock"></i> ${fmtTime(record.time)}</span></div>`;
-    document.getElementById("detailSummary").innerHTML = summaryHtml;
-
-    // RENDER CHI TIẾT BÊN DƯỚI
-    const el = document.getElementById("qDetailList");
-    
-    if (record.isIspring) {
-      // BÀI ISPRING: Không gọi API lấy câu hỏi, chỉ hiện thông báo
-      el.innerHTML = `
-        <div class="no-data animate__animated animate__fadeIn">
-          <i class="fas fa-box-open" style="font-size:3rem; margin-bottom:15px; color:var(--ispring)"></i>
-          <h3 style="color:#fff; margin-bottom:8px;">Hệ thống SCORM / iSpring</h3>
-          <p style="color:#94a3b8; font-size:0.9rem; line-height:1.5; padding: 0 20px;">
-            Hệ thống đã ghi nhận điểm số tổng quát của bạn.<br>
-            Chi tiết từng câu hỏi đúng/sai được quản lý nội bộ bên trong file bài giảng iSpring.
-          </p>
-        </div>`;
-    } else {
-      // BÀI NEBULA: Gọi API lấy câu hỏi để so sánh
-      await loadNebulaQuestions(record.testName || record.testname);
-    }
-  }
-
-  // ── LOAD CÂU HỎI CHO BÀI NEBULA ──
-  async function loadNebulaQuestions(rawTestName) {
-    const el = document.getElementById("qDetailList");
-    el.innerHTML = `<div class="loading-questions"><i class="fas fa-spinner fa-spin"></i> Đang tải đáp án chi tiết...</div>`;
-
-    try {
-      // 1. Tìm testId từ DB
-      const testsRes = await fetch(`${API}?action=getTests`);
-      const tests = await testsRes.json();
-      const found = tests.find(t => (t.name || "").trim().toLowerCase() === (rawTestName || "").trim().toLowerCase());
-
-      if (!found) {
-        el.innerHTML = `<div class="loading-questions" style="color:var(--wrong)">Bài thi này đã bị xóa hoặc thay đổi trên hệ thống.</div>`;
-        return;
-      }
-
-      // 2. Tải danh sách câu hỏi gốc
-      const qRes = await fetch(`${API}?action=getQuestions&testId=${encodeURIComponent(found.id)}`);
-      const qList = await qRes.json();
-
-      if (!qList.length) {
-        el.innerHTML = `<div class="loading-questions">Không tìm thấy câu hỏi nào.</div>`;
-        return;
-      }
-
-      // 3. Lấy đáp án của học sinh từ record
-      let studentAnswers = {};
-      if (currentRecord.answers) {
-        try {
-          studentAnswers = typeof currentRecord.answers === 'string' ? JSON.parse(currentRecord.answers) : currentRecord.answers;
-        } catch(e) { studentAnswers = {}; }
-      }
-
-      // 4. Render từng câu
-      el.innerHTML = qList.map((q, idx) => {
-        const studentAns = studentAnswers[q.question] || "";
-        const correctAns = String(q.correct || "").trim();
-        const pts = parseFloat(q.points) || 0;
-
-        const isCorrect = checkAns(q, studentAns, correctAns);
-        const status = studentAns ? (isCorrect ? "correct" : "wrong") : "unanswered";
-
-        const badgeClass = status === "correct" ? "correct" : (status === "wrong" ? "wrong" : "unanswered");
-        const badgeIcon = status === "correct" ? "fa-check" : (status === "wrong" ? "fa-times" : "fa-minus");
-
-        return `
-          <div class="q-item" id="qd${idx}">
-            <div class="q-header" onclick="toggleQ(${idx})">
-              <div class="q-badge ${badgeClass}">
-                <i class="fas ${badgeIcon}"></i>
-              </div>
-              <div class="q-preview">Câu ${idx+1}: ${q.question}</div>
-              ${pts > 0 ? `<div class="q-pts">${pts}đ</div>` : ""}
-              <i class="fas fa-chevron-down q-arrow"></i>
-            </div>
-            <div class="q-detail">
-              <div class="detail-inner">
-                ${q.image && q.image.length > 10 ? `<img src="${q.image}" style="width:100%;border-radius:10px;margin-bottom:10px;max-height:200px;object-fit:contain;background:rgba(0,0,0,0.2)">` : ""}
-                ${renderDetail(q, studentAns, correctAns, status)}
-              </div>
-            </div>
-          </div>`;
-      }).join("");
-
-    } catch(e) {
-      console.error("Lỗi tải câu hỏi:", e);
-      el.innerHTML = `<div class="loading-questions" style="color:var(--wrong)">Lỗi kết nối khi lấy chi tiết câu hỏi.</div>`;
-    }
-  }
-
-  // ── TOGGLE ĐÓNG MỞ CÂU HỎI ──
-  function toggleQ(idx) {
-    document.getElementById(`qd${idx}`).classList.toggle("open");
-  }
-
-  // ── HÀM CHẤM LẠI ĐỂ HIỆN TRẠNG THÁI ──
-  function checkAns(q, studentAns, correctAns) {
-    if (!studentAns) return false;
-    const type = (q.type || "single").toLowerCase();
-    
-    const cleanOrder = (s) => s ? String(s).split('|').map(x => x.trim().toLowerCase()).join('|') : "";
-    const cleanArr = (s) => s ? String(s).split('|').map(x => x.trim().toLowerCase()).sort().join('|') : "";
-    
-    if (type === "ordering") {
-      return cleanOrder(studentAns) === cleanOrder(correctAns);
-    } else if (type === "multiple" || type === "matching") {
-      return cleanArr(studentAns) === cleanArr(correctAns);
-    } else {
-      return String(studentAns).trim().toLowerCase() === String(correctAns).trim().toLowerCase();
-    }
-  }
-
-  // ── RENDER CHI TIẾT TỪNG CÂU BÊN TRONG BÀI NEBULA ──
-  function renderDetail(q, studentAns, correctAns, status) {
-    const type = (q.type || "single").toLowerCase();
-    let html = "";
-
-    // Dạng Trắc nghiệm (có options)
-    if (["single", "mcq", "tf", "multiple"].includes(type)) {
-      let opts = [];
-      try {
-        const det = typeof q.answer === "string" ? JSON.parse(q.answer) : q.answer;
-        opts = (det?.items || []).map(o => typeof o === "object" ? o.text : o);
-      } catch(e) {}
-      if (type === "tf") opts = ["Đúng", "Sai"];
-
-      if (opts.length) {
-        html += `<div class="d-label">Các lựa chọn</div>`;
-        
-        // Mảng các đáp án học sinh đã chọn (cho câu nhiều đáp án)
-        const chosenArr = String(studentAns).split('|').map(s => s.trim());
-        const correctArr = String(correctAns).split('|').map(s => s.trim());
-
-        opts.forEach(opt => {
-          const optText = String(opt).trim();
-          const isCorr = correctArr.includes(optText);
-          const isChosen = chosenArr.includes(optText);
-          
-          let cls = "", icon = "fa-circle";
-          if (type === "multiple") icon = "fa-square";
-
-          if (isCorr && isChosen) { cls = "is-correct"; icon = "fa-check-circle"; }
-          else if (isChosen && !isCorr) { cls = "is-wrong"; icon = "fa-times-circle"; }
-          else if (isCorr && !isChosen) { cls = "is-correct"; icon = "fa-check-circle"; } // Hiện đáp án đúng bị bỏ lỡ
-          
-          html += `<div class="opt-item ${cls}"><i class="fas ${icon}"></i>${opt}</div>`;
-        });
-        return html;
-      }
-    }
-
-    // Dạng Sắp xếp (Ordering)
-    if (type === "ordering") {
-      html += `<div class="d-label">Thứ tự bạn đã xếp</div>`;
-      html += `<div class="opt-item ${status==='correct'?'is-correct':'is-wrong'}">
-                 <i class="fas fa-list-ol"></i> ${studentAns ? String(studentAns).replace(/\|/g, " ➔ ") : "(Chưa làm)"}
-               </div>`;
-      if (status !== 'correct') {
-        html += `<div class="divider"></div><div class="d-label">Thứ tự đúng</div>`;
-        html += `<div class="correct-answer-box"><i class="fas fa-star"></i>${String(correctAns).replace(/\|/g, " ➔ ")}</div>`;
-      }
       return html;
     }
-
-    // Dạng Nối chéo (Matching)
-    if (type === "matching") {
-      html += `<div class="d-label">Các cặp bạn ghép</div>`;
-      html += `<div class="opt-item ${status==='correct'?'is-correct':'is-wrong'}">
-                 <i class="fas fa-link"></i> ${studentAns ? String(studentAns).replace(/\|/g, "<br>") : "(Chưa ghép)"}
-               </div>`;
-      if (status !== 'correct') {
-        html += `<div class="divider"></div><div class="d-label">Đáp án đúng</div>`;
-        html += `<div class="correct-answer-box"><i class="fas fa-star"></i>${String(correctAns).replace(/\|/g, "<br>")}</div>`;
-      }
-      return html;
-    }
-
-    // Dạng Điền khuyết (Fill) hoặc khác
-    if (studentAns) {
-      html += `<div class="d-label">Bài làm của bạn</div>`;
-      html += `<div class="opt-item ${status === 'correct' ? 'is-correct' : 'is-wrong'}">
-                 <i class="fas ${status === 'correct' ? 'fa-circle-check' : 'fa-circle-xmark'}"></i>
-                 ${studentAns}
-               </div><div class="divider"></div>`;
-    } else {
-      html += `<div class="opt-item is-wrong"><i class="fas fa-minus"></i>(Không có câu trả lời)</div><div class="divider"></div>`;
-    }
-
-    html += `<div class="d-label">Đáp án đúng</div>`;
-    html += `<div class="correct-answer-box"><i class="fas fa-star"></i>${correctAns || "—"}</div>`;
+    html+='<div class="opt ok"><i class="fas fa-star"></i> Đáp án: '+esc(ca||"—")+'</div>';
+    if (sa) html+='<div class="opt '+(st==="c"?"ok":"ng")+'"><i class="fas fa-pen"></i> Bài làm: '+esc(sa)+'</div>';
     return html;
   }
-
-  // ── QUAY LẠI ──
-  function backToList() {
-    document.getElementById("viewDetail").style.display = "none";
-    document.getElementById("viewList").style.display   = "block";
+  if (type==="ordering") {
+    html+='<div class="opt '+(st==="c"?"ok":"ng")+'" style="margin-bottom:5px">'
+      +'<i class="fas fa-list-ol"></i> Bạn xếp: '+esc(sa?sa.replace(/\|/g," → "):"(chưa làm)")+' </div>';
+    if (st!=="c") html+='<div class="ans-box"><i class="fas fa-star"></i> Đúng: '+esc(ca.replace(/\|/g," → "))+'</div>';
+    return html;
   }
+  if (type==="matching") {
+    html+='<div class="opt '+(st==="c"?"ok":"ng")+'" style="margin-bottom:5px">'
+      +'<i class="fas fa-link"></i> Bạn ghép: '+esc(sa?sa.replace(/\|/g," | "):"(chưa ghép)")+'</div>';
+    if (st!=="c") html+='<div class="ans-box"><i class="fas fa-star"></i> Đúng: '+esc(ca.replace(/\|/g," | "))+'</div>';
+    return html;
+  }
+  /* fill/other */
+  html+='<div class="opt '+(st==="c"?"ok":"ng")+'" style="margin-bottom:5px">'
+    +'<i class="fas '+(st==="c"?"fa-check-circle":"fa-times-circle")+'"></i> Bài làm: '+esc(sa||"(trống)")+'</div>';
+  html+='<div class="ans-box"><i class="fas fa-star"></i> Đúng: '+esc(ca||"—")+'</div>';
+  return html;
+}
+
+function backToList() {
+  document.getElementById("viewDetail").style.display = "none";
+  document.getElementById("viewList").style.display   = "block";
+  window.scrollTo(0,0);
+}
+
+/* ─ HELPERS ─ */
+function fmtTime(val) {
+  if (!val) return "—";
+  try {
+    var s = String(val).trim();
+    if (/^\d{4}-\d{2}-\d{2}\s/.test(s)) s = s.replace(" ","T");
+    else if (/^\d{2}\/\d{2}\/\d{4}\s/.test(s)) {
+      var parts = s.split(" "), d=parts[0].split("/");
+      s = d[2]+"-"+d[1]+"-"+d[0]+"T"+(parts[1]||"00:00:00");
+    }
+    var dt = new Date(s);
+    if (isNaN(dt)) return val;
+    return dt.toLocaleString("vi-VN",{hour:"2-digit",minute:"2-digit",day:"2-digit",month:"2-digit",year:"numeric"});
+  } catch(e){ return val; }
+}
+
+function parseDate(val) {
+  if (!val) return 0;
+  try {
+    var s = String(val).trim();
+    if (/^\d{4}-\d{2}-\d{2}\s/.test(s)) s=s.replace(" ","T");
+    else if (/^\d{2}\/\d{2}\/\d{4}\s/.test(s)) {
+      var parts=s.split(" "),d=parts[0].split("/");
+      s=d[2]+"-"+d[1]+"-"+d[0]+"T"+(parts[1]||"00:00:00");
+    }
+    return new Date(s).getTime() || 0;
+  } catch(e){ return 0; }
+}
+
+function esc(str) {
+  return String(str||"").replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
 </script>
 </body>
 </html>
