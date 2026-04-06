@@ -39,7 +39,7 @@
       background:rgba(11,15,26,.95);border-bottom:1px solid var(--bd);
       backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
       display:flex;align-items:center;justify-content:space-between;
-      padding:14px 16px;gap:12px;
+      padding:16px 24px;gap:16px;
     }
     .nav-info h2{font-size:1.1rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px}
     .nav-info p{font-size:.74rem;color:var(--p);margin-top:3px}
@@ -57,7 +57,7 @@
     .nbtn.primary:hover{background:var(--p);color:#0b0f1a}
 
     /* ─ MAIN ─ */
-    .main{position:relative;z-index:1;max-width:780px;margin:0 auto;padding:16px 14px 40px}
+    .main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px 20px 48px}
 
     /* TABS */
     .tabs{display:flex;gap:6px;margin-bottom:16px;
@@ -74,7 +74,7 @@
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
     .stat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r2);
       padding:12px 10px;text-align:center}
-    .stat-n{font-size:1.4rem;font-weight:900;line-height:1}
+    .stat-n{font-size:1.6rem;font-weight:900;line-height:1}
     .stat-l{font-size:.64rem;color:var(--mu);margin-top:3px;text-transform:uppercase;
       letter-spacing:.5px}
     .stat-n.c-p{color:var(--p)} .stat-n.c-a{color:var(--a)} .stat-n.c-o{color:var(--o)}
@@ -88,8 +88,8 @@
       background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);
       margin-bottom:10px;cursor:pointer;
       transition:background .2s,border-color .2s,transform .15s;
-      display:grid;grid-template-columns:1fr auto auto auto;
-      align-items:center;gap:12px;padding:16px 18px;
+      display:grid;grid-template-columns:1fr 70px 110px 30px;
+      align-items:center;gap:14px;padding:18px 22px;
       -webkit-tap-highlight-color:transparent;
     }
     .hi:hover{background:rgba(79,172,254,.07);border-color:var(--p);transform:translateX(3px)}
@@ -182,6 +182,34 @@
     .s-great{color:var(--a)}
     .s-ok   {color:var(--p)}
     .s-bad  {color:var(--d)}
+
+
+    /* PC improvements */
+    @media(min-width:768px){
+      .main { padding:24px 24px 56px; }
+      .nav-info h2 { font-size:1.25rem; }
+      .nav-info p  { font-size:.82rem; }
+      .hi { padding:20px 24px; gap:16px; }
+      .hi-name  { font-size:1rem; }
+      .hi-sn    { font-size:1.6rem; }
+      .hi-meta  { font-size:.75rem; }
+      .hi-tot   { font-size:.88rem; }
+      .stat-n   { font-size:1.8rem; }
+      .stat-l   { font-size:.68rem; }
+      .stats    { gap:14px; margin-bottom:20px; }
+      .stat     { padding:16px 12px; }
+      .tabs     { margin-bottom:20px; }
+      .tab      { font-size:.8rem; padding:10px 8px; }
+      /* detail view */
+      .det-sum  { padding:22px 24px; }
+      .det-title{ font-size:1.1rem; }
+      .qi-hdr   { padding:15px 20px; }
+      .qpv      { font-size:.9rem; }
+      .qdtl     { padding:0 20px 16px; }
+    }
+    @media(min-width:1024px){
+      .main { max-width:960px; }
+    }
 
     @media(max-width:520px){
       .hi{grid-template-columns:1fr auto auto;padding:14px 14px;gap:8px}
