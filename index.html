@@ -4,289 +4,100 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quiz Online | Premium Edition</title>
-  
-  <!-- FontAwesome cho icon -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <style>
-    :root {
-      --primary: #4facfe;
-      --secondary: #00f2fe;
-      --accent: #00ffcc;
-      --deep-bg: #0f172a;
-      --glass-bg: rgba(255, 255, 255, 0.07);
-      --glass-border: rgba(255, 255, 255, 0.12);
-      --text-main: #ffffff;
-      --text-muted: rgba(255, 255, 255, 0.6);
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
-
-    body {
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: var(--text-main);
-      overflow: hidden;
-      position: relative;
-      background: var(--deep-bg);
-    }
-
-    /* Hình nền có chiều sâu */
-    .bg-image {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
-      filter: brightness(0.4);
-      z-index: -2;
-    }
-
-    body::after {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle at center, transparent 0%, var(--deep-bg) 100%);
-      z-index: -1;
-    }
-
-    /* Hiệu ứng đốm sáng Neon */
-    .orb {
-      position: absolute;
-      width: 600px; height: 600px;
-      border-radius: 50%;
-      background: var(--primary);
-      filter: blur(140px);
-      opacity: 0.15;
-      z-index: 0;
-      pointer-events: none;
-    }
-    .orb-2 { right: -10%; bottom: -10%; background: var(--accent); opacity: 0.1; }
-
-    /* Hạt sáng bay lơ lửng */
-    .particle {
-      position: absolute;
-      background: white;
-      border-radius: 50%;
-      pointer-events: none;
-      opacity: 0.3;
-      animation: float-particle var(--duration) linear infinite;
-    }
-
-    @keyframes float-particle {
-      from { transform: translateY(0) translateX(0); opacity: 0; }
-      50% { opacity: 0.5; }
-      to { transform: translateY(-100vh) translateX(20px); opacity: 0; }
-    }
-
-    .container { position: relative; z-index: 10; width: 100%; max-width: 480px; padding: 20px; }
-
-    .box {
-      background: var(--glass-bg);
-      backdrop-filter: blur(30px);
-      -webkit-backdrop-filter: blur(30px);
-      border-radius: 40px;
-      padding: 60px 45px;
-      border: 1px solid var(--glass-border);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-      animation: reveal 1s ease-out;
-    }
-
-    /* Hiệu ứng lóa sáng quét qua Card */
-    .box::before {
-      content: "";
-      position: absolute;
-      top: -50%; left: -50%; width: 200%; height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
-      pointer-events: none;
-    }
-
-    @keyframes reveal {
-      from { opacity: 0; transform: translateY(30px) scale(0.95); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    .logo-container {
-      margin-bottom: 30px;
-      position: relative;
-      display: inline-block;
-    }
-
-    .logo-icon { 
-      font-size: 70px; 
-      background: linear-gradient(135deg, #fff, var(--primary));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 0 15px rgba(79, 172, 254, 0.5));
-      animation: float 4s infinite ease-in-out;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
-    }
-
-    h1 {
-      font-size: 2.5rem;
-      font-weight: 800;
-      margin-bottom: 12px;
-      letter-spacing: -1px;
-      background: linear-gradient(to right, #ffffff, #94a3b8);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    p { 
-      color: var(--text-muted); 
-      font-size: 1.05rem; 
-      margin-bottom: 40px; 
-      line-height: 1.6;
-    }
-
-    .menu-actions { display: flex; flex-direction: column; gap: 16px; }
-
-    .btn {
-      width: 100%;
-      padding: 18px;
-      border-radius: 20px;
-      border: none;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      text-decoration: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .btn-student { 
-      background: linear-gradient(135deg, var(--primary), #3b82f6); 
-      color: white; 
-      box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.5);
-    }
-    
-    /* Shimmer Effect cho nút chính */
-    .btn-student::after {
-      content: "";
-      position: absolute;
-      top: 0; left: -100%; width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-      transition: 0.5s;
-    }
-    .btn-student:hover::after { left: 100%; }
-
-    .btn-student:hover { 
-      transform: translateY(-3px); 
-      box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.6);
-    }
-
-    .btn-admin { 
-      background: rgba(255, 255, 255, 0.03); 
-      color: white; 
-      border: 1px solid var(--glass-border);
-      backdrop-filter: blur(10px);
-    }
-    .btn-admin:hover { 
-      background: rgba(255, 255, 255, 0.08); 
-      border-color: var(--primary);
-      transform: translateY(-3px); 
-    }
-
-    .footer-text { 
-      margin-top: 45px; 
-      font-size: 0.7rem; 
-      color: rgba(255, 255, 255, 0.25); 
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
-
-    .fade-out {
-      opacity: 0;
-      transform: scale(0.97);
-      transition: 0.4s ease-out;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="idx-body">
 
-  <div class="bg-image"></div>
-  <div class="orb" id="orb1"></div>
-  <div class="orb orb-2" id="orb2"></div>
+  <div class="idx-bg-image"></div>
+  <div class="idx-orb" id="orb1"></div>
+  <div class="idx-orb idx-orb-2" id="orb2"></div>
 
-  <div class="container">
-    <div class="box" id="mainBox">
-      <div class="logo-container">
-        <i class="fas fa-rocket logo-icon"></i>
-      </div>
-      <h1>QUIZ ONLINE</h1>
-      <p>Nền tảng ôn luyện trắc nghiệm tối ưu <br> kiến tạo tri thức tương lai</p>
+  <!-- Các hạt sáng được tạo bằng CSS thuần, không cần JS -->
+  <div class="idx-particles" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
 
-      <div class="menu-actions">
-        <button class="btn btn-student" onclick="goTo('login.html?role=student')">
-          <i class="fas fa-graduation-cap"></i> Học sinh đăng nhập
-        </button>
-        
-        <button class="btn btn-admin" onclick="goTo('login.html?role=admin')">
-          <i class="fas fa-shield-halved"></i> Khu vực quản trị
-        </button>
+  <div class="idx-container">
+    <div class="idx-box" id="mainBox">
+
+      <!-- Badge trạng thái -->
+      <div class="idx-status-badge">
+        <span class="idx-status-dot"></span> Hệ thống đang hoạt động
       </div>
 
-      <div class="footer-text">
-        Premium Edition • 2026 • Kieu Le Dang Khoa
+      <div class="idx-logo-container">
+        <!-- SVG icon inline - không cần FontAwesome load -->
+        <svg class="idx-logo-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff"/>
+              <stop offset="100%" stop-color="#4facfe"/>
+            </linearGradient>
+          </defs>
+          <!-- Rocket body -->
+          <path d="M32 4 C32 4 20 16 18 32 L32 36 L46 32 C44 16 32 4 32 4Z" fill="url(#rg)" opacity="0.9"/>
+          <!-- Rocket fins -->
+          <path d="M18 32 L10 44 L22 40 Z" fill="url(#rg)" opacity="0.6"/>
+          <path d="M46 32 L54 44 L42 40 Z" fill="url(#rg)" opacity="0.6"/>
+          <!-- Window -->
+          <circle cx="32" cy="26" r="5" fill="#0f172a" stroke="#4facfe" stroke-width="1.5"/>
+          <circle cx="32" cy="26" r="2.5" fill="#4facfe" opacity="0.7"/>
+          <!-- Flame -->
+          <ellipse cx="32" cy="42" rx="5" ry="8" fill="#f97316" opacity="0.8"/>
+          <ellipse cx="32" cy="44" rx="3" ry="5" fill="#fbbf24" opacity="0.9"/>
+        </svg>
+      </div>
+
+      <h1 class="idx-title">QUIZ ONLINE</h1>
+      <p class="idx-desc">Nền tảng ôn luyện trắc nghiệm tối ưu<br>kiến tạo tri thức tương lai</p>
+
+      <div class="idx-menu-actions">
+        <button class="idx-btn idx-btn-student" onclick="nbIdxGoTo('login.html?role=student')" aria-label="Học sinh đăng nhập">
+          <!-- SVG: graduation cap -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+          </svg>
+          Học sinh đăng nhập
+          <svg class="idx-btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+          </svg>
+        </button>
+
+        <button class="idx-btn idx-btn-admin" onclick="nbIdxGoTo('login.html?role=admin')" aria-label="Khu vực quản trị">
+          <!-- SVG: shield -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93-2.67-1.14-5-4.43-5-7.93V7.18L12 5zm-1 3v4h2V8h-2zm0 6v2h2v-2h-2z"/>
+          </svg>
+          Khu vực quản trị
+        </button>
+      </div>
+
+      <div class="idx-footer-text">
+        Premium Edition &bull; 2026 &bull; Kieu Le Dang Khoa
       </div>
     </div>
   </div>
 
+  <script src="script.js" defer></script>
   <script>
-    // Tạo hạt bụi sáng bay lơ lửng
-    function createParticles() {
-      for (let i = 0; i < 20; i++) {
-        const p = document.createElement('div');
-        p.className = 'particle';
-        const size = Math.random() * 3 + 1 + 'px';
-        p.style.width = size;
-        p.style.height = size;
-        p.style.left = Math.random() * 100 + 'vw';
-        p.style.top = Math.random() * 100 + 'vh';
-        p.style.setProperty('--duration', Math.random() * 10 + 10 + 's');
-        p.style.animationDelay = Math.random() * 5 + 's';
-        document.body.appendChild(p);
-      }
-    }
-    createParticles();
-
-    function goTo(url) {
-      document.getElementById('mainBox').classList.add('fade-out');
-      setTimeout(() => {
-        window.location.href = url;
-      }, 400);
+    // Tilt + orb mouse effect — chỉ desktop
+    if(window.matchMedia('(pointer:fine)').matches){
+      document.addEventListener('mousemove', (e) => {
+        const x = (e.clientX - innerWidth / 2) / 35;
+        const y = (e.clientY - innerHeight / 2) / 35;
+        document.getElementById('orb1').style.transform = `translate(${x*1.5}px,${y*1.5}px)`;
+        document.getElementById('orb2').style.transform = `translate(${-x}px,${-y}px)`;
+        document.getElementById('mainBox').style.transform =
+          `perspective(1000px) rotateY(${x/2}deg) rotateX(${-y/2}deg)`;
+      });
     }
 
-    // Hiệu ứng tương tác chuột cao cấp
-    document.addEventListener('mousemove', (e) => {
-      const { clientX, clientY } = e;
-      const x = (clientX - window.innerWidth / 2) / 35;
-      const y = (clientY - window.innerHeight / 2) / 35;
-      
-      const orb1 = document.getElementById('orb1');
-      const orb2 = document.getElementById('orb2');
-      const box = document.getElementById('mainBox');
-      
-      orb1.style.transform = `translate(${x * 1.5}px, ${y * 1.5}px)`;
-      orb2.style.transform = `translate(${-x}px, ${-y}px)`;
-      
-      // Hiệu ứng nghiêng nhẹ cho hộp (Tilt effect)
-      box.style.transform = `perspective(1000px) rotateY(${x/2}deg) rotateX(${-y/2}deg)`;
-    });
+    function nbIdxGoTo(url){
+      document.getElementById('mainBox').classList.add('idx-fade-out');
+      setTimeout(() => { window.location.href = url; }, 400);
+    }
   </script>
 </body>
 </html>

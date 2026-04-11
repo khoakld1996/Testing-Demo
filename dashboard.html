@@ -3,102 +3,140 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Hệ thống Quản trị - Nebula Premium</title>
+  <title>Hệ thống Quản trị — Nebula</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  <script src="script.js" defer></script>
 </head>
 <body class="dash-body">
 <div class="container animate__animated animate__fadeIn">
 
+  <!-- ══ HEADER ══ -->
   <header class="nav-header">
     <div class="logo-area">
-      <h1><i class="fas fa-shield-halved"></i> NEBULA ADMIN</h1>
+      <h1>
+        <!-- shield SVG -->
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="dash-logo-icon" aria-hidden="true">
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93-2.67-1.14-5-4.43-5-7.93V7.18L12 5zm-1 3v4h2V8h-2zm0 6v2h2v-2h-2z"/>
+        </svg>
+        NEBULA ADMIN
+      </h1>
       <p>Hệ thống quản trị tối cao &nbsp;
         <span class="refresh-badge" id="refreshBadge">
-          <i class="fas fa-sync-alt"></i> Auto 30s
+          <!-- sync SVG -->
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+          Auto&nbsp;<span id="refreshCountdown">30</span>s
         </span>
       </p>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+    <div class="dash-header-actions">
       <span id="apiStatus" class="api-status loading"><span class="dot"></span> Kết nối...</span>
+
+      <!-- Xuất CSV -->
       <button class="btn btn-outline" onclick="exportResults()" title="Xuất CSV kết quả">
-        <i class="fas fa-file-csv"></i> <span class="hide-sm">Xuất CSV</span>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+        <span class="hide-sm">Xuất CSV</span>
       </button>
-      <button class="btn btn-outline" onclick="toggleDebug()"><i class="fas fa-code"></i></button>
-      <button class="btn btn-outline" onclick="loadData()"><i class="fas fa-sync"></i></button>
-      <button class="btn btn-outline" style="color:var(--danger)" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i>
+
+      <!-- Debug -->
+      <button class="btn btn-outline" onclick="toggleDebug()" title="Debug log">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5s-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"/></svg>
+      </button>
+
+      <!-- Reload -->
+      <button class="btn btn-outline" id="btnReload" onclick="loadData(true)" title="Tải lại dữ liệu">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" id="reloadIcon" aria-hidden="true"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+      </button>
+
+      <!-- Logout -->
+      <button class="btn btn-outline dash-btn-danger" onclick="logout()" title="Đăng xuất">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
       </button>
     </div>
   </header>
 
   <div id="debugPanel"></div>
 
-  <!-- STATS -->
+  <!-- ══ STATS ══ -->
   <div class="stats-grid">
     <div class="glass-card stat-box">
       <div class="stat-icon" style="background:rgba(59,130,246,.1);color:var(--primary)">
-        <i class="fas fa-file-invoice"></i>
+        <!-- document SVG -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
       </div>
       <div><p>Đề thi hệ thống</p><h2 id="cTests">—</h2></div>
     </div>
     <div class="glass-card stat-box">
       <div class="stat-icon" style="background:rgba(249,115,22,.1);color:var(--ispring)">
-        <i class="fas fa-rocket"></i>
+        <!-- rocket SVG -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/></svg>
       </div>
       <div><p>Bài iSpring</p><h2 id="cIspring">0</h2></div>
     </div>
     <div class="glass-card stat-box">
       <div class="stat-icon" style="background:rgba(245,158,11,.1);color:var(--warning)">
-        <i class="fas fa-user-clock"></i>
+        <!-- person-clock SVG -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/><circle cx="18" cy="17" r="4" fill="var(--warning)" opacity=".9"/><path d="M18 15v2.5l1.5 1.5-.7.7-1.8-1.8V15H18z" fill="#000"/></svg>
       </div>
       <div><p>Chờ duyệt</p><h2 id="cPending">—</h2></div>
     </div>
     <div class="glass-card stat-box">
       <div class="stat-icon" style="background:rgba(16,185,129,.1);color:var(--success)">
-        <i class="fas fa-graduation-cap"></i>
+        <!-- graduation cap SVG -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
       </div>
       <div><p>Lượt làm bài</p><h2 id="cResults">—</h2></div>
     </div>
   </div>
 
-  <!-- TABS -->
+  <!-- ══ TABS ══ -->
   <div class="tab-nav">
     <button class="tab-btn active" data-tab="system" onclick="switchTab('system')">
-      <i class="fas fa-database"></i> HỆ THỐNG
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 16 18 16s1.5.67 1.5 1.5S18.83 19 18 19zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 6 18 6s1.5.67 1.5 1.5S18.83 9 18 9z"/></svg>
+      HỆ THỐNG
     </button>
     <button class="tab-btn" data-tab="ispring" onclick="switchTab('ispring')">
-      <i class="fas fa-rocket"></i> iSPRING
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+      iSPRING
     </button>
   </div>
 
-  <!-- TAB HỆ THỐNG -->
+  <!-- ══ TAB HỆ THỐNG ══ -->
   <div id="tab-system" class="tab-content active">
     <div class="main-grid">
       <main>
-        <div class="glass-card" style="margin-bottom:25px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-            <h3 style="font-size:1rem;display:flex;align-items:center;gap:10px">
-              <i class="fas fa-folder-open" style="color:var(--primary)"></i> Danh sách đề thi
+        <!-- Danh sách đề thi -->
+        <div class="glass-card dash-section-card">
+          <div class="dash-section-header">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--primary)" aria-hidden="true"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+              Danh sách đề thi
             </h3>
-            <input type="text" id="searchInput" class="input-dark"
-              style="width:220px" placeholder="Tìm tên đề thi..." oninput="filterTests()">
+            <div class="dash-search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="dash-search-icon" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <input type="text" id="searchInput" class="input-dark dash-search-input"
+                placeholder="Tìm tên đề thi..." oninput="filterTests()">
+            </div>
           </div>
           <div id="testList" class="item-list"></div>
         </div>
 
-        <div class="glass-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
-            <h3 style="font-size:1rem;display:flex;align-items:center;gap:10px">
-              <i class="fas fa-list-check" style="color:var(--success)"></i> Kết quả gần đây
+        <!-- Kết quả -->
+        <div class="glass-card dash-section-card">
+          <div class="dash-section-header">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--success)" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              Kết quả gần đây
+              <span class="dash-live-badge" id="lastSyncBadge"></span>
             </h3>
             <button class="btn-export" onclick="exportResults()">
-              <i class="fas fa-file-csv"></i> Xuất CSV
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 13l-3-3h2V8h2v4h2l-3 3z"/></svg>
+              Xuất CSV
             </button>
           </div>
-          <div class="result-row" style="opacity:.5;font-weight:800;font-size:.7rem;letter-spacing:1px;border-bottom:2px solid var(--border)">
+          <div class="result-row dash-result-header">
             <span>THÍ SINH</span><span>ĐỀ THI</span><span>KẾT QUẢ</span>
           </div>
           <div id="resultList" class="item-list" style="max-height:350px"></div>
@@ -106,35 +144,47 @@
       </main>
 
       <aside>
-        <div class="glass-card" style="margin-bottom:25px;border-top:4px solid var(--primary)">
-          <h3 style="font-size:1rem;margin-bottom:18px">Khởi tạo đề mới</h3>
-          <div style="display:flex;flex-direction:column;gap:12px">
+        <!-- Tạo đề mới -->
+        <div class="glass-card dash-section-card dash-create-card">
+          <h3 class="dash-aside-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+            Khởi tạo đề mới
+          </h3>
+          <div class="dash-create-form">
             <input id="newName" class="input-dark" placeholder="Tên bài thi">
             <input id="newDesc" class="input-dark" placeholder="Mô tả bài thi">
-            <div style="display:flex;align-items:center;gap:10px">
-              <i class="fas fa-clock" style="opacity:.5"></i>
-              <input id="newDur" class="input-dark" type="number" placeholder="Phút" value="45" style="flex:1">
+            <div class="dash-input-icon-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="dash-input-prefix-icon" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+              <input id="newDur" class="input-dark" type="number" placeholder="Phút" value="45">
             </div>
-            <button class="btn btn-glow" style="width:100%;justify-content:center;padding:14px" onclick="addTest()">
-              <i class="fas fa-plus"></i> TẠO BÀI THI NGAY
+            <button class="btn btn-glow dash-btn-full" onclick="addTest()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              TẠO BÀI THI NGAY
             </button>
           </div>
         </div>
 
-        <div class="glass-card" style="margin-bottom:25px">
-          <h3 style="font-size:1rem;margin-bottom:15px">
+        <!-- Chart -->
+        <div class="glass-card dash-section-card">
+          <h3 class="dash-aside-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/><path d="M5 17h3v-6H5v6zm5 0h3v-9h-3v9zm5 0h3v-3h-3v3z" fill="currentColor"/></svg>
             Phân tích chất lượng
-            <span style="font-size:.68rem;opacity:.4;font-weight:400;margin-left:6px">(Giỏi/TB/Yếu)</span>
+            <span style="font-size:.65rem;opacity:.4;font-weight:400;margin-left:4px">(Giỏi/TB/Yếu)</span>
           </h3>
           <div style="height:220px"><canvas id="chartEl"></canvas></div>
         </div>
 
-        <div class="glass-card" style="border-top:4px solid var(--warning)">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-            <h3 style="font-size:1rem;color:var(--warning)">
-              <i class="fas fa-user-clock"></i> Yêu cầu đăng ký
+        <!-- Pending -->
+        <div class="glass-card dash-section-card dash-pending-card">
+          <div class="dash-section-header">
+            <h3 style="color:var(--warning)">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+              Yêu cầu đăng ký
             </h3>
-            <span class="refresh-badge"><i class="fas fa-circle" style="font-size:.4rem"></i> Live</span>
+            <span class="refresh-badge">
+              <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>
+              Live
+            </span>
           </div>
           <div id="pendingList" class="item-list" style="max-height:280px"></div>
         </div>
@@ -142,40 +192,43 @@
     </div>
   </div>
 
-  <!-- TAB ISPRING -->
+  <!-- ══ TAB ISPRING ══ -->
   <div id="tab-ispring" class="tab-content">
     <div class="ispring-grid">
       <div>
-        <div class="glass-card" style="margin-bottom:25px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
-            <h3 style="font-size:1rem;display:flex;align-items:center;gap:10px">
-              <i class="fas fa-rocket" style="color:var(--ispring)"></i> Bài thi iSpring
-              <span id="ispringCount"
-                style="font-size:.7rem;background:rgba(249,115,22,.15);color:var(--ispring);padding:3px 10px;border-radius:20px;border:1px solid rgba(249,115,22,.3)">
-                0 bài
-              </span>
+        <!-- Danh sách iSpring -->
+        <div class="glass-card dash-section-card">
+          <div class="dash-section-header">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--ispring)" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/></svg>
+              Bài thi iSpring
+              <span id="ispringCount" class="dash-ispring-badge">0 bài</span>
             </h3>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <input type="text" id="ispringSearch" class="input-dark orange" style="width:180px"
+            <div class="dash-search-wrap">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="dash-search-icon" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <input type="text" id="ispringSearch" class="input-dark input-dark orange dash-search-input"
                 placeholder="Tìm bài iSpring..." oninput="renderIspringList()">
-              <button class="btn-export" onclick="exportIspringResults()">
-                <i class="fas fa-file-csv"></i> Xuất CSV
+              <button class="btn-export" onclick="exportIspringResults()" style="flex-shrink:0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 13l-3-3h2V8h2v4h2l-3 3z"/></svg>
+                CSV
               </button>
             </div>
           </div>
           <div id="ispringList" class="item-list" style="max-height:500px">
-            <div class="empty-state"><i class="fas fa-folder-plus"></i>
+            <div class="empty-state">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 6h-2.18c.07-.44.18-.86.18-1.3C18 2.55 15.89.5 13.5.5c-1.3 0-2.51.58-3.36 1.5L9 3.17l-1.15-1.17C6.99 1.06 5.79.5 4.5.5 2.08.5 0 2.55 0 4.7c0 .44.1.86.18 1.3H0v2h18l2-2V6zm-3.5 0H5.32C5.12 5.68 5 5.2 5 4.7 5 3.76 5.67 3 6.5 3c.53 0 1.04.26 1.36.68l1.9 1.92L11.12 3.7C11.46 3.26 11.96 3 12.5 3c.83 0 1.5.76 1.5 1.7 0 .5-.12.98-.32 1.3H16.5zM4 8v12h16V8H4zm8 11l-5-5 1.41-1.41L12 16.17l3.59-3.58L17 14l-5 5z"/></svg>
               <p>Chưa có bài iSpring nào.<br>Thêm từ form bên phải.</p>
             </div>
           </div>
         </div>
 
-        <!-- Hướng dẫn cấu trúc thư mục -->
-        <div class="glass-card" style="border-left:4px solid rgba(249,115,22,.4)">
-          <h3 style="font-size:.9rem;margin-bottom:14px;color:var(--ispring)">
-            <i class="fas fa-info-circle"></i> Cấu trúc thư mục
+        <!-- Cấu trúc thư mục -->
+        <div class="glass-card dash-section-card dash-folder-card">
+          <h3 class="dash-aside-title" style="color:var(--ispring)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 9h2V7h-2v2zm1 11c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v-6h-2v6z"/></svg>
+            Cấu trúc thư mục
           </h3>
-          <div style="background:rgba(0,0,0,.4);border-radius:10px;padding:14px;font-family:monospace;font-size:.75rem;color:#94a3b8;line-height:1.8">
+          <div class="dash-folder-tree">
             📁 Testing-Demo/ &nbsp;←&nbsp; <span style="color:var(--ispring)">gốc website</span><br>
             &nbsp;&nbsp;├─ 📄 select.html<br>
             &nbsp;&nbsp;└─ 📁 <span style="color:var(--ispring)">quizzes/</span><br>
@@ -183,70 +236,77 @@
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ 📄 index.html<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ 📁 data/
           </div>
-          <p style="font-size:.72rem;opacity:.55;margin-top:12px;line-height:1.8">
+          <p class="dash-folder-hint">
             👉 Đường dẫn cần nhập:
-            <code style="background:rgba(249,115,22,.1);color:var(--ispring);padding:3px 8px;border-radius:5px;font-size:.8rem">
-              quizzes/FullIOT1GS6LV1/index.html
-            </code>
+            <code>quizzes/FullIOT1GS6LV1/index.html</code>
           </p>
         </div>
       </div>
 
       <aside>
-        <div class="glass-card ispring-add-form" style="margin-bottom:25px">
-          <h3 style="font-size:1rem;margin-bottom:5px;color:var(--ispring)">
-            <i class="fas fa-plus-circle"></i> Thêm bài thi iSpring
+        <!-- Thêm iSpring -->
+        <div class="glass-card ispring-add-form dash-section-card">
+          <h3 class="dash-aside-title" style="color:var(--ispring)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            Thêm bài thi iSpring
           </h3>
-          <p style="font-size:.72rem;opacity:.45;margin-bottom:18px">
-            Nhập thông tin để hiển thị trên trang chọn bài thi
-          </p>
-          <div style="display:flex;flex-direction:column;gap:12px">
+          <p class="dash-form-subtitle">Nhập thông tin để hiển thị trên trang chọn bài thi</p>
+          <div class="dash-create-form">
             <input id="iName" class="input-dark orange" placeholder="Tên hiển thị">
             <div>
               <input id="iPath" class="input-dark orange" placeholder="VD: quizzes/FullIOT1GS6LV1/index.html">
               <p class="form-hint">Relative path từ gốc web đến <code>index.html</code> của iSpring</p>
             </div>
             <input id="iDesc" class="input-dark orange" placeholder="Mô tả ngắn (tùy chọn)">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="dash-row-2">
               <input id="iDuration" class="input-dark orange" type="number" placeholder="Phút" value="45">
               <input id="iSubject" class="input-dark orange" placeholder="Môn học">
             </div>
             <div class="toggle-wrap">
-              <label><i class="fas fa-eye" style="opacity:.5;margin-right:6px"></i> Hiển thị với học sinh</label>
+              <label>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="opacity:.5;margin-right:5px" aria-hidden="true"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                Hiển thị với học sinh
+              </label>
               <div class="toggle on" id="visToggle" onclick="this.classList.toggle('on')"></div>
             </div>
-            <button class="btn btn-orange" style="width:100%;justify-content:center;padding:14px;font-size:.9rem" onclick="addIspring()">
-              <i class="fas fa-rocket"></i> THÊM BÀI iSPRING
+            <button class="btn btn-orange dash-btn-full" onclick="addIspring()">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+              THÊM BÀI iSPRING
             </button>
           </div>
         </div>
 
-        <div class="glass-card" style="border-top:4px solid rgba(249,115,22,.5);margin-bottom:25px">
-          <h3 style="font-size:.9rem;margin-bottom:6px;color:var(--ispring)">
-            <i class="fas fa-chart-bar"></i> Kết quả bài thi iSpring
+        <!-- Kết quả iSpring -->
+        <div class="glass-card dash-section-card dash-ispring-result-card">
+          <h3 class="dash-aside-title" style="color:var(--ispring)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 12l-4-4 1.41-1.41L12 12.17l5.59-5.58L19 8l-7 7z"/></svg>
+            Kết quả bài thi iSpring
           </h3>
-          <p style="font-size:.72rem;opacity:.45;margin-bottom:14px;line-height:1.6">
-            Xem & xuất điểm học sinh qua SCORM. Dữ liệu từ Google Sheet.
-          </p>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-orange" style="flex:1;justify-content:center;" onclick="viewIspringResults()">
-              <i class="fas fa-table"></i> Xem kết quả
+          <p class="dash-form-subtitle">Xem & xuất điểm học sinh qua SCORM. Dữ liệu từ Google Sheet.</p>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-orange" style="flex:1;justify-content:center" onclick="viewIspringResults()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              Xem kết quả
             </button>
             <button class="btn-export" onclick="exportIspringResults()">
-              <i class="fas fa-file-csv"></i> CSV
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 13l-3-3h2V8h2v4h2l-3 3z"/></svg>
+              CSV
             </button>
           </div>
         </div>
 
-        <div class="glass-card" style="border-top:4px solid rgba(249,115,22,.4)">
-          <h3 style="font-size:.9rem;margin-bottom:14px;color:var(--ispring)">
-            <i class="fas fa-vial"></i> Kiểm tra đường dẫn
+        <!-- Test đường dẫn -->
+        <div class="glass-card dash-section-card">
+          <h3 class="dash-aside-title" style="color:var(--ispring)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+            Kiểm tra đường dẫn
           </h3>
-          <div style="display:flex;gap:8px;margin-bottom:12px">
+          <div style="display:flex;gap:8px;margin-bottom:10px;margin-top:12px">
             <input id="testPath" class="input-dark orange" style="flex:1"
               placeholder="quizzes/FullIOT1GS6LV1/index.html">
             <button class="btn btn-outline" onclick="testIspringPath()" style="white-space:nowrap">
-              <i class="fas fa-play"></i> Test
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+              Test
             </button>
           </div>
           <div id="pathTestResult" style="font-size:.78rem;opacity:.6;min-height:20px"></div>
@@ -255,100 +315,99 @@
     </div>
   </div>
 
-  <footer style="text-align:center;margin-top:50px;opacity:.2;font-size:.7rem;letter-spacing:4px">
-    NEBULA ECOSYSTEM &copy; 2026
-  </footer>
+  <footer class="dash-footer">NEBULA ECOSYSTEM &copy; 2026</footer>
 </div>
 
-<!-- iSpring Preview Modal -->
-<div id="ispringModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
-  <div style="background:#0f172a;border:1px solid rgba(249,115,22,.3);border-radius:20px;width:90vw;max-width:1100px;height:85vh;display:flex;flex-direction:column;overflow:hidden">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid rgba(255,255,255,.08)">
-      <div style="display:flex;align-items:center;gap:10px">
-        <i class="fas fa-rocket" style="color:var(--ispring)"></i>
-        <span style="font-weight:700" id="modalTitle">Preview iSpring</span>
+<!-- ══ iSpring Preview Modal ══ -->
+<div id="ispringModal" class="modal-overlay" style="display:none">
+  <div class="modal-box" style="max-width:1100px;height:85vh;padding:0;overflow:hidden">
+    <div class="modal-header" style="padding:14px 20px">
+      <div class="modal-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--ispring)" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+        <span id="modalTitle">Preview iSpring</span>
         <span style="font-size:.7rem;opacity:.4" id="modalPath"></span>
       </div>
-      <button onclick="closeIspringModal()" class="btn btn-outline" style="color:var(--danger);padding:8px 14px">
-        <i class="fas fa-times"></i> Đóng
+      <button onclick="closeIspringModal()" class="btn btn-outline dash-btn-danger" style="padding:7px 14px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        Đóng
       </button>
     </div>
-    <iframe id="ispringFrame" src="" style="flex:1;border:none;width:100%"></iframe>
+    <iframe id="ispringFrame" src="" style="flex:1;border:none;width:100%;height:calc(100% - 57px)"></iframe>
   </div>
 </div>
 
-<script src="script.js" defer></script>
 <script>
-/* ─── Biến trạng thái trang ─── */
+/* ─── State ─── */
 let tests=[], results=[], pending=[], ispringList=[];
 window._nbResults = results;
 window._nbPending = pending;
 
-/* ─── Khởi tạo ─── */
-window.onload = async function(){
-  nbDashboardInit(); /* từ script.js */
-  await loadIspring();
-  await loadData();
-  /* Bind modal close khi click nền */
+/* ─── Init ─── */
+window.addEventListener('DOMContentLoaded', async function(){
+  nbDashboardInit();
+  await Promise.all([ loadIspring(), loadData() ]);
   document.getElementById('ispringModal')
     .addEventListener('click', function(e){ if(e.target===this) closeIspringModal(); });
-};
+});
 
 /* ─── iSPRING ─── */
 async function loadIspring(){
   try{
     const data = await callAPI('getIspring');
     if(Array.isArray(data)){
-      ispringList=data;
-      document.getElementById('cIspring').innerText=ispringList.length;
+      ispringList = data;
+      document.getElementById('cIspring').innerText = ispringList.length;
       renderIspringList();
     }
   }catch(e){ log('Lỗi loadIspring: '+e.message,'err'); }
 }
 
 function renderIspringList(){
-  const el=document.getElementById('ispringList');
-  const q=(document.getElementById('ispringSearch')?.value||'').toLowerCase();
-  const filtered=ispringList.filter(item=>(item.name||'').toLowerCase().includes(q));
-  document.getElementById('ispringCount').innerText=ispringList.length+' bài';
+  const el  = document.getElementById('ispringList');
+  const q   = (document.getElementById('ispringSearch')?.value||'').toLowerCase();
+  const filtered = ispringList.filter(item=>(item.name||'').toLowerCase().includes(q));
+  document.getElementById('ispringCount').innerText = ispringList.length+' bài';
   if(!filtered.length){
-    el.innerHTML=`<div class="empty-state">
-      <i class="fas fa-${ispringList.length?'search':'folder-plus'}"></i>
-      <p>${ispringList.length?'Không tìm thấy kết quả phù hợp.':'Chưa có bài iSpring nào.<br>Thêm từ form bên phải.'}</p>
-    </div>`;
+    const emptyIcon = ispringList.length
+      ? `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`
+      : `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.86.18-1.3C18 2.55 15.89.5 13.5.5c-1.3 0-2.51.58-3.36 1.5L9 3.17l-1.15-1.17C6.99 1.06 5.79.5 4.5.5 2.08.5 0 2.55 0 4.7c0 .44.1.86.18 1.3H0v2h20V6z"/></svg>`;
+    el.innerHTML=`<div class="empty-state">${emptyIcon}<p>${ispringList.length?'Không tìm thấy kết quả phù hợp.':'Chưa có bài iSpring nào.<br>Thêm từ form bên phải.'}</p></div>`;
     return;
   }
-  el.innerHTML=filtered.map((item,i)=>{
-    /* Normalize header names cũ */
-    item.name    =item.name    ||item.nameIPS    ||item.nameips    ||'?';
-    item.path    =item.path    ||item.pathIPS    ||item.pathips    ||'';
-    item.duration=item.duration||item.durationIPS||item.durationips||'';
-    item.subject =item.subject ||item.typeIPS    ||item.typeips    ||'';
-    item.desc    =item.desc    ||item.descriptionIPS||item.descriptionips||'';
+  el.innerHTML = filtered.map((item,i) => {
+    item.name     = item.name     ||item.nameIPS    ||'?';
+    item.path     = item.path     ||item.pathIPS    ||'';
+    item.duration = item.duration ||item.durationIPS||'';
+    item.subject  = item.subject  ||item.typeIPS    ||'';
+    item.desc     = item.desc     ||item.descriptionIPS||'';
+    const eyeSvg  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
+    const eyeOffSvg=`<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zm5.53 5.53l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2z"/></svg>`;
     return `
     <div class="ispring-card animate__animated animate__fadeInUp" style="animation-delay:${i*.04}s">
       <div style="min-width:0;flex:1">
         <h4>
-          <i class="fas fa-rocket" style="font-size:.85rem"></i>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
           ${nbEsc(item.name)}
           ${item.visible!==false
-            ?'<span class="badge"><i class="fas fa-eye"></i> Hiện</span>'
-            :'<span class="badge" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.1)"><i class="fas fa-eye-slash"></i> Ẩn</span>'}
+            ?`<span class="badge">${eyeSvg} Hiện</span>`
+            :`<span class="badge" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.1)">${eyeOffSvg} Ẩn</span>`}
         </h4>
         <p>${nbEsc(item.path)}</p>
-        ${item.desc?`<p style="color:rgba(255,255,255,.4);font-family:inherit;margin-top:2px">${nbEsc(item.desc)}</p>`:''}
-        <div style="display:flex;gap:12px;margin-top:6px;font-size:.7rem;opacity:.5">
-          ${item.duration?`<span><i class="fas fa-clock"></i> ${item.duration}p</span>`:''}
-          ${item.subject?`<span><i class="fas fa-book"></i> ${item.subject}</span>`:''}
+        ${item.desc?`<p style="color:rgba(255,255,255,.4);margin-top:2px">${nbEsc(item.desc)}</p>`:''}
+        <div class="dash-ispring-meta">
+          ${item.duration?`<span><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> ${item.duration}p</span>`:''}
+          ${item.subject?`<span><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z"/></svg> ${item.subject}</span>`:''}
         </div>
       </div>
-      <div style="display:flex;gap:6px;margin-left:12px">
-        <button class="btn btn-outline" onclick="previewIspring(${i})" title="Preview"><i class="fas fa-eye"></i></button>
-        <button class="btn btn-outline" onclick="toggleIspringVisible(${i})" title="Ẩn/Hiện">
-          <i class="fas fa-${item.visible!==false?'eye-slash':'eye'}"></i>
+      <div class="dash-card-actions">
+        <button class="btn btn-outline" onclick="previewIspring(${i})" title="Preview">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
         </button>
-        <button class="btn btn-outline" style="color:var(--danger)" onclick="deleteIspring(${i})">
-          <i class="fas fa-trash"></i>
+        <button class="btn btn-outline" onclick="toggleIspringVisible(${i})" title="Ẩn/Hiện">
+          ${item.visible!==false ? eyeOffSvg : eyeSvg}
+        </button>
+        <button class="btn btn-outline dash-btn-danger" onclick="deleteIspring(${i})">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
         </button>
       </div>
     </div>`;
@@ -356,12 +415,12 @@ function renderIspringList(){
 }
 
 async function addIspring(){
-  const name    =document.getElementById('iName').value.trim();
-  const path    =document.getElementById('iPath').value.trim();
-  const desc    =document.getElementById('iDesc').value.trim();
+  const name=document.getElementById('iName').value.trim();
+  const path=document.getElementById('iPath').value.trim();
+  const desc=document.getElementById('iDesc').value.trim();
   const duration=document.getElementById('iDuration').value;
-  const subject =document.getElementById('iSubject').value.trim();
-  const visible =document.getElementById('visToggle').classList.contains('on');
+  const subject=document.getElementById('iSubject').value.trim();
+  const visible=document.getElementById('visToggle').classList.contains('on');
   if(!name) return nbAlert('warning','Thiếu tên','Vui lòng nhập tên bài thi!');
   if(!path) return nbAlert('warning','Thiếu đường dẫn','VD: quizzes/FullIOT1GS6LV1/index.html');
   nbLoading('Đang lưu...');
@@ -373,15 +432,14 @@ async function addIspring(){
     document.getElementById('visToggle').classList.add('on');
     await loadIspring();
     nbToast('success',`Đã thêm "${name}" thành công!`);
-  } else {
+  }else{
     nbAlert('error','Lỗi!','Không thể lưu. Kiểm tra lại AppScript.');
   }
 }
 
 async function deleteIspring(idx){
   const item=ispringList[idx];
-  const r=await nbConfirm({ title:'Xóa bài iSpring?', text:`"${item.name}"`,
-    icon:'warning', confirmButtonColor:'#ef4444', confirmButtonText:'XÓA' });
+  const r=await nbConfirm({title:'Xóa bài iSpring?',text:`"${item.name}"`,icon:'warning',confirmButtonColor:'#ef4444',confirmButtonText:'XÓA'});
   if(!r.isConfirmed) return;
   nbLoading('Đang xóa...');
   await postAPI({action:'deleteIspring',id:item.id});
@@ -412,9 +470,7 @@ async function viewIspringResults(){
   nbLoading('Đang tải...');
   const data=await callAPI('getIspringResults');
   nbClose();
-  if(!data||!Array.isArray(data)||!data.length){
-    nbAlert('info','Chưa có kết quả iSpring',''); return;
-  }
+  if(!data||!Array.isArray(data)||!data.length){ nbAlert('info','Chưa có kết quả iSpring',''); return; }
   const rows=data.slice(-60).reverse().map(r=>`
     <tr style="border-bottom:1px solid rgba(255,255,255,.06)">
       <td style="padding:8px 6px;font-weight:700">${nbEsc(r.student)}</td>
@@ -424,17 +480,14 @@ async function viewIspringResults(){
     </tr>`).join('');
   Swal.fire({
     title:'Kết quả bài thi iSpring',
-    html:`<div style="overflow-x:auto">
-      <table style="width:100%;color:#fff;font-size:.82rem;border-collapse:collapse">
-        <thead><tr style="color:var(--ispring);border-bottom:2px solid rgba(249,115,22,.3)">
-          <th style="padding:8px 6px;text-align:left">Học sinh</th>
-          <th style="padding:8px 6px;text-align:left">Bài thi</th>
-          <th style="padding:8px 6px;text-align:left">Điểm</th>
-          <th style="padding:8px 6px;text-align:left">Thời gian</th>
-        </tr></thead><tbody>${rows}</tbody>
-      </table></div>`,
-    width:'700px',background:'#131c2f',color:'#fff',
-    showCloseButton:true,showConfirmButton:false
+    html:`<div style="overflow-x:auto"><table style="width:100%;color:#fff;font-size:.82rem;border-collapse:collapse">
+      <thead><tr style="color:var(--ispring);border-bottom:2px solid rgba(249,115,22,.3)">
+        <th style="padding:8px 6px;text-align:left">Học sinh</th>
+        <th style="padding:8px 6px;text-align:left">Bài thi</th>
+        <th style="padding:8px 6px;text-align:left">Điểm</th>
+        <th style="padding:8px 6px;text-align:left">Thời gian</th>
+      </tr></thead><tbody>${rows}</tbody></table></div>`,
+    width:'700px',background:'#131c2f',color:'#fff',showCloseButton:true,showConfirmButton:false
   });
 }
 
@@ -442,57 +495,72 @@ async function testIspringPath(){
   const path=document.getElementById('testPath').value.trim();
   const result=document.getElementById('pathTestResult');
   if(!path) return;
-  result.innerHTML=`<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...`;
+  result.innerHTML=`<span class="spin-anim" style="display:inline-block;font-size:.8rem">↻</span> Đang kiểm tra...`;
   try{
     const resp=await fetch(path,{method:'HEAD'});
     result.innerHTML=resp.ok
-      ?`<span style="color:var(--success)"><i class="fas fa-check-circle"></i> OK! File tồn tại (${resp.status})</span>`
-      :`<span style="color:var(--danger)"><i class="fas fa-times-circle"></i> Lỗi ${resp.status} — Kiểm tra lại đường dẫn</span>`;
+      ?`<span style="color:var(--success)">✓ OK! File tồn tại (${resp.status})</span>`
+      :`<span style="color:var(--danger)">✗ Lỗi ${resp.status} — Kiểm tra lại đường dẫn</span>`;
   }catch(e){
-    result.innerHTML=`<span style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> Không kiểm tra được qua HEAD. Thử nút Preview.</span>`;
+    result.innerHTML=`<span style="color:var(--warning)">⚠ Không kiểm tra được qua HEAD. Thử nút Preview.</span>`;
   }
 }
 
 /* ─── HỆ THỐNG ─── */
-async function loadData(){
+async function loadData(manual=false){
   setStatus('loading','Đang tải...');
-  document.getElementById('testList').innerHTML=Array(3).fill('<div class="skeleton"></div>').join('');
-  document.getElementById('resultList').innerHTML=Array(3).fill('<div class="skeleton"></div>').join('');
-  document.getElementById('pendingList').innerHTML='<div class="skeleton"></div>';
-  const[tData,rData,pData]=await Promise.all([
-    callAPI('getTests'), callAPI('getResults'), callAPI('getPendingUsers')
-  ]);
-  if(tData){ tests=tData; renderTests(); }
-  if(rData){ results=rData; window._nbResults=results; renderResults(); }
-  if(pData){ pending=pData; window._nbPending=pending; renderPending(); }
-  document.getElementById('cTests').innerText=tests.length;
-  document.getElementById('cResults').innerText=results.length;
-  document.getElementById('cPending').innerText=pending.length;
-  nbRenderDashChart(results);
-  setStatus('ok','Trực tuyến');
-  log('Tải dữ liệu thành công','ok');
+  const reloadIcon=document.getElementById('reloadIcon');
+  if(reloadIcon) reloadIcon.classList.add('spin-anim');
+  document.getElementById('testList').innerHTML   = Array(3).fill('<div class="skeleton"></div>').join('');
+  document.getElementById('resultList').innerHTML = Array(3).fill('<div class="skeleton"></div>').join('');
+  document.getElementById('pendingList').innerHTML= '<div class="skeleton"></div>';
+  try{
+    const[tData,rData,pData]=await Promise.all([callAPI('getTests'),callAPI('getResults'),callAPI('getPendingUsers')]);
+    if(tData){ tests=tData; renderTests(); }
+    if(rData){ results=rData; window._nbResults=results; renderResults(); }
+    if(pData){ pending=pData; window._nbPending=pending; renderPending(); }
+    document.getElementById('cTests').innerText   = tests.length;
+    document.getElementById('cResults').innerText = results.length;
+    document.getElementById('cPending').innerText = pending.length;
+    nbRenderDashChart(results);
+    setStatus('ok','Trực tuyến');
+    log('Tải dữ liệu thành công','ok');
+    /* Badge thời gian đồng bộ */
+    const syncBadge=document.getElementById('lastSyncBadge');
+    if(syncBadge){
+      const now=new Date();
+      syncBadge.textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+    }
+    if(manual){
+      nbToast('success','Đã đồng bộ dữ liệu!');
+      if(typeof window._nbResetCountdown === 'function') window._nbResetCountdown();
+    }
+  }catch(e){
+    setStatus('err','Lỗi kết nối');
+    log('loadData error: '+e.message,'err');
+  }finally{
+    if(reloadIcon) reloadIcon.classList.remove('spin-anim');
+  }
 }
 
 function renderTests(data=tests){
   const el=document.getElementById('testList');
-  if(!data.length){
-    el.innerHTML='<div style="text-align:center;padding:30px;opacity:.3">Chưa có đề thi nào</div>'; return;
-  }
+  if(!data.length){el.innerHTML='<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><p>Chưa có đề thi nào</p></div>'; return;}
   el.innerHTML=data.map(t=>`
     <div class="test-card animate__animated animate__fadeInUp">
       <div>
         <h4>${nbEsc(t.name)}</h4>
         <p>Mã: ${t.id} &bull; ${nbEsc(t.desc||'Không có mô tả')}</p>
       </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-outline" onclick="goTo('add-question.html','${t.id}','${t.name.replace(/'/g,"\\'")}')" title="Thêm câu hỏi">
-          <i class="fas fa-plus-circle"></i>
+      <div class="dash-card-actions">
+        <button class="btn btn-outline" onclick="goTo('add-question.html','${t.id}','${t.name.replace(/'/g,"\\'")}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
         </button>
-        <button class="btn btn-outline" onclick="goTo('question-list.html','${t.id}','${t.name.replace(/'/g,"\\'")}')" title="Quản lý">
-          <i class="fas fa-tasks"></i>
+        <button class="btn btn-outline" onclick="goTo('question-list.html','${t.id}','${t.name.replace(/'/g,"\\'")}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
         </button>
-        <button class="btn btn-outline" style="color:var(--danger)" onclick="deleteTest('${t.id}','${t.name.replace(/'/g,"\\'")}')">
-          <i class="fas fa-trash"></i>
+        <button class="btn btn-outline dash-btn-danger" onclick="deleteTest('${t.id}','${t.name.replace(/'/g,"\\'")}')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
         </button>
       </div>
     </div>`).join('');
@@ -500,17 +568,12 @@ function renderTests(data=tests){
 
 function renderResults(){
   const el=document.getElementById('resultList');
-  if(!results.length){
-    el.innerHTML='<div style="text-align:center;padding:30px;opacity:.3">Chưa có dữ liệu</div>'; return;
-  }
+  if(!results.length){el.innerHTML='<div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><p>Chưa có dữ liệu</p></div>'; return;}
   el.innerHTML=[...results].reverse().slice(0,60).map(r=>{
     const score=parseFloat(r.score||0);
     const color=score>=8?'var(--success)':(score>=5?'var(--primary)':'var(--danger)');
     return`<div class="result-row">
-      <div>
-        <div style="font-weight:600">${nbEsc(r.student||'Ẩn danh')}</div>
-        <div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div>
-      </div>
+      <div><div style="font-weight:600">${nbEsc(r.student||'Ẩn danh')}</div><div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div></div>
       <div style="opacity:.7">${nbEsc(r.testName||'Đề thi')}</div>
       <div style="font-weight:800;color:${color}">${score}đ</div>
     </div>`;
@@ -519,21 +582,19 @@ function renderResults(){
 
 function renderPending(){
   const el=document.getElementById('pendingList');
-  if(!pending.length){
-    el.innerHTML='<div style="text-align:center;padding:20px;opacity:.4;font-size:.8rem">Không có yêu cầu mới</div>'; return;
-  }
+  if(!pending.length){el.innerHTML='<div style="text-align:center;padding:20px;opacity:.4;font-size:.8rem">Không có yêu cầu mới</div>'; return;}
   el.innerHTML=pending.map(u=>`
     <div class="user-card animate__animated animate__fadeInRight">
       <div style="min-width:0">
         <div style="font-weight:800;font-size:.85rem">${nbEsc(u.name)}</div>
         <div style="font-size:.7rem;opacity:.7">${nbEsc(u.username)} | ${nbEsc(u.class||'N/A')}</div>
       </div>
-      <div style="display:flex;gap:5px">
+      <div class="dash-card-actions">
         <button class="btn" style="padding:6px 10px;background:var(--success);color:#000" onclick="handleUser('${u.username}','approve')">
-          <i class="fas fa-check"></i>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
         </button>
-        <button class="btn btn-outline" style="padding:6px 10px;color:var(--danger)" onclick="handleUser('${u.username}','reject')">
-          <i class="fas fa-times"></i>
+        <button class="btn btn-outline dash-btn-danger" style="padding:6px 10px" onclick="handleUser('${u.username}','reject')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </div>
     </div>`).join('');
@@ -552,14 +613,13 @@ async function addTest(){
     loadData();
     document.getElementById('newName').value='';
     document.getElementById('newDesc').value='';
-  } else {
+  }else{
     nbAlert('error','Lỗi tạo đề thi','Vui lòng thử lại!');
   }
 }
 
 async function deleteTest(id,name){
-  const r=await nbConfirm({ title:'Xóa đề thi?', text:`"${name}"`,
-    icon:'warning', confirmButtonColor:'#ef4444' });
+  const r=await nbConfirm({title:'Xóa đề thi?',text:`"${name}"`,icon:'warning',confirmButtonColor:'#ef4444'});
   if(!r.isConfirmed) return;
   nbLoading('Đang xóa...');
   await postAPI({action:'deleteTest',testId:id});
@@ -568,11 +628,11 @@ async function deleteTest(id,name){
   loadData();
 }
 
-async function handleUser(username, action){
+async function handleUser(username,action){
   nbLoading('Đang xử lý...');
   await postAPI({action:'handleUserRequest',username,status:action==='approve'?'approved':'rejected'});
   nbClose();
-  nbToast(action==='approve'?'success':'info', action==='approve'?'Đã duyệt tài khoản!':'Đã từ chối!');
+  nbToast(action==='approve'?'success':'info',action==='approve'?'Đã duyệt tài khoản!':'Đã từ chối!');
   loadData();
 }
 

@@ -372,18 +372,126 @@ window.nbDashboardInit = function(){
     });
   };
 
-  /* Auto-refresh pending users mỗi 30s */
-  nbStartAutoRefresh(async ()=>{
-    const newPending = await callAPI('getPendingUsers').catch(()=>null);
-    if(!newPending) return;
-    const old = window._nbPending || [];
-    window._nbPending = newPending;
-    if(newPending.length > old.length){
-      nbToast('info',`🔔 Có ${newPending.length - old.length} tài khoản mới đăng ký!`);
+  /* ═══════════════════════════════════════
+     SMART AUTO-REFRESH — không cần reload trang
+     - Mỗi 30s: poll toàn bộ data (tests, results, pending)
+     - So sánh diff: chỉ re-render khi có thay đổi thực sự
+     - Countdown timer hiển thị trực tiếp trên badge
+     - Nếu tab bị ẩn (Page Visibility API): dừng polling, 
+       tiếp tục khi user quay lại
+     - Nếu mất mạng: retry với backoff 60s
+     ═══════════════════════════════════════ */
+  const REFRESH_INTERVAL = 30; // giây
+  let   _countdownVal    = REFRESH_INTERVAL;
+  let   _countdownTimer  = null;
+  let   _refreshPaused   = false;
+  let   _failStreak      = 0;
+
+  function _updateCountdownUI(){
+    const el = document.getElementById('refreshCountdown');
+    if(el) el.textContent = _countdownVal;
+  }
+
+  function _startCountdown(){
+    clearInterval(_countdownTimer);
+    _countdownVal = REFRESH_INTERVAL;
+    _updateCountdownUI();
+    _countdownTimer = setInterval(async ()=>{
+      if(_refreshPaused) return;
+      _countdownVal--;
+      _updateCountdownUI();
+      if(_countdownVal <= 0){
+        _countdownVal = REFRESH_INTERVAL;
+        _updateCountdownUI();
+        await _silentRefresh();
+      }
+    }, 1000);
+  }
+
+  async function _silentRefresh(){
+    try{
+      /* Fetch tất cả song song */
+      const [tData, rData, pData] = await Promise.all([
+        callAPI('getTests'),
+        callAPI('getResults'),
+        callAPI('getPendingUsers'),
+      ]);
+      _failStreak = 0;
+
+      /* ── Tests: so sánh theo length + stringify nhanh ── */
+      const tStr = JSON.stringify((tData||[]).map(t=>t.id));
+      if(tStr !== window._nbLastTestStr){
+        window._nbLastTestStr = tStr;
+        if(window.tests !== undefined){ window.tests = tData || []; }
+        if(window.renderTests) window.renderTests();
+        document.getElementById('cTests').innerText = (tData||[]).length;
+      }
+
+      /* ── Results: so sánh length ── */
+      const rLen = (rData||[]).length;
+      if(rLen !== (window._nbResults||[]).length){
+        const added = rLen - (window._nbResults||[]).length;
+        window._nbResults = rData || [];
+        if(window.results !== undefined){ window.results = rData || []; }
+        if(window.renderResults) window.renderResults();
+        document.getElementById('cResults').innerText = rLen;
+        if(added > 0) nbToast('info', `📊 +${added} kết quả mới!`);
+        if(window.nbRenderDashChart) window.nbRenderDashChart(rData);
+        /* Cập nhật sync time badge */
+        const syncBadge = document.getElementById('lastSyncBadge');
+        if(syncBadge){
+          const now = new Date();
+          syncBadge.textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        }
+      }
+
+      /* ── Pending: thông báo khi có mới ── */
+      const pLen = (pData||[]).length;
+      const oldPLen = (window._nbPending||[]).length;
+      if(pLen !== oldPLen){
+        window._nbPending = pData || [];
+        if(window.pending !== undefined){ window.pending = pData || []; }
+        if(window.renderPending) window.renderPending();
+        document.getElementById('cPending').innerText = pLen;
+        if(pLen > oldPLen){
+          nbToast('info', `🔔 +${pLen - oldPLen} yêu cầu đăng ký mới!`);
+          /* Badge pulse effect */
+          const badge = document.getElementById('refreshBadge');
+          if(badge){ badge.style.animation='none'; badge.style.background='rgba(245,158,11,.2)';
+            setTimeout(()=>{ badge.style.background=''; }, 3000); }
+        }
+      }
+
+      setStatus('ok','Trực tuyến');
+    }catch(err){
+      _failStreak++;
+      setStatus('err','Mất kết nối');
+      log('Auto-refresh lỗi: '+err.message,'err');
+      /* Backoff: nếu fail 3+ lần liên tiếp thì giãn interval lên 60s */
+      if(_failStreak >= 3){
+        _countdownVal = 60;
+        log('Backoff 60s do lỗi liên tiếp','warn');
+      }
     }
-    document.getElementById('cPending').innerText = newPending.length;
-    if(window.renderPending) window.renderPending();
-  }, 30000);
+  }
+
+  /* Page Visibility API: dừng khi tab ẩn, chạy lại khi quay về */
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.hidden){
+      _refreshPaused = true;
+      log('Tab ẩn — tạm dừng auto-refresh','warn');
+    } else {
+      _refreshPaused = false;
+      log('Tab hiện — tiếp tục auto-refresh','ok');
+      /* Refresh ngay khi user quay lại nếu đã hơn 15s */
+      if(_countdownVal < REFRESH_INTERVAL - 15) _silentRefresh();
+    }
+  });
+
+  /* Bắt đầu đếm ngược */
+  _startCountdown();
+  /* Expose để nút reload manual có thể reset countdown */
+  window._nbResetCountdown = _startCountdown;
 };
 
 /* ──────────────────────────────────────────────
@@ -743,3 +851,188 @@ document.addEventListener('DOMContentLoaded', function(){
   if(path.includes('dashboard.html'))    nbDashboardInit();
   if(path.includes('add-question.html')) nbAddQuestionInit();
 });
+
+
+/* ──────────────────────────────────────────────
+   PAGE: login.html
+   Tất cả logic login/register được gom vào đây
+   ────────────────────────────────────────────── */
+window.nbLgnInit = function(){
+  const params       = new URLSearchParams(window.location.search);
+  const roleFromUrl  = params.get('role') || 'admin';
+  let   isRegMode    = false;
+  let   isSubmitting = false;
+
+  /* ── Cập nhật header theo role ── */
+  function _setHeader(mode){
+    const iconEl = document.getElementById('headerIcon');
+    const textEl = document.getElementById('headerText');
+    if(!iconEl || !textEl) return;
+
+    // SVGs được định nghĩa inline trong HTML; chỉ đổi màu fill qua class/attr
+    if(mode === 'register'){
+      textEl.textContent = 'ĐĂNG KÝ MỚI';
+      iconEl.innerHTML = `<path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>`;
+    } else if(roleFromUrl === 'student'){
+      textEl.textContent = 'HỌC SINH';
+      iconEl.innerHTML = `<path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>`;
+    } else {
+      textEl.textContent = 'QUẢN TRỊ VIÊN';
+      iconEl.innerHTML = `<path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93-2.67-1.14-5-4.43-5-7.93V7.18L12 5zm-1 3v4h2V8h-2zm0 6v2h2v-2h-2z"/>`;
+    }
+  }
+
+  /* ── Khởi tạo ── */
+  _setHeader(null);
+  if(roleFromUrl === 'student'){
+    const regBtn = document.getElementById('regToggleBtn');
+    if(regBtn) regBtn.classList.remove('hidden');
+  }
+  const userInput = document.getElementById('user');
+  if(userInput) userInput.focus();
+
+  /* ── Enter key ── */
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && !isSubmitting)
+      nbLgnHandle(isRegMode ? 'register' : 'login');
+  });
+
+  /* ── Password strength cho form đăng ký ── */
+  const regPassInput = document.getElementById('regPass');
+  if(regPassInput){
+    regPassInput.addEventListener('input', function(){
+      const strength = typeof nbPwStrength === 'function' ? nbPwStrength(this.value) : '';
+      const bar  = document.getElementById('regPwBar');
+      const hint = document.getElementById('regPwHint');
+      if(bar){
+        bar.className = 'pw-bar ' + strength;
+      }
+      if(hint){
+        const msgs = { weak:'Yếu — thêm chữ hoa, số, ký tự đặc biệt', medium:'Trung bình — có thể mạnh hơn!', strong:'Mạnh ✓' };
+        hint.textContent = this.value.length > 0 ? (msgs[strength] || '') : '';
+      }
+    });
+  }
+
+  /* ── expose toggleForm globally ── */
+  window.nbLgnToggleForm = function(showReg){
+    if(isSubmitting) return;
+    isRegMode = showReg;
+    const box = document.getElementById('mainBox');
+    box.classList.add('animate__animated','animate__flipInY');
+
+    setTimeout(() => {
+      document.getElementById('loginForm').classList.toggle('hidden', showReg);
+      document.getElementById('registerForm').classList.toggle('hidden', !showReg);
+      _setHeader(showReg ? 'register' : null);
+      const focusId = showReg ? 'regFullName' : 'user';
+      const el = document.getElementById(focusId);
+      if(el) el.focus();
+    }, 180);
+
+    setTimeout(() => box.classList.remove('animate__flipInY'), 800);
+  };
+};
+
+/* ── Toggle hiện/ẩn password ── */
+window.nbLgnTogglePw = function(inputId, btn){
+  const input = document.getElementById(inputId);
+  if(!input) return;
+  const isText = input.type === 'text';
+  input.type = isText ? 'password' : 'text';
+  // Đổi SVG path giữa eye và eye-off
+  btn.querySelector('svg').innerHTML = isText
+    ? `<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>`
+    : `<path d="M12 6c3.79 0 7.17 2.13 8.82 5.5-.59 1.22-1.42 2.27-2.41 3.12l1.41 1.42C21.12 14.9 22.29 13.26 23 11.5 21.27 7.11 17 4 12 4c-1.27 0-2.49.2-3.64.57l1.65 1.65C10.76 6.07 11.37 6 12 6zm-1.07.68L13 8.75c.57.26 1.03.72 1.28 1.28l2.07 2.07c.08-.3.14-.6.14-.93-.01-2.21-1.8-4-4-4-.32 0-.63.06-.93.14zM2.01 3.87l2.68 2.68C3.06 7.83 1.77 9.53 1 11.5 2.73 15.89 7 19 12 19c1.52 0 2.98-.29 4.32-.82l3.42 3.42 1.41-1.41L3.42 2.45 2.01 3.87zm7.5 7.5l2.61 2.61c-.04.01-.08.02-.12.02-1.38 0-2.5-1.12-2.5-2.5 0-.05.01-.08.01-.13zm-3.4-3.4l1.75 1.75c-.23.55-.36 1.15-.36 1.78 0 2.76 2.24 5 5 5 .63 0 1.23-.13 1.77-.36l.98.98c-.88.24-1.8.38-2.75.38-3.79 0-7.17-2.13-8.82-5.5.7-1.43 1.72-2.61 2.93-3.53z"/>`;
+};
+
+/* ── Xử lý đăng nhập / đăng ký ── */
+window.nbLgnHandle = async function(action){
+  const params      = new URLSearchParams(window.location.search);
+  const roleFromUrl = params.get('role') || 'admin';
+  const SURL        = window.SCRIPT_URL || window.API_URL || window.NB_API || '';
+
+  const userVal = action === 'login'
+    ? (document.getElementById('user')?.value.trim() || '')
+    : (document.getElementById('regUser')?.value.trim() || '');
+  const passVal = action === 'login'
+    ? (document.getElementById('pass')?.value.trim() || '')
+    : (document.getElementById('regPass')?.value.trim() || '');
+
+  if(!userVal || !passVal){
+    if(typeof Swal !== 'undefined')
+      Swal.fire({ icon:'warning', title:'Thiếu thông tin!', text:'Vui lòng nhập đầy đủ các trường yêu cầu ✨' });
+    return;
+  }
+
+  // Kiểm tra lại biến isSubmitting thông qua closure
+  const btnId = action === 'login' ? 'btnLogin' : 'btnReg';
+  const currentBtn = document.getElementById(btnId);
+  if(!currentBtn || currentBtn.disabled) return;
+
+  currentBtn.disabled = true;
+  const originalHtml  = currentBtn.innerHTML;
+  currentBtn.innerHTML = `<svg class="spin-anim" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> ĐANG XỬ LÝ...`;
+
+  try {
+    const formData = new URLSearchParams();
+    formData.append('action', action);
+    formData.append('user',   userVal);
+    formData.append('pass',   passVal);
+    formData.append('role',   roleFromUrl);
+
+    if(action === 'register'){
+      formData.append('name',   document.getElementById('regFullName')?.value.trim() || '');
+      formData.append('class',  document.getElementById('regClass')?.value.trim() || '');
+      formData.append('school', document.getElementById('regSchool')?.value.trim() || '');
+    }
+
+    const response = await fetch(SURL, { method:'POST', body:formData });
+    const result   = await response.json();
+
+    if(result.status === 'success'){
+      if(action === 'login'){
+        nb.setMany({
+          userRole:     result.role || 'student',
+          studentName:  result.name,
+          username:     userVal,
+          schoolName:   result.school || '',
+          className:    (result.class || '').replace(/^'+/, ''),
+          studentClass: (result.class || '').replace(/^'+/, ''),
+        });
+
+        if(typeof Swal !== 'undefined'){
+          Swal.fire({
+            icon:'success', title:'CHÀO MỪNG TRỞ LẠI!',
+            html:`Hệ thống Nebula xin chào! <b style="color:var(--primary)">${result.name}</b>`,
+            timer:2000, showConfirmButton:false
+          });
+        }
+        setTimeout(() => {
+          window.location.href = result.role === 'admin' ? 'dashboard.html' : 'name.html';
+        }, 2000);
+
+      } else {
+        if(typeof Swal !== 'undefined'){
+          Swal.fire({
+            icon:'success', title:'GỬI THÀNH CÔNG!',
+            text:'Yêu cầu của bạn đã được gửi. Hãy kiên nhẫn đợi quản trị viên phê duyệt nhé!',
+          }).then(() => {
+            if(typeof window.nbLgnToggleForm === 'function') window.nbLgnToggleForm(false);
+          });
+        }
+      }
+    } else {
+      if(typeof Swal !== 'undefined')
+        Swal.fire({ icon:'error', title:'THẤT BẠI', text: result.message || 'Sai thông tin!' });
+      const box = document.getElementById('mainBox');
+      if(box){ box.classList.add('shake'); setTimeout(()=>box.classList.remove('shake'), 400); }
+    }
+  } catch(error){
+    if(typeof Swal !== 'undefined')
+      Swal.fire({ icon:'error', title:'LỖI KẾT NỐI', text:'Không thể liên lạc với máy chủ Nebula!' });
+  } finally {
+    currentBtn.disabled = false;
+    currentBtn.innerHTML = originalHtml;
+  }
+};
