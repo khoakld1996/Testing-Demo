@@ -2,138 +2,76 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Hệ thống Quản trị - Nebula Premium</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
-    :root {
-      --bg-dark:#070b14; --card-bg:rgba(15,23,42,0.7); --primary:#3b82f6;
-      --secondary:#10b981; --accent:#8b5cf6; --danger:#ef4444; --warning:#f59e0b;
-      --ispring:#f97316; --text:#f8fafc; --border:rgba(255,255,255,0.08);
-      --glass-shadow:0 8px 32px 0 rgba(0,0,0,0.37);
-    }
-    *{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
-    ::-webkit-scrollbar{width:5px} ::-webkit-scrollbar-track{background:transparent}
-    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px}
-    body{background:var(--bg-dark);background-image:radial-gradient(circle at 10% 20%,rgba(59,130,246,0.1) 0%,transparent 40%),radial-gradient(circle at 90% 80%,rgba(139,92,246,0.1) 0%,transparent 40%),url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop');background-size:cover;background-attachment:fixed;color:var(--text);padding:20px;min-height:100vh;line-height:1.5;}
-    .container{max-width:1400px;margin:0 auto;}
-    .glass-card{background:var(--card-bg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:var(--glass-shadow);transition:border-color 0.3s;}
-    .nav-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:25px;}
-    .logo-area h1{font-size:1.6rem;font-weight:800;letter-spacing:1px;background:linear-gradient(135deg,#60a5fa,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    .logo-area p{font-size:0.7rem;opacity:0.5;text-transform:uppercase;letter-spacing:2px;}
-    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin-bottom:25px;}
-    .stat-box{display:flex;align-items:center;gap:18px;transition:0.4s cubic-bezier(0.175,0.885,0.32,1.275);}
-    .stat-box:hover{transform:translateY(-8px);border-color:rgba(255,255,255,0.2);}
-    .stat-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
-    .stat-box h2{font-size:1.8rem;font-weight:800;} .stat-box p{opacity:0.5;font-size:0.75rem;margin-bottom:2px;}
-    /* TABS */
-    .tab-nav{display:flex;gap:6px;margin-bottom:25px;background:rgba(0,0,0,0.3);padding:6px;border-radius:16px;border:1px solid var(--border);width:fit-content;}
-    .tab-btn{padding:10px 22px;border-radius:11px;border:none;cursor:pointer;font-weight:700;font-size:0.82rem;transition:all 0.25s;color:rgba(255,255,255,0.5);background:transparent;display:flex;align-items:center;gap:8px;letter-spacing:0.5px;}
-    .tab-btn.active{background:var(--card-bg);color:white;box-shadow:0 4px 15px rgba(0,0,0,0.3);border:1px solid var(--border);}
-    .tab-btn.active[data-tab="system"]{color:var(--primary);border-color:rgba(59,130,246,0.3);}
-    .tab-btn.active[data-tab="ispring"]{color:var(--ispring);border-color:rgba(249,115,22,0.3);}
-    .tab-content{display:none;} .tab-content.active{display:block;}
-    /* SYSTEM */
-    .main-grid{display:grid;grid-template-columns:1.8fr 1.2fr;gap:25px;}
-    @media(max-width:1100px){.main-grid{grid-template-columns:1fr;}}
-    .item-list{max-height:480px;overflow-y:auto;padding-right:8px;}
-    .test-card{background:rgba(255,255,255,0.02);border:1px solid var(--border);padding:18px;border-radius:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;transition:0.3s;}
-    .test-card:hover{background:rgba(255,255,255,0.06);border-color:var(--primary);}
-    .test-card h4{color:#60a5fa;margin-bottom:4px;font-size:1rem;} .test-card p{font-size:0.75rem;opacity:0.5;}
-    .result-row{display:grid;grid-template-columns:1.5fr 1.5fr 1fr;padding:14px 10px;border-bottom:1px solid var(--border);font-size:0.85rem;align-items:center;transition:0.2s;}
-    .result-row:hover{background:rgba(255,255,255,0.02);}
-    .user-card{background:rgba(245,158,11,0.05);border-left:4px solid var(--warning);padding:16px;border-radius:12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
-    /* ISPRING */
-    .ispring-grid{display:grid;grid-template-columns:1.6fr 1.2fr;gap:25px;}
-    @media(max-width:1100px){.ispring-grid{grid-template-columns:1fr;}}
-    .ispring-card{background:rgba(249,115,22,0.04);border:1px solid rgba(249,115,22,0.15);padding:18px;border-radius:16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;transition:0.3s;}
-    .ispring-card:hover{background:rgba(249,115,22,0.09);border-color:var(--ispring);}
-    .ispring-card h4{color:var(--ispring);margin-bottom:4px;font-size:1rem;display:flex;align-items:center;gap:8px;}
-    .ispring-card p{font-size:0.72rem;opacity:0.5;font-family:monospace;margin-top:3px;}
-    .ispring-card .badge{font-size:0.65rem;padding:3px 9px;border-radius:20px;font-weight:700;background:rgba(249,115,22,0.15);color:var(--ispring);border:1px solid rgba(249,115,22,0.3);}
-    .ispring-add-form{border-top:4px solid var(--ispring);}
-    .form-hint{font-size:0.72rem;opacity:0.45;margin-top:6px;line-height:1.6;}
-    .form-hint code{background:rgba(255,255,255,0.07);padding:2px 7px;border-radius:5px;font-family:monospace;color:var(--ispring);}
-    .toggle-wrap{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
-    .toggle-wrap label{font-size:0.82rem;opacity:0.7;}
-    .toggle{width:44px;height:24px;background:rgba(255,255,255,0.1);border-radius:12px;position:relative;cursor:pointer;transition:0.3s;border:1px solid var(--border);}
-    .toggle.on{background:var(--ispring);border-color:var(--ispring);}
-    .toggle::after{content:"";position:absolute;width:18px;height:18px;background:white;border-radius:50%;top:2px;left:2px;transition:0.3s;}
-    .toggle.on::after{left:22px;}
-    /* BUTTONS */
-    .btn{padding:10px 18px;border-radius:10px;border:none;font-weight:600;cursor:pointer;transition:0.2s;display:inline-flex;align-items:center;gap:8px;font-size:0.8rem;}
-    .btn-glow{background:var(--primary);color:white;box-shadow:0 4px 15px rgba(59,130,246,0.3);}
-    .btn-glow:hover{transform:scale(1.02);filter:brightness(1.1);}
-    .btn-orange{background:var(--ispring);color:white;box-shadow:0 4px 15px rgba(249,115,22,0.3);}
-    .btn-orange:hover{transform:scale(1.02);filter:brightness(1.1);}
-    .btn-outline{background:transparent;border:1px solid var(--border);color:white;}
-    .btn-outline:hover{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.2);}
-    .input-dark{background:rgba(0,0,0,0.3);border:1px solid var(--border);color:white;padding:12px 16px;border-radius:10px;outline:none;width:100%;font-size:0.85rem;transition:0.2s;}
-    .input-dark:focus{border-color:var(--primary);background:rgba(0,0,0,0.5);}
-    .input-dark.orange:focus{border-color:var(--ispring);}
-    .api-status{display:inline-flex;align-items:center;gap:8px;font-size:0.7rem;padding:6px 14px;border-radius:30px;border:1px solid var(--border);font-weight:700;text-transform:uppercase;}
-    .api-status .dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
-    .api-status.ok{color:var(--secondary);background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);}
-    .api-status.loading{color:var(--warning);background:rgba(245,158,11,0.1);animation:pulse 1.5s infinite;}
-    .api-status.err{color:var(--danger);background:rgba(239,68,68,0.1);}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-    .skeleton{height:60px;border-radius:12px;margin-bottom:12px;background:linear-gradient(90deg,rgba(255,255,255,0.03) 25%,rgba(255,255,255,0.08) 50%,rgba(255,255,255,0.03) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite linear;}
-    @keyframes shimmer{to{background-position:200% 0}}
-    #debugPanel{background:#000;border:1px solid #333;border-radius:12px;padding:15px;margin-bottom:20px;font-family:'Courier New',monospace;font-size:0.75rem;display:none;max-height:200px;overflow-y:auto;color:#aaa;}
-    .dl-err{color:var(--danger)} .dl-warn{color:var(--warning)} .dl-ok{color:var(--secondary)}
-    .empty-state{text-align:center;padding:40px 20px;opacity:0.3;}
-    .empty-state i{font-size:2.5rem;display:block;margin-bottom:10px;}
-    .empty-state p{font-size:0.85rem;}
-    /* EXPORT/IMPORT area */
-    .config-io{background:rgba(0,0,0,0.3);border:1px solid rgba(249,115,22,0.2);border-radius:12px;padding:16px;margin-bottom:15px;}
-    .config-io p{font-size:0.75rem;opacity:0.5;margin-bottom:10px;}
-    .config-io textarea{width:100%;background:rgba(0,0,0,0.4);border:1px solid var(--border);color:#94a3b8;padding:10px;border-radius:8px;font-family:monospace;font-size:0.72rem;height:90px;outline:none;resize:none;}
-  </style>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 </head>
-<body>
+<body class="dash-body">
 <div class="container animate__animated animate__fadeIn">
 
   <header class="nav-header">
     <div class="logo-area">
       <h1><i class="fas fa-shield-halved"></i> NEBULA ADMIN</h1>
-      <p>Hệ thống quản trị tối cao</p>
+      <p>Hệ thống quản trị tối cao &nbsp;
+        <span class="refresh-badge" id="refreshBadge">
+          <i class="fas fa-sync-alt"></i> Auto 30s
+        </span>
+      </p>
     </div>
-    <div style="display:flex;gap:12px;align-items:center;">
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
       <span id="apiStatus" class="api-status loading"><span class="dot"></span> Kết nối...</span>
+      <button class="btn btn-outline" onclick="exportResults()" title="Xuất CSV kết quả">
+        <i class="fas fa-file-csv"></i> <span class="hide-sm">Xuất CSV</span>
+      </button>
       <button class="btn btn-outline" onclick="toggleDebug()"><i class="fas fa-code"></i></button>
       <button class="btn btn-outline" onclick="loadData()"><i class="fas fa-sync"></i></button>
-      <button class="btn btn-outline" style="color:var(--danger)" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+      <button class="btn btn-outline" style="color:var(--danger)" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
     </div>
   </header>
 
   <div id="debugPanel"></div>
 
+  <!-- STATS -->
   <div class="stats-grid">
     <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(59,130,246,0.1);color:var(--primary)"><i class="fas fa-file-invoice"></i></div>
+      <div class="stat-icon" style="background:rgba(59,130,246,.1);color:var(--primary)">
+        <i class="fas fa-file-invoice"></i>
+      </div>
       <div><p>Đề thi hệ thống</p><h2 id="cTests">—</h2></div>
     </div>
     <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(249,115,22,0.1);color:var(--ispring)"><i class="fas fa-rocket"></i></div>
+      <div class="stat-icon" style="background:rgba(249,115,22,.1);color:var(--ispring)">
+        <i class="fas fa-rocket"></i>
+      </div>
       <div><p>Bài iSpring</p><h2 id="cIspring">0</h2></div>
     </div>
     <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:var(--warning)"><i class="fas fa-user-clock"></i></div>
+      <div class="stat-icon" style="background:rgba(245,158,11,.1);color:var(--warning)">
+        <i class="fas fa-user-clock"></i>
+      </div>
       <div><p>Chờ duyệt</p><h2 id="cPending">—</h2></div>
     </div>
     <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(16,185,129,0.1);color:var(--secondary)"><i class="fas fa-graduation-cap"></i></div>
+      <div class="stat-icon" style="background:rgba(16,185,129,.1);color:var(--success)">
+        <i class="fas fa-graduation-cap"></i>
+      </div>
       <div><p>Lượt làm bài</p><h2 id="cResults">—</h2></div>
     </div>
   </div>
 
+  <!-- TABS -->
   <div class="tab-nav">
-    <button class="tab-btn active" data-tab="system" onclick="switchTab('system')"><i class="fas fa-database"></i> HỆ THỐNG</button>
-    <button class="tab-btn" data-tab="ispring" onclick="switchTab('ispring')"><i class="fas fa-rocket"></i> iSPRING</button>
+    <button class="tab-btn active" data-tab="system" onclick="switchTab('system')">
+      <i class="fas fa-database"></i> HỆ THỐNG
+    </button>
+    <button class="tab-btn" data-tab="ispring" onclick="switchTab('ispring')">
+      <i class="fas fa-rocket"></i> iSPRING
+    </button>
   </div>
 
   <!-- TAB HỆ THỐNG -->
@@ -141,34 +79,63 @@
     <div class="main-grid">
       <main>
         <div class="glass-card" style="margin-bottom:25px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-            <h3 style="font-size:1rem;display:flex;align-items:center;gap:10px"><i class="fas fa-folder-open" style="color:var(--primary)"></i> Danh sách đề thi</h3>
-            <input type="text" id="searchInput" class="input-dark" style="width:250px" placeholder="Tìm tên đề thi..." oninput="filterTests()">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+            <h3 style="font-size:1rem;display:flex;align-items:center;gap:10px">
+              <i class="fas fa-folder-open" style="color:var(--primary)"></i> Danh sách đề thi
+            </h3>
+            <input type="text" id="searchInput" class="input-dark"
+              style="width:220px" placeholder="Tìm tên đề thi..." oninput="filterTests()">
           </div>
           <div id="testList" class="item-list"></div>
         </div>
+
         <div class="glass-card">
-          <h3 style="font-size:1rem;margin-bottom:20px;display:flex;align-items:center;gap:10px"><i class="fas fa-list-check" style="color:var(--secondary)"></i> Kết quả gần đây</h3>
-          <div class="result-row" style="opacity:0.5;font-weight:800;font-size:0.7rem;letter-spacing:1px;border-bottom:2px solid var(--border)"><span>THÍ SINH</span><span>ĐỀ THI</span><span>KẾT QUẢ</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+            <h3 style="font-size:1rem;display:flex;align-items:center;gap:10px">
+              <i class="fas fa-list-check" style="color:var(--success)"></i> Kết quả gần đây
+            </h3>
+            <button class="btn-export" onclick="exportResults()">
+              <i class="fas fa-file-csv"></i> Xuất CSV
+            </button>
+          </div>
+          <div class="result-row" style="opacity:.5;font-weight:800;font-size:.7rem;letter-spacing:1px;border-bottom:2px solid var(--border)">
+            <span>THÍ SINH</span><span>ĐỀ THI</span><span>KẾT QUẢ</span>
+          </div>
           <div id="resultList" class="item-list" style="max-height:350px"></div>
         </div>
       </main>
+
       <aside>
         <div class="glass-card" style="margin-bottom:25px;border-top:4px solid var(--primary)">
           <h3 style="font-size:1rem;margin-bottom:18px">Khởi tạo đề mới</h3>
           <div style="display:flex;flex-direction:column;gap:12px">
             <input id="newName" class="input-dark" placeholder="Tên bài thi">
             <input id="newDesc" class="input-dark" placeholder="Mô tả bài thi">
-            <div style="display:flex;align-items:center;gap:10px"><i class="fas fa-clock" style="opacity:0.5"></i><input id="newDur" class="input-dark" type="number" placeholder="Phút" value="45"></div>
-            <button class="btn btn-glow" style="width:100%;justify-content:center;padding:14px" onclick="addTest()"><i class="fas fa-plus"></i> TẠO BÀI THI NGAY</button>
+            <div style="display:flex;align-items:center;gap:10px">
+              <i class="fas fa-clock" style="opacity:.5"></i>
+              <input id="newDur" class="input-dark" type="number" placeholder="Phút" value="45" style="flex:1">
+            </div>
+            <button class="btn btn-glow" style="width:100%;justify-content:center;padding:14px" onclick="addTest()">
+              <i class="fas fa-plus"></i> TẠO BÀI THI NGAY
+            </button>
           </div>
         </div>
+
         <div class="glass-card" style="margin-bottom:25px">
-          <h3 style="font-size:1rem;margin-bottom:15px">Phân tích chất lượng</h3>
+          <h3 style="font-size:1rem;margin-bottom:15px">
+            Phân tích chất lượng
+            <span style="font-size:.68rem;opacity:.4;font-weight:400;margin-left:6px">(Giỏi/TB/Yếu)</span>
+          </h3>
           <div style="height:220px"><canvas id="chartEl"></canvas></div>
         </div>
+
         <div class="glass-card" style="border-top:4px solid var(--warning)">
-          <h3 style="font-size:1rem;margin-bottom:18px;color:var(--warning)">Yêu cầu đăng ký</h3>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+            <h3 style="font-size:1rem;color:var(--warning)">
+              <i class="fas fa-user-clock"></i> Yêu cầu đăng ký
+            </h3>
+            <span class="refresh-badge"><i class="fas fa-circle" style="font-size:.4rem"></i> Live</span>
+          </div>
           <div id="pendingList" class="item-list" style="max-height:280px"></div>
         </div>
       </aside>
@@ -180,42 +147,61 @@
     <div class="ispring-grid">
       <div>
         <div class="glass-card" style="margin-bottom:25px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
             <h3 style="font-size:1rem;display:flex;align-items:center;gap:10px">
               <i class="fas fa-rocket" style="color:var(--ispring)"></i> Bài thi iSpring
-              <span style="font-size:0.7rem;background:rgba(249,115,22,0.15);color:var(--ispring);padding:3px 10px;border-radius:20px;border:1px solid rgba(249,115,22,0.3)" id="ispringCount">0 bài</span>
+              <span id="ispringCount"
+                style="font-size:.7rem;background:rgba(249,115,22,.15);color:var(--ispring);padding:3px 10px;border-radius:20px;border:1px solid rgba(249,115,22,.3)">
+                0 bài
+              </span>
             </h3>
-            <input type="text" id="ispringSearch" class="input-dark orange" style="width:220px" placeholder="Tìm bài iSpring..." oninput="renderIspringList()">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <input type="text" id="ispringSearch" class="input-dark orange" style="width:180px"
+                placeholder="Tìm bài iSpring..." oninput="renderIspringList()">
+              <button class="btn-export" onclick="exportIspringResults()">
+                <i class="fas fa-file-csv"></i> Xuất CSV
+              </button>
+            </div>
           </div>
           <div id="ispringList" class="item-list" style="max-height:500px">
-            <div class="empty-state"><i class="fas fa-folder-plus"></i><p>Chưa có bài iSpring nào.<br>Thêm từ form bên phải.</p></div>
+            <div class="empty-state"><i class="fas fa-folder-plus"></i>
+              <p>Chưa có bài iSpring nào.<br>Thêm từ form bên phải.</p>
+            </div>
           </div>
         </div>
 
-        <!-- Hướng dẫn -->
-        <div class="glass-card" style="border-left:4px solid rgba(249,115,22,0.4)">
-          <h3 style="font-size:0.9rem;margin-bottom:14px;color:var(--ispring)"><i class="fas fa-info-circle"></i> Cấu trúc thư mục</h3>
-          <div style="background:rgba(0,0,0,0.4);border-radius:10px;padding:14px;font-family:monospace;font-size:0.75rem;color:#94a3b8;line-height:1.8">
+        <!-- Hướng dẫn cấu trúc thư mục -->
+        <div class="glass-card" style="border-left:4px solid rgba(249,115,22,.4)">
+          <h3 style="font-size:.9rem;margin-bottom:14px;color:var(--ispring)">
+            <i class="fas fa-info-circle"></i> Cấu trúc thư mục
+          </h3>
+          <div style="background:rgba(0,0,0,.4);border-radius:10px;padding:14px;font-family:monospace;font-size:.75rem;color:#94a3b8;line-height:1.8">
             📁 Testing-Demo/ &nbsp;←&nbsp; <span style="color:var(--ispring)">gốc website</span><br>
             &nbsp;&nbsp;├─ 📄 select.html<br>
-            &nbsp;&nbsp;├─ 📄 dashboard.html<br>
             &nbsp;&nbsp;└─ 📁 <span style="color:var(--ispring)">quizzes/</span><br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ 📁 <span style="color:var(--ispring)">FullIOT1GS6LV1/</span><br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ 📄 index.html<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ 📁 data/
           </div>
-          <p style="font-size:0.72rem;opacity:0.55;margin-top:12px;line-height:1.8">
-            👉 Đường dẫn cần nhập: <code style="background:rgba(249,115,22,0.1);color:var(--ispring);padding:3px 8px;border-radius:5px;font-size:0.8rem">quizzes/FullIOT1GS6LV1/index.html</code>
+          <p style="font-size:.72rem;opacity:.55;margin-top:12px;line-height:1.8">
+            👉 Đường dẫn cần nhập:
+            <code style="background:rgba(249,115,22,.1);color:var(--ispring);padding:3px 8px;border-radius:5px;font-size:.8rem">
+              quizzes/FullIOT1GS6LV1/index.html
+            </code>
           </p>
         </div>
       </div>
 
       <aside>
         <div class="glass-card ispring-add-form" style="margin-bottom:25px">
-          <h3 style="font-size:1rem;margin-bottom:5px;color:var(--ispring)"><i class="fas fa-plus-circle"></i> Thêm bài thi iSpring</h3>
-          <p style="font-size:0.72rem;opacity:0.45;margin-bottom:18px">Nhập thông tin để hiển thị trên trang chọn bài thi</p>
+          <h3 style="font-size:1rem;margin-bottom:5px;color:var(--ispring)">
+            <i class="fas fa-plus-circle"></i> Thêm bài thi iSpring
+          </h3>
+          <p style="font-size:.72rem;opacity:.45;margin-bottom:18px">
+            Nhập thông tin để hiển thị trên trang chọn bài thi
+          </p>
           <div style="display:flex;flex-direction:column;gap:12px">
-            <input id="iName" class="input-dark orange" placeholder="Tên hiển thị (VD: Đề Full IOT G6 LV1)">
+            <input id="iName" class="input-dark orange" placeholder="Tên hiển thị">
             <div>
               <input id="iPath" class="input-dark orange" placeholder="VD: quizzes/FullIOT1GS6LV1/index.html">
               <p class="form-hint">Relative path từ gốc web đến <code>index.html</code> của iSpring</p>
@@ -226,320 +212,382 @@
               <input id="iSubject" class="input-dark orange" placeholder="Môn học">
             </div>
             <div class="toggle-wrap">
-              <label><i class="fas fa-eye" style="opacity:0.5;margin-right:6px"></i> Hiển thị với học sinh</label>
+              <label><i class="fas fa-eye" style="opacity:.5;margin-right:6px"></i> Hiển thị với học sinh</label>
               <div class="toggle on" id="visToggle" onclick="this.classList.toggle('on')"></div>
             </div>
-            <button class="btn btn-orange" style="width:100%;justify-content:center;padding:14px;font-size:0.9rem" onclick="addIspring()">
+            <button class="btn btn-orange" style="width:100%;justify-content:center;padding:14px;font-size:.9rem" onclick="addIspring()">
               <i class="fas fa-rocket"></i> THÊM BÀI iSPRING
             </button>
           </div>
         </div>
 
-        <!-- Kết quả iSpring -->
-        <div class="glass-card" style="border-top:4px solid rgba(249,115,22,0.5);margin-bottom:25px">
-          <h3 style="font-size:0.9rem;margin-bottom:6px;color:var(--ispring)"><i class="fas fa-chart-bar"></i> Kết quả bài thi iSpring</h3>
-          <p style="font-size:0.72rem;opacity:0.45;margin-bottom:14px;line-height:1.6">Xem điểm học sinh đã nộp qua SCORM. Dữ liệu lưu thẳng vào Google Sheet.</p>
-          <button class="btn btn-orange" style="width:100%;justify-content:center;" onclick="viewIspringResults()">
-            <i class="fas fa-table"></i> Xem kết quả iSpring
-          </button>
-          <p style="font-size:0.68rem;opacity:0.35;margin-top:10px;text-align:center">Sheet <b>Results</b>, cột testName có prefix <code>[iSpring]</code></p>
+        <div class="glass-card" style="border-top:4px solid rgba(249,115,22,.5);margin-bottom:25px">
+          <h3 style="font-size:.9rem;margin-bottom:6px;color:var(--ispring)">
+            <i class="fas fa-chart-bar"></i> Kết quả bài thi iSpring
+          </h3>
+          <p style="font-size:.72rem;opacity:.45;margin-bottom:14px;line-height:1.6">
+            Xem & xuất điểm học sinh qua SCORM. Dữ liệu từ Google Sheet.
+          </p>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-orange" style="flex:1;justify-content:center;" onclick="viewIspringResults()">
+              <i class="fas fa-table"></i> Xem kết quả
+            </button>
+            <button class="btn-export" onclick="exportIspringResults()">
+              <i class="fas fa-file-csv"></i> CSV
+            </button>
+          </div>
         </div>
 
-        <!-- Test path -->
-        <div class="glass-card" style="border-top:4px solid rgba(249,115,22,0.4)">
-          <h3 style="font-size:0.9rem;margin-bottom:14px;color:var(--ispring)"><i class="fas fa-vial"></i> Kiểm tra đường dẫn</h3>
+        <div class="glass-card" style="border-top:4px solid rgba(249,115,22,.4)">
+          <h3 style="font-size:.9rem;margin-bottom:14px;color:var(--ispring)">
+            <i class="fas fa-vial"></i> Kiểm tra đường dẫn
+          </h3>
           <div style="display:flex;gap:8px;margin-bottom:12px">
-            <input id="testPath" class="input-dark orange" placeholder="quizzes/FullIOT1GS6LV1/index.html" style="flex:1">
-            <button class="btn btn-outline" onclick="testIspringPath()" style="white-space:nowrap"><i class="fas fa-play"></i> Test</button>
+            <input id="testPath" class="input-dark orange" style="flex:1"
+              placeholder="quizzes/FullIOT1GS6LV1/index.html">
+            <button class="btn btn-outline" onclick="testIspringPath()" style="white-space:nowrap">
+              <i class="fas fa-play"></i> Test
+            </button>
           </div>
-          <div id="pathTestResult" style="font-size:0.78rem;opacity:0.6;min-height:20px"></div>
+          <div id="pathTestResult" style="font-size:.78rem;opacity:.6;min-height:20px"></div>
         </div>
       </aside>
     </div>
   </div>
 
-  <footer style="text-align:center;margin-top:50px;opacity:0.2;font-size:0.7rem;letter-spacing:4px">NEBULA ECOSYSTEM &copy; 2026</footer>
+  <footer style="text-align:center;margin-top:50px;opacity:.2;font-size:.7rem;letter-spacing:4px">
+    NEBULA ECOSYSTEM &copy; 2026
+  </footer>
 </div>
 
 <!-- iSpring Preview Modal -->
-<div id="ispringModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
-  <div style="background:#0f172a;border:1px solid rgba(249,115,22,0.3);border-radius:20px;width:90vw;max-width:1100px;height:85vh;display:flex;flex-direction:column;overflow:hidden;">
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid rgba(255,255,255,0.08)">
+<div id="ispringModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
+  <div style="background:#0f172a;border:1px solid rgba(249,115,22,.3);border-radius:20px;width:90vw;max-width:1100px;height:85vh;display:flex;flex-direction:column;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid rgba(255,255,255,.08)">
       <div style="display:flex;align-items:center;gap:10px">
         <i class="fas fa-rocket" style="color:var(--ispring)"></i>
         <span style="font-weight:700" id="modalTitle">Preview iSpring</span>
-        <span style="font-size:0.7rem;opacity:0.4" id="modalPath"></span>
+        <span style="font-size:.7rem;opacity:.4" id="modalPath"></span>
       </div>
-      <button onclick="closeIspringModal()" class="btn btn-outline" style="color:var(--danger);padding:8px 14px"><i class="fas fa-times"></i> Đóng</button>
+      <button onclick="closeIspringModal()" class="btn btn-outline" style="color:var(--danger);padding:8px 14px">
+        <i class="fas fa-times"></i> Đóng
+      </button>
     </div>
     <iframe id="ispringFrame" src="" style="flex:1;border:none;width:100%"></iframe>
   </div>
 </div>
 
+<script src="script.js" defer></script>
 <script>
-const API = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
-let tests=[], results=[], pending=[], chartInst=null, ispringList=[];
+/* ─── Biến trạng thái trang ─── */
+let tests=[], results=[], pending=[], ispringList=[];
+window._nbResults = results;
+window._nbPending = pending;
 
-if(localStorage.getItem("userRole") !== "admin") location.replace("index.html");
+/* ─── Khởi tạo ─── */
+window.onload = async function(){
+  nbDashboardInit(); /* từ script.js */
+  await loadIspring();
+  await loadData();
+  /* Bind modal close khi click nền */
+  document.getElementById('ispringModal')
+    .addEventListener('click', function(e){ if(e.target===this) closeIspringModal(); });
+};
 
-// ===== iSPRING - DÙNG GOOGLE SHEET QUA API =====
-async function loadIspring() {
-  try {
-    const data = await callAPI("getIspring");
-    if(Array.isArray(data)) {
-      ispringList = data;
-      document.getElementById("cIspring").innerText = ispringList.length;
+/* ─── iSPRING ─── */
+async function loadIspring(){
+  try{
+    const data = await callAPI('getIspring');
+    if(Array.isArray(data)){
+      ispringList=data;
+      document.getElementById('cIspring').innerText=ispringList.length;
       renderIspringList();
     }
-  } catch(e) { log("Lỗi loadIspring: " + e.message, "err"); }
+  }catch(e){ log('Lỗi loadIspring: '+e.message,'err'); }
 }
-function saveIspring() { document.getElementById("cIspring").innerText = ispringList.length; }
 
-function renderIspringList() {
-  const el = document.getElementById("ispringList");
-  const q = (document.getElementById("ispringSearch")?.value || "").toLowerCase();
-  const filtered = ispringList.filter(item => item.name.toLowerCase().includes(q));
-  document.getElementById("ispringCount").innerText = ispringList.length + " bài";
-  if(!filtered.length) {
-    el.innerHTML = `<div class="empty-state"><i class="fas fa-${ispringList.length ? 'search' : 'folder-plus'}"></i><p>${ispringList.length ? 'Không tìm thấy' : 'Chưa có bài iSpring nào.<br>Thêm từ form bên phải.'}</p></div>`;
+function renderIspringList(){
+  const el=document.getElementById('ispringList');
+  const q=(document.getElementById('ispringSearch')?.value||'').toLowerCase();
+  const filtered=ispringList.filter(item=>(item.name||'').toLowerCase().includes(q));
+  document.getElementById('ispringCount').innerText=ispringList.length+' bài';
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty-state">
+      <i class="fas fa-${ispringList.length?'search':'folder-plus'}"></i>
+      <p>${ispringList.length?'Không tìm thấy kết quả phù hợp.':'Chưa có bài iSpring nào.<br>Thêm từ form bên phải.'}</p>
+    </div>`;
     return;
   }
-  el.innerHTML = filtered.map((item, i) => {
-    // Normalize old sheet header names
-    item.name     = item.name     || item.nameIPS     || item.nameips     || "?";
-    item.path     = item.path     || item.pathIPS     || item.pathips     || "";
-    item.duration = item.duration || item.durationIPS || item.durationips || "";
-    item.subject  = item.subject  || item.typeIPS     || item.typeips     || "";
-    item.desc     = item.desc     || item.descriptionIPS || item.descriptionips || "";
+  el.innerHTML=filtered.map((item,i)=>{
+    /* Normalize header names cũ */
+    item.name    =item.name    ||item.nameIPS    ||item.nameips    ||'?';
+    item.path    =item.path    ||item.pathIPS    ||item.pathips    ||'';
+    item.duration=item.duration||item.durationIPS||item.durationips||'';
+    item.subject =item.subject ||item.typeIPS    ||item.typeips    ||'';
+    item.desc    =item.desc    ||item.descriptionIPS||item.descriptionips||'';
     return `
-    <div class="ispring-card animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s">
+    <div class="ispring-card animate__animated animate__fadeInUp" style="animation-delay:${i*.04}s">
       <div style="min-width:0;flex:1">
         <h4>
-          <i class="fas fa-rocket" style="font-size:0.85rem"></i>
-          ${item.name}
-          ${item.visible!==false?'<span class="badge"><i class="fas fa-eye"></i> Hiện</span>':'<span class="badge" style="background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.3);border-color:rgba(255,255,255,0.1)"><i class="fas fa-eye-slash"></i> Ẩn</span>'}
+          <i class="fas fa-rocket" style="font-size:.85rem"></i>
+          ${nbEsc(item.name)}
+          ${item.visible!==false
+            ?'<span class="badge"><i class="fas fa-eye"></i> Hiện</span>'
+            :'<span class="badge" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.1)"><i class="fas fa-eye-slash"></i> Ẩn</span>'}
         </h4>
-        <p>${item.path}</p>
-        ${item.desc?`<p style="color:rgba(255,255,255,0.4);font-family:inherit;margin-top:2px">${item.desc}</p>`:''}
-        <div style="display:flex;gap:12px;margin-top:6px;font-size:0.7rem;opacity:0.5">
+        <p>${nbEsc(item.path)}</p>
+        ${item.desc?`<p style="color:rgba(255,255,255,.4);font-family:inherit;margin-top:2px">${nbEsc(item.desc)}</p>`:''}
+        <div style="display:flex;gap:12px;margin-top:6px;font-size:.7rem;opacity:.5">
           ${item.duration?`<span><i class="fas fa-clock"></i> ${item.duration}p</span>`:''}
           ${item.subject?`<span><i class="fas fa-book"></i> ${item.subject}</span>`:''}
         </div>
       </div>
       <div style="display:flex;gap:6px;margin-left:12px">
         <button class="btn btn-outline" onclick="previewIspring(${i})" title="Preview"><i class="fas fa-eye"></i></button>
-        <button class="btn btn-outline" onclick="toggleIspringVisible(${i})" title="Ẩn/Hiện"><i class="fas fa-${item.visible!==false?'eye-slash':'eye'}"></i></button>
-        <button class="btn btn-outline" style="color:var(--danger)" onclick="deleteIspring(${i})"><i class="fas fa-trash"></i></button>
+        <button class="btn btn-outline" onclick="toggleIspringVisible(${i})" title="Ẩn/Hiện">
+          <i class="fas fa-${item.visible!==false?'eye-slash':'eye'}"></i>
+        </button>
+        <button class="btn btn-outline" style="color:var(--danger)" onclick="deleteIspring(${i})">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
-    </div>
-  `;}).join('');
-}
-
-async function addIspring() {
-  const name = document.getElementById("iName").value.trim();
-  const path = document.getElementById("iPath").value.trim();
-  const desc = document.getElementById("iDesc").value.trim();
-  const duration = document.getElementById("iDuration").value;
-  const subject = document.getElementById("iSubject").value.trim();
-  const visible = document.getElementById("visToggle").classList.contains("on");
-  if(!name) return Swal.fire({icon:'warning',title:'Thiếu tên',background:'#131c2f',color:'#fff'});
-  if(!path) return Swal.fire({icon:'warning',title:'Thiếu đường dẫn',text:'VD: quizzes/FullIOT1GS6LV1/index.html',background:'#131c2f',color:'#fff'});
-  Swal.fire({title:'Đang lưu...',didOpen:()=>Swal.showLoading(),background:'#131c2f',color:'#fff'});
-  const res = await postAPI({action:"addIspring",name,path,desc,duration,subject,visible});
-  if(res && res.status === "success") {
-    ["iName","iPath","iDesc","iSubject"].forEach(id=>document.getElementById(id).value="");
-    document.getElementById("iDuration").value=45;
-    document.getElementById("visToggle").classList.add("on");
-    await loadIspring();
-    Swal.fire({icon:'success',title:'Đã thêm!',html:`<b style="color:#f97316">${name}</b> đã được lưu vào Google Sheet!`,timer:2000,showConfirmButton:false,background:'#131c2f',color:'#fff'});
-  } else {
-    Swal.fire({icon:'error',title:'Lỗi!',text:'Không thể lưu. Kiểm tra lại AppScript.',background:'#131c2f',color:'#fff'});
-  }
-}
-
-async function deleteIspring(idx) {
-  const item = ispringList[idx];
-  const r = await Swal.fire({title:'Xóa bài iSpring?',text:`"${item.name}"`,icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444',confirmButtonText:'XÓA',cancelButtonText:'HỦY',background:'#131c2f',color:'#fff'});
-  if(r.isConfirmed) {
-    Swal.fire({title:'Đang xóa...',didOpen:()=>Swal.showLoading(),background:'#131c2f',color:'#fff'});
-    await postAPI({action:"deleteIspring",id:item.id});
-    await loadIspring();
-    Swal.fire({icon:'success',title:'Đã xóa!',timer:1000,showConfirmButton:false,background:'#131c2f',color:'#fff'});
-  }
-}
-
-async function toggleIspringVisible(idx) {
-  const item = ispringList[idx];
-  await postAPI({action:"updateIspring",id:item.id,visible:item.visible===false});
-  await loadIspring();
-}
-
-function previewIspring(idx) {
-  const item = ispringList[idx];
-  document.getElementById("modalTitle").innerText = item.name;
-  document.getElementById("modalPath").innerText = item.path;
-  document.getElementById("ispringFrame").src = item.path;
-  document.getElementById("ispringModal").style.display = "flex";
-}
-
-function closeIspringModal() {
-  document.getElementById("ispringModal").style.display = "none";
-  document.getElementById("ispringFrame").src = "";
-}
-
-// Xem kết quả iSpring
-async function viewIspringResults() {
-  Swal.fire({title:'Đang tải...',didOpen:()=>Swal.showLoading(),background:'#131c2f',color:'#fff'});
-  const data = await callAPI("getIspringResults");
-  if(!data || !Array.isArray(data) || data.length === 0) {
-    Swal.fire({icon:'info',title:'Chưa có kết quả iSpring',background:'#131c2f',color:'#fff'});
-    return;
-  }
-  const rows = data.slice(-50).reverse().map(r=>`
-    <tr style="border-bottom:1px solid rgba(255,255,255,0.06)">
-      <td style="padding:8px 6px;font-weight:700">${r.student}</td>
-      <td style="padding:8px 6px;opacity:0.7;font-size:0.8rem">${String(r.testName).replace('[iSpring] ','')}</td>
-      <td style="padding:8px 6px;color:#f97316;font-weight:800">${r.score}đ</td>
-      <td style="padding:8px 6px;opacity:0.5;font-size:0.72rem">${r.time}</td>
-    </tr>`).join('');
-  Swal.fire({
-    title:'Kết quả bài thi iSpring',
-    html:`<div style="overflow-x:auto"><table style="width:100%;color:#fff;font-size:0.82rem;border-collapse:collapse">
-      <thead><tr style="color:#f97316;border-bottom:2px solid rgba(249,115,22,0.3)">
-        <th style="padding:8px 6px;text-align:left">Học sinh</th><th style="padding:8px 6px;text-align:left">Bài thi</th>
-        <th style="padding:8px 6px;text-align:left">Điểm</th><th style="padding:8px 6px;text-align:left">Thời gian</th>
-      </tr></thead><tbody>${rows}</tbody></table></div>`,
-    width:'700px',background:'#131c2f',color:'#fff',showCloseButton:true,showConfirmButton:false
-  });
-}
-
-async function testIspringPath() {
-  const path = document.getElementById("testPath").value.trim();
-  const result = document.getElementById("pathTestResult");
-  if(!path) return;
-  result.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...`;
-  try {
-    const resp = await fetch(path, {method:'HEAD'});
-    result.innerHTML = resp.ok
-      ? `<span style="color:var(--secondary)"><i class="fas fa-check-circle"></i> OK! File tồn tại (${resp.status})</span>`
-      : `<span style="color:var(--danger)"><i class="fas fa-times-circle"></i> Lỗi ${resp.status} — Kiểm tra lại đường dẫn</span>`;
-  } catch(e) {
-    result.innerHTML = `<span style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> Không thể kiểm tra qua HEAD request. Thử nút Preview.</span>`;
-  }
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active',c.id===`tab-${tab}`));
-}
-
-function logout() { localStorage.clear(); location.replace("index.html"); }
-function log(msg,type='ok'){const p=document.getElementById("debugPanel");p.innerHTML+=`<div class="dl-${type}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;p.scrollTop=p.scrollHeight;}
-function toggleDebug(){const p=document.getElementById("debugPanel");p.style.display=p.style.display==='block'?'none':'block';}
-function setStatus(type,text){const el=document.getElementById("apiStatus");el.className=`api-status ${type}`;el.innerHTML=`<span class="dot"></span> ${text}`;}
-
-async function callAPI(action) {
-  try { const r=await fetch(`${API}?action=${action}`);return await r.json(); }
-  catch(e) { log(`Lỗi API ${action}: `+e.message,'err');return null; }
-}
-async function postAPI(params) {
-  try { const q=new URLSearchParams(params).toString();const r=await fetch(`${API}?${q}`);return await r.json(); }
-  catch(e) { log("Lỗi gửi: "+e.message,'err');return {status:"error"}; }
-}
-
-async function loadData() {
-  setStatus("loading","Đang tải...");
-  document.getElementById("testList").innerHTML=Array(3).fill('<div class="skeleton"></div>').join('');
-  document.getElementById("resultList").innerHTML=Array(3).fill('<div class="skeleton"></div>').join('');
-  document.getElementById("pendingList").innerHTML='<div class="skeleton"></div>';
-  const [tData,rData,pData]=await Promise.all([callAPI("getTests"),callAPI("getResults"),callAPI("getPendingUsers")]);
-  if(tData){tests=tData;renderTests();}
-  if(rData){results=rData;renderResults();}
-  if(pData){pending=pData;renderPending();}
-  document.getElementById("cTests").innerText=tests.length;
-  document.getElementById("cResults").innerText=results.length;
-  document.getElementById("cPending").innerText=pending.length;
-  updateStats();
-  setStatus("ok","Trực tuyến");
-}
-
-function renderTests(data=tests) {
-  const el=document.getElementById("testList");
-  if(!data.length){el.innerHTML='<div style="text-align:center;padding:30px;opacity:0.3">Trống</div>';return;}
-  el.innerHTML=data.map(t=>`
-    <div class="test-card animate__animated animate__fadeInUp">
-      <div><h4>${t.name}</h4><p>Mã: ${t.id} • ${t.desc||'Không có mô tả'}</p></div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-outline" onclick="goTo('add-question.html','${t.id}','${t.name}')" title="Thêm câu hỏi"><i class="fas fa-plus-circle"></i></button>
-        <button class="btn btn-outline" onclick="goTo('question-list.html','${t.id}','${t.name}')" title="Quản lý"><i class="fas fa-tasks"></i></button>
-        <button class="btn btn-outline" style="color:var(--danger)" onclick="deleteTest('${t.id}','${t.name}')"><i class="fas fa-trash"></i></button>
-      </div>
-    </div>`).join('');
-}
-
-function renderResults() {
-  const el=document.getElementById("resultList");
-  if(!results.length){el.innerHTML='<div style="text-align:center;padding:30px;opacity:0.3">Chưa có dữ liệu</div>';return;}
-  el.innerHTML=[...results].reverse().slice(0,50).map(r=>{
-    const score=parseFloat(r.score||0);
-    const color=score>=8?'var(--secondary)':(score>=5?'#3b82f6':'var(--danger)');
-    return`<div class="result-row"><div><div style="font-weight:600">${r.student||'Ẩn danh'}</div><div style="font-size:0.65rem;opacity:0.4">${r.time||''}</div></div><div style="opacity:0.7">${r.testName||'Đề thi'}</div><div style="font-weight:800;color:${color}">${score}đ</div></div>`;
+    </div>`;
   }).join('');
 }
 
-function renderPending() {
-  const el=document.getElementById("pendingList");
-  if(!pending.length){el.innerHTML='<div style="text-align:center;padding:20px;opacity:0.4;font-size:0.8rem">Không có yêu cầu mới</div>';return;}
-  el.innerHTML=pending.map(u=>`
-    <div class="user-card animate__animated animate__fadeInRight">
-      <div style="min-width:0"><div style="font-weight:800;font-size:0.85rem">${u.name}</div><div style="font-size:0.7rem;opacity:0.7">${u.username} | ${u.class||'N/A'}</div></div>
-      <div style="display:flex;gap:5px">
-        <button class="btn btn-glow" style="padding:6px 10px;background:var(--secondary)" onclick="handleUser('${u.username}','approve')"><i class="fas fa-check"></i></button>
-        <button class="btn btn-outline" style="padding:6px 10px;color:var(--danger)" onclick="handleUser('${u.username}','reject')"><i class="fas fa-times"></i></button>
+async function addIspring(){
+  const name    =document.getElementById('iName').value.trim();
+  const path    =document.getElementById('iPath').value.trim();
+  const desc    =document.getElementById('iDesc').value.trim();
+  const duration=document.getElementById('iDuration').value;
+  const subject =document.getElementById('iSubject').value.trim();
+  const visible =document.getElementById('visToggle').classList.contains('on');
+  if(!name) return nbAlert('warning','Thiếu tên','Vui lòng nhập tên bài thi!');
+  if(!path) return nbAlert('warning','Thiếu đường dẫn','VD: quizzes/FullIOT1GS6LV1/index.html');
+  nbLoading('Đang lưu...');
+  const res=await postAPI({action:'addIspring',name,path,desc,duration,subject,visible});
+  nbClose();
+  if(res&&res.status==='success'){
+    ['iName','iPath','iDesc','iSubject'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('iDuration').value=45;
+    document.getElementById('visToggle').classList.add('on');
+    await loadIspring();
+    nbToast('success',`Đã thêm "${name}" thành công!`);
+  } else {
+    nbAlert('error','Lỗi!','Không thể lưu. Kiểm tra lại AppScript.');
+  }
+}
+
+async function deleteIspring(idx){
+  const item=ispringList[idx];
+  const r=await nbConfirm({ title:'Xóa bài iSpring?', text:`"${item.name}"`,
+    icon:'warning', confirmButtonColor:'#ef4444', confirmButtonText:'XÓA' });
+  if(!r.isConfirmed) return;
+  nbLoading('Đang xóa...');
+  await postAPI({action:'deleteIspring',id:item.id});
+  await loadIspring();
+  nbClose();
+  nbToast('success','Đã xóa!');
+}
+
+async function toggleIspringVisible(idx){
+  const item=ispringList[idx];
+  await postAPI({action:'updateIspring',id:item.id,visible:item.visible===false});
+  await loadIspring();
+}
+
+function previewIspring(idx){
+  const item=ispringList[idx];
+  document.getElementById('modalTitle').innerText=item.name;
+  document.getElementById('modalPath').innerText=item.path;
+  document.getElementById('ispringFrame').src=item.path;
+  document.getElementById('ispringModal').style.display='flex';
+}
+function closeIspringModal(){
+  document.getElementById('ispringModal').style.display='none';
+  document.getElementById('ispringFrame').src='';
+}
+
+async function viewIspringResults(){
+  nbLoading('Đang tải...');
+  const data=await callAPI('getIspringResults');
+  nbClose();
+  if(!data||!Array.isArray(data)||!data.length){
+    nbAlert('info','Chưa có kết quả iSpring',''); return;
+  }
+  const rows=data.slice(-60).reverse().map(r=>`
+    <tr style="border-bottom:1px solid rgba(255,255,255,.06)">
+      <td style="padding:8px 6px;font-weight:700">${nbEsc(r.student)}</td>
+      <td style="padding:8px 6px;opacity:.7;font-size:.8rem">${nbEsc(String(r.testName||'').replace('[iSpring] ',''))}</td>
+      <td style="padding:8px 6px;color:var(--ispring);font-weight:800">${r.score}đ</td>
+      <td style="padding:8px 6px;opacity:.5;font-size:.72rem">${nbFmtTime(r.time)}</td>
+    </tr>`).join('');
+  Swal.fire({
+    title:'Kết quả bài thi iSpring',
+    html:`<div style="overflow-x:auto">
+      <table style="width:100%;color:#fff;font-size:.82rem;border-collapse:collapse">
+        <thead><tr style="color:var(--ispring);border-bottom:2px solid rgba(249,115,22,.3)">
+          <th style="padding:8px 6px;text-align:left">Học sinh</th>
+          <th style="padding:8px 6px;text-align:left">Bài thi</th>
+          <th style="padding:8px 6px;text-align:left">Điểm</th>
+          <th style="padding:8px 6px;text-align:left">Thời gian</th>
+        </tr></thead><tbody>${rows}</tbody>
+      </table></div>`,
+    width:'700px',background:'#131c2f',color:'#fff',
+    showCloseButton:true,showConfirmButton:false
+  });
+}
+
+async function testIspringPath(){
+  const path=document.getElementById('testPath').value.trim();
+  const result=document.getElementById('pathTestResult');
+  if(!path) return;
+  result.innerHTML=`<i class="fas fa-spinner fa-spin"></i> Đang kiểm tra...`;
+  try{
+    const resp=await fetch(path,{method:'HEAD'});
+    result.innerHTML=resp.ok
+      ?`<span style="color:var(--success)"><i class="fas fa-check-circle"></i> OK! File tồn tại (${resp.status})</span>`
+      :`<span style="color:var(--danger)"><i class="fas fa-times-circle"></i> Lỗi ${resp.status} — Kiểm tra lại đường dẫn</span>`;
+  }catch(e){
+    result.innerHTML=`<span style="color:var(--warning)"><i class="fas fa-exclamation-triangle"></i> Không kiểm tra được qua HEAD. Thử nút Preview.</span>`;
+  }
+}
+
+/* ─── HỆ THỐNG ─── */
+async function loadData(){
+  setStatus('loading','Đang tải...');
+  document.getElementById('testList').innerHTML=Array(3).fill('<div class="skeleton"></div>').join('');
+  document.getElementById('resultList').innerHTML=Array(3).fill('<div class="skeleton"></div>').join('');
+  document.getElementById('pendingList').innerHTML='<div class="skeleton"></div>';
+  const[tData,rData,pData]=await Promise.all([
+    callAPI('getTests'), callAPI('getResults'), callAPI('getPendingUsers')
+  ]);
+  if(tData){ tests=tData; renderTests(); }
+  if(rData){ results=rData; window._nbResults=results; renderResults(); }
+  if(pData){ pending=pData; window._nbPending=pending; renderPending(); }
+  document.getElementById('cTests').innerText=tests.length;
+  document.getElementById('cResults').innerText=results.length;
+  document.getElementById('cPending').innerText=pending.length;
+  nbRenderDashChart(results);
+  setStatus('ok','Trực tuyến');
+  log('Tải dữ liệu thành công','ok');
+}
+
+function renderTests(data=tests){
+  const el=document.getElementById('testList');
+  if(!data.length){
+    el.innerHTML='<div style="text-align:center;padding:30px;opacity:.3">Chưa có đề thi nào</div>'; return;
+  }
+  el.innerHTML=data.map(t=>`
+    <div class="test-card animate__animated animate__fadeInUp">
+      <div>
+        <h4>${nbEsc(t.name)}</h4>
+        <p>Mã: ${t.id} &bull; ${nbEsc(t.desc||'Không có mô tả')}</p>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline" onclick="goTo('add-question.html','${t.id}','${t.name.replace(/'/g,"\\'")}')" title="Thêm câu hỏi">
+          <i class="fas fa-plus-circle"></i>
+        </button>
+        <button class="btn btn-outline" onclick="goTo('question-list.html','${t.id}','${t.name.replace(/'/g,"\\'")}')" title="Quản lý">
+          <i class="fas fa-tasks"></i>
+        </button>
+        <button class="btn btn-outline" style="color:var(--danger)" onclick="deleteTest('${t.id}','${t.name.replace(/'/g,"\\'")}')">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
     </div>`).join('');
 }
 
-function updateStats() {
-  if(!results.length) return;
-  const pass=results.filter(r=>parseFloat(r.score)>=5).length;
-  const s=[0,0,0];
-  results.forEach(r=>{const v=parseFloat(r.score);if(v>=8)s[0]++;else if(v>=5)s[1]++;else s[2]++;});
-  if(chartInst)chartInst.destroy();
-  chartInst=new Chart(document.getElementById("chartEl"),{type:'doughnut',data:{labels:['Giỏi','Trung bình','Yếu'],datasets:[{data:s,backgroundColor:['#10b981','#3b82f6','#ef4444'],borderWidth:0}]},options:{maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:10},usePointStyle:true}}}}});
+function renderResults(){
+  const el=document.getElementById('resultList');
+  if(!results.length){
+    el.innerHTML='<div style="text-align:center;padding:30px;opacity:.3">Chưa có dữ liệu</div>'; return;
+  }
+  el.innerHTML=[...results].reverse().slice(0,60).map(r=>{
+    const score=parseFloat(r.score||0);
+    const color=score>=8?'var(--success)':(score>=5?'var(--primary)':'var(--danger)');
+    return`<div class="result-row">
+      <div>
+        <div style="font-weight:600">${nbEsc(r.student||'Ẩn danh')}</div>
+        <div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div>
+      </div>
+      <div style="opacity:.7">${nbEsc(r.testName||'Đề thi')}</div>
+      <div style="font-weight:800;color:${color}">${score}đ</div>
+    </div>`;
+  }).join('');
 }
 
-async function addTest() {
-  const name=document.getElementById("newName").value.trim();
-  const desc=document.getElementById("newDesc").value.trim();
-  const dur=document.getElementById("newDur").value;
-  if(!name)return Swal.fire("Lỗi","Vui lòng nhập tên đề","error");
-  Swal.fire({title:'Đang khởi tạo...',didOpen:()=>Swal.showLoading()});
-  const res=await postAPI({action:"createTest",name,desc,duration:dur});
-  if(res.status==="success"){Swal.fire({icon:'success',title:'Thành công',timer:1000});loadData();document.getElementById("newName").value="";}
+function renderPending(){
+  const el=document.getElementById('pendingList');
+  if(!pending.length){
+    el.innerHTML='<div style="text-align:center;padding:20px;opacity:.4;font-size:.8rem">Không có yêu cầu mới</div>'; return;
+  }
+  el.innerHTML=pending.map(u=>`
+    <div class="user-card animate__animated animate__fadeInRight">
+      <div style="min-width:0">
+        <div style="font-weight:800;font-size:.85rem">${nbEsc(u.name)}</div>
+        <div style="font-size:.7rem;opacity:.7">${nbEsc(u.username)} | ${nbEsc(u.class||'N/A')}</div>
+      </div>
+      <div style="display:flex;gap:5px">
+        <button class="btn" style="padding:6px 10px;background:var(--success);color:#000" onclick="handleUser('${u.username}','approve')">
+          <i class="fas fa-check"></i>
+        </button>
+        <button class="btn btn-outline" style="padding:6px 10px;color:var(--danger)" onclick="handleUser('${u.username}','reject')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+    </div>`).join('');
 }
 
-async function deleteTest(id,name) {
-  const r=await Swal.fire({title:'Xóa đề thi?',text:`"${name}"`,icon:'warning',showCancelButton:true,confirmButtonColor:'#ef4444'});
-  if(!r.isConfirmed)return;
-  Swal.fire({title:'Đang xóa...',didOpen:()=>Swal.showLoading()});
-  await postAPI({action:"deleteTest",testId:id});
+async function addTest(){
+  const name=document.getElementById('newName').value.trim();
+  const desc=document.getElementById('newDesc').value.trim();
+  const dur=document.getElementById('newDur').value;
+  if(!name) return nbAlert('error','Lỗi','Vui lòng nhập tên đề thi!');
+  nbLoading('Đang khởi tạo...');
+  const res=await postAPI({action:'createTest',name,desc,duration:dur});
+  nbClose();
+  if(res.status==='success'){
+    nbToast('success','Đã tạo đề thi!');
+    loadData();
+    document.getElementById('newName').value='';
+    document.getElementById('newDesc').value='';
+  } else {
+    nbAlert('error','Lỗi tạo đề thi','Vui lòng thử lại!');
+  }
+}
+
+async function deleteTest(id,name){
+  const r=await nbConfirm({ title:'Xóa đề thi?', text:`"${name}"`,
+    icon:'warning', confirmButtonColor:'#ef4444' });
+  if(!r.isConfirmed) return;
+  nbLoading('Đang xóa...');
+  await postAPI({action:'deleteTest',testId:id});
+  nbClose();
+  nbToast('success','Đã xóa đề thi!');
   loadData();
 }
 
-async function handleUser(username,action) {
-  Swal.fire({title:'Đang xử lý...',didOpen:()=>Swal.showLoading()});
-  await postAPI({action:"handleUserRequest",username,status:action==='approve'?"approved":"rejected"});
-  Swal.fire({icon:'success',title:'Xong!',timer:800,showConfirmButton:false});
+async function handleUser(username, action){
+  nbLoading('Đang xử lý...');
+  await postAPI({action:'handleUserRequest',username,status:action==='approve'?'approved':'rejected'});
+  nbClose();
+  nbToast(action==='approve'?'success':'info', action==='approve'?'Đã duyệt tài khoản!':'Đã từ chối!');
   loadData();
 }
 
-function filterTests(){const q=document.getElementById("searchInput").value.toLowerCase();renderTests(tests.filter(t=>t.name.toLowerCase().includes(q)));}
-function goTo(page,id,name){localStorage.setItem("currentTest",JSON.stringify({id,name}));location.href=page;}
-
-document.getElementById("ispringModal").addEventListener("click",function(e){if(e.target===this)closeIspringModal();});
-
-window.onload=async()=>{await loadIspring();loadData();};
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active',c.id===`tab-${tab}`));
+}
+function filterTests(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  renderTests(tests.filter(t=>t.name.toLowerCase().includes(q)));
+}
+function goTo(page,id,name){
+  localStorage.setItem('currentTest',JSON.stringify({id,name}));
+  location.href=page;
+}
 </script>
 </body>
 </html>
