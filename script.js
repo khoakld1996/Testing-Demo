@@ -1147,3 +1147,503 @@ window.nbLgnHandle = async function(action){
     currentBtn.innerHTML = originalHtml;
   }
 };
+
+/* ══════════════════════════════════════════════
+   PAGE: name.html — Xác nhận hồ sơ thí sinh
+   ══════════════════════════════════════════════ */
+window.nbNameInit = function(){
+  /* Kiểm tra đăng nhập */
+  if(!nb.isLogged()){
+    nbAlert('error','Hết phiên làm việc','Vui lòng đăng nhập để tiếp tục.')
+      .then(()=>{ location.replace('login.html'); });
+    return;
+  }
+
+  const inputs = {
+    name:   document.getElementById('nameInput'),
+    school: document.getElementById('schoolInput'),
+    cls:    document.getElementById('classInput'),
+  };
+
+  /* Điền từ cache trước */
+  const cached = {
+    name:   localStorage.getItem('studentName'),
+    school: (localStorage.getItem('schoolName')||'').replace(/^'+/,''),
+    cls:    (localStorage.getItem('className')||'').replace(/^'+/,''),
+  };
+
+  if(cached.name && cached.school && cached.cls){
+    inputs.name.value   = cached.name;
+    inputs.school.value = cached.school;
+    inputs.cls.value    = cached.cls;
+    [inputs.name, inputs.school, inputs.cls].forEach(i=>i.readOnly=true);
+    return;
+  }
+
+  /* Chưa có cache → gọi API */
+  Object.values(inputs).forEach(el=>el.classList.add('nm-loading'));
+  const username = nb.get('username');
+
+  fetch(`${NB_API}?action=getUserInfo&username=${encodeURIComponent(username)}`)
+    .then(r=>r.json())
+    .then(data=>{
+      Object.values(inputs).forEach(el=>el.classList.remove('nm-loading'));
+      if(data.status==='success'){
+        const name   = data.name   || '';
+        const school = (data.school||'').replace(/^'+/,'');
+        const cls    = (data.class ||'').replace(/^'+/,'');
+        inputs.name.value   = name;
+        inputs.school.value = school;
+        inputs.cls.value    = cls;
+        if(name)   { inputs.name.readOnly   = true; nb.set('studentName', name); }
+        if(school) { inputs.school.readOnly = true; nb.set('schoolName',  school); }
+        if(cls)    { inputs.cls.readOnly    = true; nb.set('className',   cls); }
+      } else {
+        inputs.name.placeholder   = 'Nhập họ tên...';
+        inputs.school.placeholder = 'Nhập tên trường...';
+        inputs.cls.placeholder    = 'Nhập lớp...';
+      }
+    })
+    .catch(()=>{
+      Object.values(inputs).forEach(el=>el.classList.remove('nm-loading'));
+      nbToast('warning', 'Không tải được thông tin. Vui lòng nhập tay.');
+      inputs.name.placeholder   = 'Nhập họ tên...';
+      inputs.school.placeholder = 'Nhập tên trường...';
+      inputs.cls.placeholder    = 'Nhập lớp...';
+    });
+
+  /* Enter */
+  document.addEventListener('keydown', e=>{
+    if(e.key==='Enter') window.nbNameSubmit();
+  });
+};
+
+window.nbNameSubmit = function(){
+  const name   = (document.getElementById('nameInput')?.value||'').trim();
+  const school = (document.getElementById('schoolInput')?.value||'').trim();
+  const cls    = (document.getElementById('classInput')?.value||'').trim();
+
+  if(!name || !school || !cls){
+    nbAlert('warning','Thông tin chưa đủ','Vui lòng điền đầy đủ họ tên, trường và lớp.');
+    return;
+  }
+  nb.setMany({ studentName:name, schoolName:school, className:cls });
+  /* Hiệu ứng fade rồi chuyển trang */
+  const box = document.querySelector('.nm-box');
+  if(box){ box.style.transition='.35s'; box.style.opacity='0'; box.style.transform='translateY(-12px)'; }
+  setTimeout(()=>{ location.href='select.html'; }, 360);
+};
+
+/* ══════════════════════════════════════════════
+   PAGE: select.html — Chọn bài thi
+   ══════════════════════════════════════════════ */
+window.nbSelectInit = function(){
+  /* Auth guard */
+  if(!nb.isLogged()){ location.replace('login.html'); return; }
+
+  let _allTests    = [];
+  let _ispringTests= [];
+
+  /* Hiển thị thông tin user trên nav */
+  function _initUser(){
+    const u = nb.user();
+    const nameEl  = document.getElementById('selNavName');
+    const classEl = document.getElementById('selNavClass');
+    const wlcEl   = document.getElementById('selWelcome');
+    if(nameEl)  nameEl.textContent  = u.name;
+    if(classEl) classEl.textContent = u.cls ? `Lớp: ${u.cls}` : (u.school||'');
+    if(wlcEl)   wlcEl.innerHTML = `Bạn đã sẵn sàng chinh phục, <b style="color:var(--accent)">${u.name}</b>?`;
+  }
+
+  /* Load danh sách bài hệ thống */
+  async function _loadTests(){
+    const listEl = document.getElementById('selTestList');
+    try{
+      const data = await callAPI('getTests');
+      _allTests = Array.isArray(data) ? data : [];
+      _renderTests();
+    }catch(e){
+      listEl.innerHTML=`<div class="sel-empty">
+        <svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>
+        Không thể kết nối máy chủ!</div>`;
+    }
+  }
+
+  /* Load danh sách iSpring */
+  async function _loadIspring(){
+    try{
+      const data = await callAPI('getIspring');
+      if(Array.isArray(data)){
+        _ispringTests = data
+          .filter(t=>t.visible!==false && t.name)
+          .map(t=>({
+            ...t,
+            name:    t.name    || t.nameIPS    || '',
+            path:    String(t.path || t.pathIPS || '').trim(),
+            duration:t.duration|| t.durationIPS|| '',
+            subject: t.subject || t.typeIPS    || '',
+            desc:    t.desc    || t.descriptionIPS || '',
+          }));
+      }
+    }catch(e){ _ispringTests=[]; }
+    _renderIspring();
+  }
+
+  function _renderTests(search=''){
+    const listEl  = document.getElementById('selTestList');
+    const countEl = document.getElementById('selSysCount');
+    const filtered= _allTests.filter(t=>t.name.toLowerCase().includes(search.toLowerCase()));
+    if(countEl) countEl.textContent = filtered.length + ' đề';
+    if(!filtered.length){
+      listEl.innerHTML=`<div class="sel-empty">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+        ${search ? 'Không có đề thi phù hợp' : 'Chưa có đề thi nào'}</div>`;
+      return;
+    }
+    listEl.innerHTML = filtered.map((t,i)=>`
+      <div class="sel-card animate__animated animate__fadeInUp" style="animation-delay:${i*.04}s"
+        onclick='window._nbConfirmLaunch(${JSON.stringify(JSON.stringify(t))})'>
+        <div style="min-width:0;flex:1">
+          <span class="sel-card-name">${nbEsc(t.name)}</span>
+          <div class="sel-card-meta">
+            <span><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>${t.duration||'?'}p</span>
+            <span><svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>${t.qCount||'?'} câu</span>
+            ${t.maxScore?`<span><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>${t.maxScore}đ</span>`:''}
+          </div>
+        </div>
+        <div class="sel-play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      </div>`).join('');
+  }
+
+  function _renderIspring(search=''){
+    const listEl  = document.getElementById('selIspringList');
+    const countEl = document.getElementById('selIspCount');
+    const filtered= _ispringTests.filter(t=>t.name.toLowerCase().includes(search.toLowerCase()));
+    if(countEl) countEl.textContent = filtered.length + ' bài';
+    if(!filtered.length){
+      listEl.innerHTML=`<div class="sel-empty">
+        <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/></svg>
+        ${search ? 'Không tìm thấy bài iSpring phù hợp' : 'Chưa có bài thi iSpring'}</div>`;
+      return;
+    }
+    listEl.innerHTML = filtered.map((t,i)=>`
+      <div class="sel-card sel-card-isp animate__animated animate__fadeInUp" style="animation-delay:${i*.04}s"
+        onclick='window._nbLaunchIspring(${JSON.stringify(JSON.stringify(t))})'>
+        <div style="min-width:0;flex:1">
+          <span class="sel-card-name">
+            ${nbEsc(t.name)}
+            <span class="sel-isp-badge">iSpring</span>
+          </span>
+          <div class="sel-card-meta">
+            ${t.duration?`<span><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>${t.duration}p</span>`:''}
+            ${t.subject?`<span><svg viewBox="0 0 24 24"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z"/></svg>${nbEsc(t.subject)}</span>`:''}
+            ${t.desc?`<span>${nbEsc(t.desc)}</span>`:''}
+          </div>
+        </div>
+        <div class="sel-play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+      </div>`).join('');
+  }
+
+  /* Expose render cho search */
+  window._nbRenderAll = function(){
+    const q = (document.getElementById('selSearch')?.value||'').toLowerCase();
+    _renderTests(q);
+    _renderIspring(q);
+  };
+
+  /* Confirm launch hệ thống */
+  window._nbConfirmLaunch = function(testJson){
+    const test = JSON.parse(testJson);
+    if(!test.qCount || test.qCount===0){
+      nbAlert('info','Đề thi đang cập nhật','Đề thi này chưa có câu hỏi. Vui lòng thử lại sau!');
+      return;
+    }
+    Swal.fire({
+      title:'Bắt đầu bài thi?',
+      html:`<div style="text-align:left;font-size:.9rem;line-height:2;color:rgba(255,255,255,.8)">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+          <svg width="16" height="16" fill="var(--primary)" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+          <span>Bài thi: <b style="color:var(--primary)">${nbEsc(test.name)}</b></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+          <svg width="16" height="16" fill="var(--warning)" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm.5 15h-1v-6h1v6zm0-8h-1V7h1v2z"/></svg>
+          <span>Thời gian: <b>${test.duration} phút</b></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+          <svg width="16" height="16" fill="var(--success)" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          <span>Số câu: <b>${test.qCount} câu hỏi</b></span>
+        </div></div>`,
+      icon:'question',
+      showCancelButton:true,
+      confirmButtonText:'BẮT ĐẦU NGAY',
+      cancelButtonText:'ĐỂ SAU',
+      background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
+    }).then(res=>{
+      if(res.isConfirmed){
+        nb.setMany({
+          currentTestId:       test.id,
+          currentTestName:     test.name,
+          currentTestDuration: test.duration,
+          currentTest:         JSON.stringify(test),
+        });
+        location.href='quiz.html';
+      }
+    });
+  };
+
+  /* Launch iSpring */
+  window._nbLaunchIspring = function(testJson){
+    const test = JSON.parse(testJson);
+    if(!test.path){
+      nbAlert('warning','Thiếu đường dẫn','Bài thi này chưa có path. Liên hệ admin.');
+      return;
+    }
+    Swal.fire({
+      title:'Mở bài thi iSpring?',
+      html:`<div style="text-align:left;font-size:.9rem;line-height:2;color:rgba(255,255,255,.8)">
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+          <svg width="16" height="16" fill="var(--ispring)" viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+          <span>Bài thi: <b style="color:var(--ispring)">${nbEsc(test.name)}</b></span>
+        </div>
+        ${test.duration?`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)">⏱ Thời gian: <b>${test.duration} phút</b></div>`:''}
+        ${test.subject?`<div style="padding:8px 0">📚 Môn học: <b>${nbEsc(test.subject)}</b></div>`:''}
+        </div>`,
+      icon:'question',
+      showCancelButton:true,
+      confirmButtonText:'MỞ BÀI THI',
+      cancelButtonText:'HỦY',
+      confirmButtonColor:'rgba(249,115,22,.9)',
+      background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
+    }).then(res=>{
+      if(res.isConfirmed){
+        nb.set('currentIspringName', test.name);
+        location.href=`player.html?path=${encodeURIComponent(test.path)}`;
+      }
+    });
+  };
+
+  /* Logout */
+  window._nbSelectLogout = function(){
+    nbConfirm({
+      title:'Đăng xuất?', text:'Hành động này sẽ kết thúc phiên làm việc.',
+      icon:'question', confirmButtonText:'ĐĂNG XUẤT', confirmButtonColor:'#ff4757',
+    }).then(r=>{ if(r.isConfirmed){ nb.clear(); location.href='index.html'; }});
+  };
+
+  /* Khởi động */
+  _initUser();
+  Promise.all([_loadTests(), _loadIspring()]);
+};
+
+/* Auto-init */
+document.addEventListener('DOMContentLoaded', function(){
+  const path = window.location.pathname;
+  if(path.includes('name.html'))   nbNameInit();
+  if(path.includes('select.html')) nbSelectInit();
+});
+
+/* ══════════════════════════════════════════════
+   PAGE: result.html — Kết quả bài thi
+   ══════════════════════════════════════════════ */
+window.nbResultInit = function(){
+  let _quizData     = { questions:[], answers:{} };
+  let _reviewLoaded = false;
+
+  /* ── Đọc dữ liệu từ localStorage ── */
+  const name      = nb.get('studentName')     || 'Người dùng';
+  const school    = (nb.get('schoolName')     || 'Tự do').replace(/^'+/,'');
+  const cls       = nb.get('className')       || '';
+  const testName  = nb.get('currentTestName') || 'Bài thi';
+  const score     = parseFloat(nb.get('lastScore') || '0');
+  const correct   = nb.get('correctCount')    || '0/0';
+
+  /* Fill info */
+  const _set = (id,v) => { const el=document.getElementById(id); if(el) el.textContent=v; };
+  _set('resName',    name);
+  _set('resSchool',  school + (cls ? ' · ' + cls : ''));
+  _set('resCorrect', correct);
+  _set('resTestName',testName);
+
+  /* Tiêu đề & emoji theo điểm */
+  const titleEl  = document.getElementById('resTitle');
+  const trophyEl = document.getElementById('resTrophy');
+  if(score >= 8)      { if(titleEl) titleEl.textContent='XUẤT SẮC!';    if(trophyEl) trophyEl.textContent='👑'; }
+  else if(score >= 5) { if(titleEl) titleEl.textContent='TỐT LẮM!';     if(trophyEl) trophyEl.textContent='🚀'; }
+  else                { if(titleEl) titleEl.textContent='CỐ GẮNG LÊN!'; if(trophyEl) trophyEl.textContent='🎯'; }
+
+  /* Animate điểm số */
+  _animateScore(score);
+
+  /* Load quizData từ cache */
+  try{
+    _quizData.answers   = JSON.parse(nb.get('quizAnswers')   || '{}');
+    _quizData.questions = JSON.parse(nb.get('quizQuestions') || '[]');
+  }catch(e){ _quizData.answers={}; _quizData.questions=[]; }
+
+  /* ── Mở modal xem lại ── */
+  window.nbOpenReview = async function(){
+    const modal = document.getElementById('resModal');
+    if(modal) modal.classList.add('open');
+    if(_reviewLoaded) return;
+
+    const listEl = document.getElementById('resQList');
+    if(!_quizData.questions || _quizData.questions.length === 0){
+      const tid = nb.get('currentTestId');
+      if(!tid){
+        if(listEl) listEl.innerHTML=`<div class="res-empty"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>Không tìm thấy dữ liệu đề thi.</div>`;
+        return;
+      }
+      if(listEl) listEl.innerHTML=`<div class="res-empty"><svg style="animation:spin .8s linear infinite" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg><p>Đang tải câu hỏi...</p></div>`;
+      try{
+        const res  = await fetch(`${NB_API}?action=getQuestions&testId=${encodeURIComponent(tid)}`);
+        const data = await res.json();
+        _quizData.questions = Array.isArray(data) ? data : [];
+      }catch(e){
+        if(listEl) listEl.innerHTML=`<div class="res-empty" style="color:var(--danger)"><svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>Lỗi kết nối máy chủ.</div>`;
+        return;
+      }
+    }
+    if(!_quizData.questions.length){
+      if(listEl) listEl.innerHTML=`<div class="res-empty"><svg viewBox="0 0 24 24"><path d="M20 6H4v2h16V6zm-2 4H6v2h12v-2zm2 4H4v2h16v-2z"/></svg>Không có câu hỏi.</div>`;
+      return;
+    }
+    _renderReview();
+    _reviewLoaded = true;
+  };
+
+  window.nbCloseReview = function(){
+    const modal = document.getElementById('resModal');
+    if(modal) modal.classList.remove('open');
+  };
+
+  window.nbToggleQ = function(i){
+    document.getElementById('rqi'+i)?.classList.toggle('open');
+  };
+
+  /* ── Render danh sách câu hỏi ── */
+  function _renderReview(){
+    let cOk=0, cErr=0, cSkip=0;
+    const SVG = {
+      check:  `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`,
+      times:  `<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>`,
+      minus:  `<svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>`,
+      circle: `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>`,
+      star:   `<svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>`,
+      pen:    `<svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`,
+      list:   `<svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>`,
+      link:   `<svg viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm1-4H8v2h8v-2z"/></svg>`,
+    };
+
+    const rows = _quizData.questions.map((q,i)=>{
+      const userAns    = String(_quizData.answers[q.question] || '');
+      const correctAns = String(q.correct || q.correctAnswer || '').trim();
+      const type       = String(q.type || 'single').toLowerCase();
+      const isCorrect  = nbCheckAns(type, userAns, correctAns);
+      const status     = !userAns ? 'skip' : (isCorrect ? 'ok' : 'err');
+      if(status==='ok') cOk++; else if(status==='err') cErr++; else cSkip++;
+
+      const pts = parseFloat(q.points) || 0;
+      const ptsHtml = pts > 0 ? `<div class="res-q-pts">${isCorrect?'+'+pts:'0'}đ</div>` : '';
+      const imgHtml = (q.image && q.image.length > 10)
+        ? `<img src="${nbEsc(q.image)}" class="res-q-img" onerror="this.style.display='none'">`
+        : '';
+
+      const badgeSvg = status==='ok' ? SVG.check : (status==='err' ? SVG.times : SVG.minus);
+
+      return `<div class="res-q-item q-${status}" id="rqi${i}">
+        <div class="res-q-head" onclick="nbToggleQ(${i})">
+          <div class="res-q-badge q-${status}">${badgeSvg}</div>
+          <div class="res-q-text">Câu ${i+1}: ${nbEsc(q.question)}</div>
+          ${ptsHtml}
+        </div>
+        <div class="res-q-detail">
+          <div class="res-detail-inner">${imgHtml}${_buildDetail(q,userAns,correctAns,status,type,SVG)}</div>
+        </div>
+      </div>`;
+    });
+
+    const chipsEl = document.getElementById('resChips');
+    if(chipsEl) chipsEl.innerHTML=`
+      <div class="res-chip res-chip-ok">${cOk}<small>Đúng</small></div>
+      <div class="res-chip res-chip-err">${cErr}<small>Sai</small></div>
+      <div class="res-chip res-chip-skip">${cSkip}<small>Bỏ qua</small></div>`;
+    const listEl = document.getElementById('resQList');
+    if(listEl) listEl.innerHTML = rows.join('');
+  }
+
+  function _buildDetail(q, userAns, correctAns, status, type, SVG){
+    let html = '<div class="res-detail-lbl">Chi tiết đáp án</div>';
+
+    if(type==='single'||type==='mcq'||type==='tf'||type==='multiple'){
+      const opts = _getOpts(q, type);
+      if(opts.length){
+        const uArr = userAns ? userAns.split('|').map(s=>s.trim()) : [];
+        const cArr = correctAns ? correctAns.split('|').map(s=>s.trim()) : [];
+        opts.forEach(opt=>{
+          const chosen = uArr.includes(opt.trim());
+          const right  = cArr.includes(opt.trim());
+          let cls='', svg=SVG.circle;
+          if(right){ cls='opt-ok'; svg=SVG.check; }
+          else if(chosen && !right){ cls='opt-err'; svg=SVG.times; }
+          html += `<div class="res-opt ${cls}">${svg}${nbEsc(opt)}</div>`;
+        });
+        return html;
+      }
+      html += `<div class="res-opt opt-ok">${SVG.star}Đáp án đúng: ${nbEsc(correctAns||'—')}</div>`;
+      if(userAns) html += `<div class="res-opt ${status==='ok'?'opt-ok':'opt-err'}">${SVG.pen}Bài làm: ${nbEsc(userAns)}</div>`;
+      return html;
+    }
+
+    if(type==='ordering'){
+      const cls = status==='ok'?'opt-ok':'opt-err';
+      html += `<div class="res-opt ${cls}" style="margin-bottom:6px">${SVG.list}Thứ tự bạn chọn: ${nbEsc(userAns ? userAns.replace(/\|/g,' → ') : '(Chưa sắp xếp)')}</div>`;
+      if(status!=='ok') html += `<div class="res-opt opt-ok">${SVG.star}Đáp án đúng: ${nbEsc(correctAns.replace(/\|/g,' → '))}</div>`;
+      return html;
+    }
+
+    if(type==='matching'){
+      const cls = status==='ok'?'opt-ok':'opt-err';
+      html += `<div class="res-opt ${cls}" style="margin-bottom:6px">${SVG.link}Bạn ghép: ${nbEsc(userAns ? userAns.replace(/\|/g,' | ') : '(Chưa ghép)')}</div>`;
+      if(status!=='ok') html += `<div class="res-opt opt-ok">${SVG.star}Đáp án đúng: ${nbEsc(correctAns.replace(/\|/g,' | '))}</div>`;
+      return html;
+    }
+
+    /* fill & khác */
+    const fCls = status==='ok'?'opt-ok':'opt-err';
+    const fSvg = status==='ok'?SVG.check:SVG.times;
+    html += `<div class="res-opt ${fCls}" style="margin-bottom:6px">${fSvg}Bài làm: ${nbEsc(userAns||'(Trống)')}</div>`;
+    html += `<div class="res-opt opt-ok">${SVG.star}Đáp án đúng: ${nbEsc(correctAns||'—')}</div>`;
+    return html;
+  }
+
+  function _getOpts(q, type){
+    if(type==='tf') return ['Đúng','Sai'];
+    try{
+      const det = q.details || (typeof q.answer==='string' ? JSON.parse(q.answer) : (q.answer||{}));
+      const items = det.items || det.options || [];
+      return items.map(o=> typeof o==='object'&&o ? (o.text||JSON.stringify(o)) : String(o));
+    }catch(e){ return []; }
+  }
+
+  /* ── Animate điểm số ── */
+  function _animateScore(end){
+    const el = document.getElementById('resScoreVal');
+    if(!el) return;
+    let st = null;
+    const dur = 1300;
+    const step = ts => {
+      if(!st) st = ts;
+      const p = Math.min((ts-st)/dur, 1);
+      const v = (p * end).toFixed(1);
+      el.textContent = v.endsWith('.0') ? v.slice(0,-2) : v;
+      if(p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+};
+
+/* Auto-init */
+document.addEventListener('DOMContentLoaded', function(){
+  const path = window.location.pathname;
+  if(path.includes('result.html')) nbResultInit();
+});

@@ -3,345 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Nebula Quiz | Hệ Thống Chọn Bài Thi</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    :root{
-      --primary:#4facfe;--secondary:#00f2fe;--accent:#00ffcc;
-      --glass:rgba(15,23,42,0.6);--glass-border:rgba(255,255,255,0.1);
-      --bg-dark:#0f172a;--ispring:#f97316;
-    }
-    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}
-    body{min-height:100vh;background:#0f172a url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;background-attachment:fixed;display:flex;justify-content:center;align-items:flex-start;color:white;padding:20px;padding-top:90px;position:relative;overflow-x:hidden;}
-    body::before{content:"";position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 50% 50%,rgba(79,172,254,0.15),rgba(15,23,42,0.95));z-index:0;}
-    .top-nav{position:fixed;top:0;left:0;right:0;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;z-index:100;backdrop-filter:blur(15px);background:rgba(15,23,42,0.7);border-bottom:1px solid var(--glass-border);}
-    .brand{font-weight:800;font-size:1.3rem;letter-spacing:1px;color:var(--primary);display:flex;align-items:center;gap:10px;}
-    .brand span{color:#fff;font-weight:300;}
-    .user-profile{display:flex;align-items:center;gap:15px;}
-    .user-info-top{text-align:right;line-height:1.2;}
-    .user-name-top{display:block;font-weight:700;color:var(--accent);font-size:0.9rem;}
-    .user-class-top{font-size:0.75rem;opacity:0.6;}
-    .btn-logout{background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.2);color:#ff4757;width:38px;height:38px;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.3s;}
-    .btn-logout:hover{background:#ff4757;color:white;transform:scale(1.1);}
-    .container{position:relative;z-index:10;width:100%;max-width:700px;padding-bottom:40px;}
-    .box{background:var(--glass);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-radius:30px;padding:30px 35px;border:1px solid var(--glass-border);box-shadow:0 40px 80px rgba(0,0,0,0.4);}
-    h2{font-size:1.6rem;margin-bottom:6px;font-weight:800;text-align:center;background:linear-gradient(to right,#fff,var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-    .welcome-text{text-align:center;color:rgba(255,255,255,0.6);margin-bottom:22px;font-size:0.95rem;}
-    .search-bar{position:relative;margin-bottom:16px;}
-    .search-bar input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--glass-border);padding:13px 20px 13px 45px;border-radius:15px;color:white;font-size:0.92rem;outline:none;transition:0.3s;}
-    .search-bar input:focus{border-color:var(--primary);background:rgba(255,255,255,0.1);}
-    .search-bar i{position:absolute;left:18px;top:50%;transform:translateY(-50%);color:var(--primary);}
-    /* Section headers */
-    .section-header{display:flex;align-items:center;gap:10px;margin:20px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--glass-border);}
-    .section-header .section-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;}
-    .section-header .section-title{font-weight:800;font-size:0.82rem;letter-spacing:1.5px;text-transform:uppercase;}
-    .section-header .section-count{margin-left:auto;font-size:0.68rem;font-weight:700;padding:3px 10px;border-radius:20px;}
-    .section-system .section-icon{background:rgba(79,172,254,0.15);color:var(--primary);}
-    .section-system .section-title{color:var(--primary);}
-    .section-system .section-count{background:rgba(79,172,254,0.1);color:var(--primary);border:1px solid rgba(79,172,254,0.2);}
-    .section-ispring .section-icon{background:rgba(249,115,22,0.15);color:var(--ispring);}
-    .section-ispring .section-title{color:var(--ispring);}
-    .section-ispring .section-count{background:rgba(249,115,22,0.1);color:var(--ispring);border:1px solid rgba(249,115,22,0.2);}
-    /* Divider */
-    .section-divider{display:flex;align-items:center;gap:12px;margin:22px 0;}
-    .section-divider::before,.section-divider::after{content:"";flex:1;height:1px;background:var(--glass-border);}
-    .section-divider span{font-size:0.65rem;text-transform:uppercase;letter-spacing:2px;opacity:0.35;font-weight:700;}
-    /* Test cards */
-    #testList,#ispringTestList{display:flex;flex-direction:column;gap:10px;}
-    .test-card{background:rgba(255,255,255,0.03);border:1px solid var(--glass-border);padding:16px 18px;border-radius:18px;cursor:pointer;transition:background .2s,border-color .2s,transform .15s;display:flex;justify-content:space-between;align-items:center;}
-    .test-card:hover{background:rgba(255,255,255,0.07);border-color:var(--primary);transform:translateX(5px);}
-    .ispring-test-card{background:rgba(249,115,22,0.03);border:1px solid rgba(249,115,22,0.12);}
-    .ispring-test-card:hover{background:rgba(249,115,22,0.08);border-color:var(--ispring);transform:translateX(5px);}
-    .ispring-test-card .play-btn{background:rgba(249,115,22,0.15);color:var(--ispring);}
-    .ispring-test-card:hover .play-btn{background:var(--ispring);color:#0f172a;}
-    .test-name{font-weight:700;color:#fff;font-size:1rem;display:block;margin-bottom:4px;}
-    .test-meta{display:flex;gap:14px;font-size:0.73rem;color:rgba(255,255,255,0.45);flex-wrap:wrap;}
-    .test-meta span i{color:var(--primary);margin-right:4px;}
-    .ispring-test-card .test-meta span i{color:var(--ispring);}
-    .ispring-badge{font-size:0.6rem;padding:2px 7px;border-radius:20px;font-weight:700;background:rgba(249,115,22,0.15);color:var(--ispring);border:1px solid rgba(249,115,22,0.25);margin-left:8px;vertical-align:middle;display:inline-block;}
-    .play-btn{width:38px;height:38px;border-radius:11px;flex-shrink:0;background:rgba(79,172,254,0.15);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:0.9rem;transition:0.3s;}
-    .test-card:hover .play-btn{background:var(--primary);color:#0f172a;}
-    .footer-actions{margin-top:22px;text-align:center;border-top:1px solid var(--glass-border);padding-top:18px;}
-    .btn-history{color:var(--accent);text-decoration:none;font-size:0.9rem;font-weight:600;transition:0.3s;display:inline-flex;align-items:center;gap:8px;}
-    .btn-history:hover{filter:brightness(1.2);letter-spacing:0.5px;}
-    .skeleton{background:rgba(255,255,255,0.05);height:74px;border-radius:15px;margin-bottom:10px;position:relative;overflow:hidden;}
-    .skeleton::after{content:"";position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent);animation:loading 1.5s infinite;}
-    @keyframes loading{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-    .empty-section{text-align:center;padding:20px;font-size:0.82rem;opacity:0.3;}
-    /* Modal */
-    #ispringModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
-    .modal-inner{background:#0a1628;border:1px solid rgba(249,115,22,0.25);border-radius:22px;width:95vw;max-width:1050px;height:88vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,0.6);animation:modalIn 0.3s cubic-bezier(0.34,1.56,0.64,1);}
-    @keyframes modalIn{from{transform:scale(0.9);opacity:0}to{transform:scale(1);opacity:1}}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;border-bottom:1px solid rgba(255,255,255,0.07);background:rgba(249,115,22,0.05);}
-    .modal-header .title-wrap{display:flex;align-items:center;gap:10px;min-width:0;}
-    .modal-header .title-wrap i{color:var(--ispring);font-size:1.1rem;}
-    .modal-header h3{font-size:1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .btn-close-modal{background:rgba(255,71,87,0.1);border:1px solid rgba(255,71,87,0.2);color:#ff4757;padding:8px 16px;border-radius:10px;cursor:pointer;font-size:0.8rem;font-weight:700;display:flex;align-items:center;gap:6px;transition:0.2s;font-family:inherit;}
-    .btn-close-modal:hover{background:#ff4757;color:white;}
-    #ispringFrame{flex:1;border:none;width:100%;}
-    @media(max-width:480px){
-      body{padding:12px;padding-top:76px}
-      .box{padding:20px 14px;border-radius:20px}
-      h2{font-size:1.25rem}
-      .welcome-text{font-size:.82rem;margin-bottom:14px}
-      .test-card{padding:13px 14px}
-      .test-name{font-size:.9rem}
-      .section-header{margin:12px 0 9px}
-      .top-nav{padding:11px 14px}
-    }
-    @media(max-width:360px){
-      .test-meta{gap:6px;font-size:.67rem}
-    }
-  </style>
+  <title>Chọn bài thi | Nebula Quiz</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  <script src="script.js" defer></script>
 </head>
-<body>
-  <nav class="top-nav animate__animated animate__fadeInDown">
-    <div class="brand"><i class="fas fa-meteor"></i> NEBULA <span>QUIZ</span></div>
-    <div class="user-profile">
-      <div class="user-info-top">
-        <span class="user-name-top" id="topNavName">Học sinh</span>
-        <span class="user-class-top" id="topNavClass">Lớp: ...</span>
+<body class="sel-body">
+
+  <!-- Top Navigation -->
+  <nav class="sel-nav animate__animated animate__fadeInDown">
+    <a class="sel-brand" href="index.html">
+      <!-- Meteor icon -->
+      <svg viewBox="0 0 24 24">
+        <path d="M19.07 4.93a1 1 0 0 0-1.41 0L4.93 17.66a1 1 0 1 0 1.41 1.41L19.07 6.34a1 1 0 0 0 0-1.41zM6.5 8C5.12 8 4 9.12 4 10.5S5.12 13 6.5 13 9 11.88 9 10.5 7.88 8 6.5 8zm11 5c-1.38 0-2.5 1.12-2.5 2.5S16.12 18 17.5 18 20 16.88 20 15.5 18.88 13 17.5 13z"/>
+      </svg>
+      NEBULA <span>QUIZ</span>
+    </a>
+    <div class="sel-user">
+      <div class="sel-user-info">
+        <span class="sel-user-name" id="selNavName">Học sinh</span>
+        <span class="sel-user-class" id="selNavClass"></span>
       </div>
-      <button class="btn-logout" title="Đăng xuất" onclick="handleLogout()"><i class="fas fa-power-off"></i></button>
+      <button class="sel-logout" title="Đăng xuất" onclick="_nbSelectLogout()">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+        </svg>
+      </button>
     </div>
   </nav>
 
-  <div class="container">
-    <div class="box animate__animated animate__zoomIn">
-      <h2><i class="fas fa-rocket"></i> HỆ THỐNG THI</h2>
-      <p class="welcome-text" id="welcomeMsg">Chào mừng bạn trở lại!</p>
+  <div class="sel-container">
+    <div class="sel-box animate__animated animate__zoomIn">
 
-      <div class="search-bar">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Tìm kiếm tất cả bài thi..." oninput="renderAll()">
-      </div>
+      <!-- Tiêu đề -->
+      <h2 class="sel-title">
+        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--primary);flex-shrink:0">
+          <path d="M19.07 4.93a1 1 0 0 0-1.41 0L4.93 17.66a1 1 0 1 0 1.41 1.41L19.07 6.34a1 1 0 0 0 0-1.41zM6.5 8C5.12 8 4 9.12 4 10.5S5.12 13 6.5 13 9 11.88 9 10.5 7.88 8 6.5 8zm11 5c-1.38 0-2.5 1.12-2.5 2.5S16.12 18 17.5 18 20 16.88 20 15.5 18.88 13 17.5 13z"/>
+        </svg>
+        HỆ THỐNG THI
+      </h2>
+      <p class="sel-welcome" id="selWelcome">Chào mừng bạn trở lại!</p>
 
-      <!-- PHẦN 1: HỆ THỐNG -->
-      <div class="section-header section-system">
-        <div class="section-icon"><i class="fas fa-database"></i></div>
-        <span class="section-title">Hệ Thống</span>
-        <span class="section-count" id="sysCount">0 đề</span>
-      </div>
-      <div id="testList">
-        <div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>
-      </div>
-
-      <div class="section-divider"><span>hoặc chọn từ</span></div>
-
-      <!-- PHẦN 2: iSPRING -->
-      <div class="section-header section-ispring">
-        <div class="section-icon"><i class="fas fa-rocket"></i></div>
-        <span class="section-title">iSpring</span>
-        <span class="section-count" id="ispringCount">0 bài</span>
-      </div>
-      <div id="ispringTestList">
-        <div class="empty-section"><i class="fas fa-rocket" style="opacity:0.2;font-size:1.5rem;display:block;margin-bottom:8px"></i>Chưa có bài thi iSpring</div>
+      <!-- Tìm kiếm -->
+      <div class="sel-search">
+        <svg class="sel-search-icon" viewBox="0 0 24 24">
+          <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+        </svg>
+        <input type="text" id="selSearch" placeholder="Tìm kiếm tất cả bài thi..."
+          oninput="_nbRenderAll()">
       </div>
 
-      <div class="footer-actions">
-        <a href="history.html" class="btn-history"><i class="fas fa-history"></i> Xem lịch sử bài làm</a>
+      <!-- ── Section: Hệ thống ── -->
+      <div class="sel-section-head sel-section-sys">
+        <div class="sel-section-icon">
+          <svg viewBox="0 0 24 24"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 16 18 16s1.5.67 1.5 1.5S18.83 19 18 19zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 6 18 6s1.5.67 1.5 1.5S18.83 9 18 9z"/></svg>
+        </div>
+        <span class="sel-section-title">Hệ Thống</span>
+        <span class="sel-section-count" id="selSysCount">0 đề</span>
       </div>
+      <div id="selTestList">
+        <div class="sel-skeleton"></div>
+        <div class="sel-skeleton"></div>
+        <div class="sel-skeleton"></div>
+      </div>
+
+      <!-- Divider -->
+      <div class="sel-divider"><span>hoặc chọn từ</span></div>
+
+      <!-- ── Section: iSpring ── -->
+      <div class="sel-section-head sel-section-isp">
+        <div class="sel-section-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+        </div>
+        <span class="sel-section-title">iSpring</span>
+        <span class="sel-section-count" id="selIspCount">0 bài</span>
+      </div>
+      <div id="selIspringList">
+        <div class="sel-empty">
+          <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+          Chưa có bài thi iSpring
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="sel-footer">
+        <a href="history.html" class="sel-history-btn">
+          <svg viewBox="0 0 24 24">
+            <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
+          </svg>
+          Xem lịch sử bài làm
+        </a>
+      </div>
+
     </div>
   </div>
 
-  <!-- iSpring Modal -->
-  <div id="ispringModal">
-    <div class="modal-inner">
-      <div class="modal-header">
-        <div class="title-wrap">
-          <i class="fas fa-rocket"></i>
-          <h3 id="modalTitle">Bài thi iSpring</h3>
+  <!-- iSpring Modal (ẩn, dùng khi cần preview) -->
+  <div class="sel-modal" id="selIspringModal">
+    <div class="sel-modal-inner">
+      <div class="sel-modal-head">
+        <div class="sel-modal-head-left">
+          <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+          <h3 id="selModalTitle">Bài thi iSpring</h3>
         </div>
-        <button class="btn-close-modal" onclick="closeModal()"><i class="fas fa-times"></i> Đóng</button>
+        <button class="sel-modal-close" onclick="_nbCloseModal()">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          Đóng
+        </button>
       </div>
-      <iframe id="ispringFrame" src="" allowfullscreen></iframe>
+      <iframe id="selIspringFrame" src="" allowfullscreen></iframe>
     </div>
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
-    let allTests = [], ispringTests = [];
-
-    function initUser() {
-      const name = localStorage.getItem("studentName") || "Người dùng";
-      const userClass = localStorage.getItem("className") || "";
-      const school = localStorage.getItem("schoolName") || "";
-      document.getElementById("topNavName").innerText = name;
-      document.getElementById("topNavClass").innerText = userClass ? `Lớp: ${userClass}` : school;
-      document.getElementById("welcomeMsg").innerHTML = `Bạn đã sẵn sàng chinh phục, <b style="color:var(--accent)">${name}</b>?`;
-    }
-
-    async function loadIspringTests() {
-      try {
-        const res  = await fetch(SCRIPT_URL + "?action=getIspring");
-        const data = await res.json();
-        console.log("[iSpring] raw data:", data);
-        if (Array.isArray(data)) {
-          // Normalize + filter: visible, có name, có path hợp lệ
-          ispringTests = data
-            .filter(t => t.visible !== false && t.name)
-            .map(t => ({
-              ...t,
-              // Đảm bảo path sạch (trim, bỏ dấu / đầu nếu là relative path)
-              path: String(t.path || "").trim()
-            }));
-          console.log("[iSpring] loaded:", ispringTests.length, "bài", ispringTests);
-        } else {
-          console.warn("[iSpring] API không trả về array:", data);
-          ispringTests = [];
-        }
-      } catch(e) {
-        console.error("[iSpring] Lỗi load:", e);
-        ispringTests = [];
-      }
-      renderIspringTests();
-    }
-
-    async function fetchTests() {
-      try {
-        const response = await fetch(`${SCRIPT_URL}?action=getTests`);
-        allTests = await response.json();
-        renderAll();
-      } catch(err) {
-        document.getElementById("testList").innerHTML = `<p style="text-align:center;color:#ff4757;padding:20px;"><i class="fas fa-wifi" style="margin-right:8px"></i>Không thể kết nối máy chủ!</p>`;
-        renderIspringTests();
-      }
-    }
-
-    function renderAll() {
-      const search = document.getElementById("searchInput").value.toLowerCase();
-      renderSystemTests(search);
-      renderIspringTests(search);
-    }
-
-    function renderSystemTests(search = "") {
-      const list = document.getElementById("testList");
-      const filtered = allTests.filter(t => t.name.toLowerCase().includes(search));
-      document.getElementById("sysCount").innerText = filtered.length + " đề";
-      if (!filtered.length) {
-        list.innerHTML = `<div class="empty-section">Không có đề thi phù hợp</div>`;
-        return;
-      }
-      list.innerHTML = filtered.map((test, i) => `
-        <div class="test-card animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s" onclick='confirmLaunch(${JSON.stringify(JSON.stringify(test))})'>
-          <div class="test-info">
-            <span class="test-name">${test.name}</span>
-            <div class="test-meta">
-              <span><i class="far fa-clock"></i> ${test.duration}p</span>
-              <span><i class="fas fa-question-circle"></i> ${test.qCount} câu</span>
-              <span><i class="fas fa-trophy"></i> ${test.maxScore}đ</span>
-            </div>
-          </div>
-          <div class="play-btn"><i class="fas fa-play"></i></div>
-        </div>`).join('');
-    }
-
-    function renderIspringTests(search = "") {
-      const list = document.getElementById("ispringTestList");
-      const filtered = ispringTests.filter(t => t.name && t.name.toLowerCase().includes(search));
-      document.getElementById("ispringCount").innerText = filtered.length + " bài";
-      if (!filtered.length) {
-        list.innerHTML = `<div class="empty-section"><i class="fas fa-rocket" style="opacity:0.2;font-size:1.5rem;display:block;margin-bottom:8px"></i>${search ? 'Không tìm thấy bài iSpring phù hợp' : 'Chưa có bài thi iSpring'}</div>`;
-        return;
-      }
-      list.innerHTML = filtered.map((test, i) => {
-        // Normalize: hỗ trợ cả tên field cũ (nameIPS) và mới (name)
-        const name = test.name || test.nameIPS || test.nameips || "Bài thi iSpring";
-        const path = test.path || test.pathIPS || "";
-        const duration = test.duration || test.durationIPS || test.durationips || "";
-        const subject = test.subject || test.typeIPS || test.typeips || "";
-        const desc = test.desc || test.descriptionIPS || test.descriptionips || "";
-        const safeTest = {...test, name, path, duration, subject, desc};
-        return `
-        <div class="test-card ispring-test-card animate__animated animate__fadeInUp" style="animation-delay:${i*0.04}s" onclick='launchIspring(${JSON.stringify(JSON.stringify(safeTest))})'>
-          <div class="test-info">
-            <span class="test-name">
-              ${name}
-              <span class="ispring-badge"><i class="fas fa-rocket" style="margin-right:3px"></i>iSpring</span>
-            </span>
-            <div class="test-meta">
-              ${duration ? `<span><i class="far fa-clock"></i> ${duration}p</span>` : ''}
-              ${subject ? `<span><i class="fas fa-book"></i> ${subject}</span>` : ''}
-              ${desc ? `<span><i class="fas fa-info-circle"></i> ${desc}</span>` : ''}
-            </div>
-          </div>
-          <div class="play-btn"><i class="fas fa-play"></i></div>
-        </div>`;
-      }).join('');
-    }
-
-    function confirmLaunch(testJson) {
-      const test = JSON.parse(testJson);
-      if (!test.qCount || test.qCount === 0) {
-        Swal.fire({icon:'info',title:'Thông báo',text:'Đề thi này đang được cập nhật câu hỏi.',background:'#131c2f',color:'#fff'});
-        return;
-      }
-      Swal.fire({
-        title:'Bắt đầu bài thi?',
-        html:`<div style="text-align:left;font-size:0.9rem;opacity:0.9;line-height:2">
-               <p>Bài thi: <b style="color:#4facfe">${test.name}</b></p>
-               <p>Thời gian: <b>${test.duration} phút</b></p>
-               <p>Số lượng: <b>${test.qCount} câu hỏi</b></p>
-              </div>`,
-        icon:'question',showCancelButton:true,confirmButtonText:'BẮT ĐẦU NGAY',cancelButtonText:'ĐỂ SAU',confirmButtonColor:'#4facfe',background:'#131c2f',color:'#fff'
-      }).then(res=>{
-        if(res.isConfirmed){
-          localStorage.setItem("currentTestId",test.id);
-          localStorage.setItem("currentTestName",test.name);
-          localStorage.setItem("currentTestDuration",test.duration);
-          localStorage.setItem("currentTest",JSON.stringify(test));
-          window.location.href="quiz.html";
-        }
-      });
-    }
-
-    function launchIspring(testJson) {
-      const test = JSON.parse(testJson);
-      const name = test.name || "Bài thi iSpring";
-      const path = test.path || "";
-      const duration = test.duration || "";
-      const subject = test.subject || "";
-      if (!path) {
-        Swal.fire({icon:"warning",title:"Thiếu đường dẫn",text:"Bài thi này chưa có path. Liên hệ admin.",background:"#131c2f",color:"#fff"});
-        return;
-      }
-      Swal.fire({
-        title:'Mở bài thi iSpring?',
-        html:`<div style="text-align:left;font-size:0.9rem;opacity:0.9;line-height:2">
-               <p>Bài thi: <b style="color:#f97316">${name}</b></p>
-               ${duration?`<p>Thời gian: <b>${duration} phút</b></p>`:''}
-               ${subject?`<p>Môn học: <b>${subject}</b></p>`:''}
-              </div>`,
-        icon:'question',showCancelButton:true,confirmButtonText:'<i class="fas fa-rocket"></i> MỞ BÀI THI',
-        cancelButtonText:'HỦY',confirmButtonColor:'#f97316',background:'#131c2f',color:'#fff'
-      }).then(res=>{
-        if(res.isConfirmed){
-          localStorage.setItem("currentIspringName", name);
-          window.location.href = `player.html?path=${encodeURIComponent(path)}`;
-        }
-      });
-    }
-
-    function closeModal() {
-      document.getElementById("ispringModal").style.display="none";
-      document.getElementById("ispringFrame").src="";
-    }
-
-    document.getElementById("ispringModal").addEventListener("click",function(e){if(e.target===this)closeModal();});
-
-    function handleLogout() {
-      Swal.fire({title:'Đăng xuất?',text:"Hành động này sẽ kết thúc phiên làm việc.",icon:'warning',showCancelButton:true,confirmButtonColor:'#ff4757',confirmButtonText:'ĐĂNG XUẤT',cancelButtonText:'HỦY',background:'#131c2f',color:'#fff'})
-      .then(result=>{if(result.isConfirmed){localStorage.clear();window.location.href="index.html";}});
-    }
-
-    window.onload = () => {
-      initUser();
-      loadIspringTests(); // async, calls renderIspringTests when done
-      fetchTests();
+    /* Close modal */
+    window._nbCloseModal = function(){
+      document.getElementById('selIspringModal').style.display='none';
+      document.getElementById('selIspringFrame').src='';
     };
+    document.getElementById('selIspringModal').addEventListener('click', function(e){
+      if(e.target===this) window._nbCloseModal();
+    });
+
+    document.addEventListener('DOMContentLoaded', function(){
+      if(typeof nbSelectInit === 'function') nbSelectInit();
+    });
   </script>
 </body>
 </html>

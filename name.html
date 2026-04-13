@@ -2,257 +2,92 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Xác nhận thông tin | Nebula Quiz</title>
-  
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-  <style>
-    :root { 
-      --primary: #4facfe; --secondary: #00f2fe; --accent: #00ffcc; 
-      --glass: rgba(15, 23, 42, 0.7); --glass-border: rgba(255, 255, 255, 0.1); 
-    }
-    
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
-    
-    body { 
-      min-height: 100vh; 
-      background: #0f172a url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop') no-repeat center center/cover;
-      background-attachment: fixed;
-      display: flex; justify-content: center; align-items: center; 
-      color: white; padding: 20px; position: relative; overflow: hidden;
-    }
-
-    body::before {
-      content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle at 50% 50%, rgba(79, 172, 254, 0.15), rgba(15, 23, 42, 0.95)); z-index: 0;
-    }
-
-    .container { position: relative; z-index: 10; width: 100%; max-width: 450px; }
-
-    .box { 
-      background: var(--glass); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-      border-radius: 35px; padding: 45px 35px; border: 1px solid var(--glass-border); 
-      box-shadow: 0 40px 100px rgba(0,0,0,0.5); text-align: center;
-    }
-
-    .icon-header {
-      width: 70px; height: 70px; background: rgba(79, 172, 254, 0.15);
-      border-radius: 20px; display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 20px; border: 1px solid rgba(79, 172, 254, 0.3);
-    }
-    .icon-header i { font-size: 1.8rem; color: var(--accent); filter: drop-shadow(0 0 10px var(--primary)); }
-
-    h2 { 
-      font-size: 1.6rem; margin-bottom: 10px; font-weight: 800;
-      background: linear-gradient(to right, #fff, var(--primary));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-
-    .sub-title { color: rgba(255,255,255,0.5); font-size: 0.85rem; margin-bottom: 30px; }
-
-    .input-group { text-align: left; margin-bottom: 20px; }
-    
-    label { 
-      display: block; margin-bottom: 8px; font-size: 0.7rem; color: var(--primary); 
-      font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; margin-left: 10px;
-    }
-    
-    .input-wrapper { position: relative; }
-    
-    .input-wrapper i {
-      position: absolute; left: 18px; top: 50%; transform: translateY(-50%);
-      color: var(--primary); opacity: 0.7; font-size: 1rem;
-    }
-
-    input { 
-      width: 100%; padding: 15px 20px 15px 50px; border-radius: 18px; 
-      border: 1px solid var(--glass-border); background: rgba(255, 255, 255, 0.05); 
-      color: white; outline: none; font-size: 1rem; transition: 0.3s; 
-    }
-    
-    input:focus { 
-      border-color: var(--primary); background: rgba(255, 255, 255, 0.1); 
-      box-shadow: 0 0 20px rgba(79, 172, 254, 0.2);
-    }
-
-    input[readonly] {
-      background: rgba(0, 0, 0, 0.2); color: rgba(255,255,255,0.6);
-      cursor: not-allowed; border-style: dashed;
-    }
-
-    .btn-next { 
-      width: 100%; padding: 18px; border-radius: 18px; border: none; 
-      background: linear-gradient(135deg, var(--primary), var(--secondary)); 
-      color: #0f172a; font-weight: 800; font-size: 1.05rem; cursor: pointer; 
-      transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-      margin-top: 15px; display: flex; align-items: center; justify-content: center; gap: 10px;
-    }
-    
-    .btn-next:hover { 
-      transform: translateY(-5px); 
-      box-shadow: 0 15px 30px rgba(79, 172, 254, 0.4); filter: brightness(1.1);
-    }
-
-    .btn-home {
-      display: inline-flex; align-items: center; gap: 8px; margin-top: 30px;
-      background: none; border: none; color: rgba(255,255,255,0.4);
-      cursor: pointer; text-decoration: none; font-size: 0.85rem; transition: 0.3s;
-    }
-    .btn-home:hover { color: #fff; }
-
-    /* Skeleton Loading Effect */
-    .loading-input {
-      position: relative; overflow: hidden; background: rgba(255,255,255,0.08) !important;
-    }
-    .loading-input::after {
-      content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-      animation: loading 1.5s infinite;
-    }
-    @keyframes loading { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-
-    /* SweetAlert Custom */
-    .swal2-popup { background: #131c2f !important; color: #fff !important; border-radius: 25px !important; }
-  </style>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  <script src="script.js" defer></script>
 </head>
-<body>
+<body class="nm-body">
 
-  <div class="container">
-    <div class="box animate__animated animate__zoomIn">
-      <div class="icon-header">
-        <i class="fas fa-id-card-alt"></i>
+  <div class="nm-container">
+    <div class="nm-box animate__animated animate__zoomIn">
+
+      <!-- Icon header -->
+      <div class="nm-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 2.75c1.24 0 2.25 1.01 2.25 2.25s-1.01 2.25-2.25 2.25S9.75 10.24 9.75 9 10.76 6.75 12 6.75zM17 17H7v-.75c0-1.67 3.33-2.5 5-2.5s5 .83 5 2.5V17z"/>
+        </svg>
       </div>
-      <h2>XÁC NHẬN HỒ SƠ</h2>
-      <p class="sub-title">Kiểm tra thông tin trước khi bắt đầu bài thi</p>
-      
-      <div class="input-group">
-        <label>Họ và tên thí sinh</label>
-        <div class="input-wrapper">
-          <i class="fas fa-user-circle"></i>
-          <input type="text" id="username_display" placeholder="Đang truy xuất..." autocomplete="off">
+
+      <h2 class="nm-title">XÁC NHẬN HỒ SƠ</h2>
+      <p class="nm-subtitle">Kiểm tra thông tin trước khi bắt đầu bài thi</p>
+
+      <!-- Họ và tên -->
+      <div class="nm-field">
+        <label class="nm-label">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          Họ và tên thí sinh
+        </label>
+        <div class="nm-input-wrap">
+          <svg class="nm-input-icon" viewBox="0 0 24 24">
+            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+          </svg>
+          <input id="nameInput" type="text" class="nm-input"
+            placeholder="Đang truy xuất..." autocomplete="name">
         </div>
       </div>
 
-      <div class="input-group">
-        <label>Tên trường / Đơn vị</label>
-        <div class="input-wrapper">
-          <i class="fas fa-university"></i>
-          <input type="text" id="school" placeholder="Đang tải..." autocomplete="off">
+      <!-- Tên trường -->
+      <div class="nm-field">
+        <label class="nm-label">
+          <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+          Tên trường / Đơn vị
+        </label>
+        <div class="nm-input-wrap">
+          <svg class="nm-input-icon" viewBox="0 0 24 24">
+            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
+          </svg>
+          <input id="schoolInput" type="text" class="nm-input"
+            placeholder="Đang tải..." autocomplete="organization">
         </div>
       </div>
 
-      <div class="input-group">
-        <label>Lớp học</label>
-        <div class="input-wrapper">
-          <i class="fas fa-atom"></i>
-          <input type="text" id="class_name" placeholder="Đang tải..." autocomplete="off">
+      <!-- Lớp học -->
+      <div class="nm-field">
+        <label class="nm-label">
+          <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+          Lớp học
+        </label>
+        <div class="nm-input-wrap">
+          <svg class="nm-input-icon" viewBox="0 0 24 24">
+            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/>
+          </svg>
+          <input id="classInput" type="text" class="nm-input"
+            placeholder="Đang tải..." autocomplete="off">
         </div>
       </div>
 
-      <button class="btn-next" id="btnContinue" onclick="startSelection()">
-        VÀO HỆ THỐNG THI <i class="fas fa-rocket"></i>
+      <!-- Nút tiếp tục -->
+      <button class="nm-btn" id="btnContinue" onclick="nbNameSubmit()">
+        VÀO HỆ THỐNG THI
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/>
+        </svg>
       </button>
 
-      <button class="btn-home" onclick="window.location.href='index.html'">
-        <i class="fas fa-long-arrow-alt-left"></i> Quay lại trang chủ
+      <!-- Quay lại -->
+      <button class="nm-back" onclick="location.href='index.html'">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Quay lại trang chủ
       </button>
+
     </div>
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec"; 
-
-    window.onload = async () => {
-      const loggedInUser = localStorage.getItem("username") || localStorage.getItem("user");
-
-      if (!loggedInUser) {
-        Swal.fire({
-          icon: 'error', title: 'Hết phiên làm việc',
-          text: 'Vui lòng đăng nhập để tiếp tục.',
-          background: '#131c2f', color: '#fff', confirmButtonColor: '#4facfe'
-        }).then(() => { window.location.href = 'login.html'; });
-        return;
-      }
-
-      const nameInput  = document.getElementById("username_display");
-      const schoolInput= document.getElementById("school");
-      const classInput = document.getElementById("class_name");
-
-      // Nếu login.html đã lưu sẵn → điền ngay, không cần gọi API
-      const cachedName   = localStorage.getItem("studentName");
-      const cachedSchool = localStorage.getItem("schoolName");
-      const cachedClass  = localStorage.getItem("className");
-
-      if (cachedName && cachedSchool && cachedClass) {
-        nameInput.value   = cachedName;
-        schoolInput.value = cachedSchool;
-        classInput.value  = cachedClass;
-        nameInput.readOnly = schoolInput.readOnly = classInput.readOnly = true;
-        return; // Không cần gọi API
-      }
-
-      // Chưa có cache → gọi API
-      [nameInput, schoolInput, classInput].forEach(el => el.classList.add("loading-input"));
-      try {
-        const response = await fetch(`${SCRIPT_URL}?action=getUserInfo&username=${encodeURIComponent(loggedInUser)}`);
-        const data = await response.json();
-        [nameInput, schoolInput, classInput].forEach(el => el.classList.remove("loading-input"));
-
-        if (data.status === "success") {
-          nameInput.value   = data.name   || "";
-          schoolInput.value = data.school || "";
-          classInput.value  = (data.class || "").replace(/^'+/, "");
-          localStorage.setItem("studentName", data.name   || "");
-          localStorage.setItem("schoolName",  data.school || "");
-          localStorage.setItem("className",   (data.class || "").replace(/^'+/, ""));
-          if (data.name)   nameInput.readOnly   = true;
-          if (data.school) schoolInput.readOnly = true;
-          if (data.class)  classInput.readOnly  = true;
-        } else {
-          nameInput.placeholder  = "Nhập họ tên...";
-          schoolInput.placeholder= "Nhập tên trường...";
-          classInput.placeholder = "Nhập lớp...";
-        }
-      } catch (err) {
-        [nameInput, schoolInput, classInput].forEach(el => el.classList.remove("loading-input"));
-        nameInput.placeholder = "Lỗi kết nối máy chủ";
-      }
-    };
-
-    function startSelection() {
-      const name = document.getElementById("username_display").value.trim();
-      const school = document.getElementById("school").value.trim();
-      const className = document.getElementById("class_name").value.trim();
-
-      if (!name || !school || !className) {
-        Swal.fire({
-          icon: 'warning',
-          title: 'Thông tin chưa đủ',
-          text: 'Vui lòng hoàn tất các trường thông tin còn trống.',
-          background: '#131c2f', color: '#fff'
-        });
-        return;
-      }
-
-      // Lưu trữ dữ liệu cuối cùng
-      localStorage.setItem("studentName", name);
-      localStorage.setItem("schoolName", school);
-      localStorage.setItem("className", className);
-      
-      // Hiệu ứng chuyển trang
-      document.querySelector('.box').classList.add('animate__animated', 'animate__fadeOutUp');
-      setTimeout(() => {
-        window.location.href = "select.html";
-      }, 500);
-    }
-
-    // Lắng nghe phím Enter
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') startSelection();
+    document.addEventListener('DOMContentLoaded', function(){
+      if(typeof nbNameInit === 'function') nbNameInit();
     });
   </script>
 </body>

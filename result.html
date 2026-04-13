@@ -3,473 +3,126 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Kết Quả | Nebula Quiz 2026</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-  <style>
-    :root {
-      --primary:#4facfe; --accent:#00ffcc; --bg:#0b0f1a;
-      --card:rgba(22,30,46,0.75); --glass-border:rgba(255,255,255,0.1);
-      --text:#f8fafc; --correct:#00ffcc; --wrong:#ff4757;
-    }
-    *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Inter','Segoe UI',sans-serif;}
-    body {
-      min-height:100vh;
-      background:var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
-      background-size:cover; background-blend-mode:overlay;
-      display:flex; justify-content:center; align-items:flex-start; color:var(--text); padding:20px;
-      padding-top: max(20px, env(safe-area-inset-top));
-    }
-    .result-container {
-      background:var(--card); backdrop-filter:blur(30px); border-radius:28px;
-      padding:40px 32px; border:1px solid var(--glass-border); text-align:center;
-      width:100%; max-width:480px; box-shadow:0 25px 80px rgba(0,0,0,0.6);
-    }
-    .trophy-box { font-size:5rem; margin-bottom:10px; animation:float 3s ease-in-out infinite; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
-    h2 { font-size:2.2rem; font-weight:800; background:linear-gradient(to right,#fff,var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:5px; }
-    .status-text { color:#94a3b8; font-size:0.8rem; text-transform:uppercase; letter-spacing:3px; margin-bottom:25px; }
-    .score-circle {
-      width:160px; height:160px; margin:0 auto 30px; border-radius:50%;
-      background:rgba(0,0,0,0.4); border:4px solid var(--glass-border);
-      display:flex; flex-direction:column; justify-content:center; align-items:center;
-    }
-    .score-big { font-size:3.5rem; font-weight:900; background:linear-gradient(135deg,#fff 30%,var(--primary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; line-height:1; }
-    .score-label { font-size:0.75rem; color:var(--primary); font-weight:bold; margin-top:5px; }
-    .info-list { background:rgba(0,0,0,0.25); border-radius:24px; padding:20px; margin-bottom:22px; border:1px solid var(--glass-border); }
-    .info-item { display:flex; justify-content:space-between; align-items:center; padding:13px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:.9rem; }
-    .info-item:last-child { border:none; }
-    .label-box { color:#94a3b8; display:flex; align-items:center; gap:12px; }
-    .val-box { font-weight:600; color:#fff; text-align:right; max-width:58%; }
-    #syncStatus { font-size:0.8rem; font-weight:700; color:var(--accent); display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:22px; }
-    .btn-group { display:grid; grid-template-columns:1fr; gap:12px; }
-    .btn { width:100%; padding:18px; border-radius:18px; border:none; font-weight:800; cursor:pointer; transition:0.3s; display:flex; align-items:center; justify-content:center; gap:10px; text-transform:uppercase; letter-spacing:1px; font-size:0.9rem; font-family:'Inter',sans-serif; }
-    .btn-main    { background:linear-gradient(135deg,var(--primary),#00f2fe); color:#0b0f1a; box-shadow:0 10px 20px rgba(79,172,254,0.3); }
-    .btn-review  { background:rgba(255,200,0,0.1); color:#ffc800; border:1px solid rgba(255,200,0,0.2); }
-    .btn-outline { background:rgba(255,255,255,0.05); color:#fff; border:1px solid var(--glass-border); }
-    .btn:hover   { transform:translateY(-4px); filter:brightness(1.1); }
-
-    /* MODAL */
-    .modal-overlay {
-      position:fixed; inset:0; background:rgba(5,8,18,0.92);
-      backdrop-filter:blur(12px); z-index:1000;
-      display:none; justify-content:center; align-items:flex-start;
-      padding:20px; overflow-y:auto;
-    }
-    .modal-overlay.open { display:flex; }
-    .modal-box {
-      background:#0f172a; border:1px solid var(--glass-border);
-      border-radius:28px; width:100%; max-width:760px;
-      padding:28px 32px; margin:auto; box-shadow:0 40px 120px rgba(0,0,0,0.8);
-      animation:slideUp 0.3s ease; max-height:92vh; display:flex; flex-direction:column;
-    }
-    @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-    .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.08); }
-    .modal-title  { font-size:1.2rem; font-weight:800; color:#fff; display:flex; align-items:center; gap:10px; }
-    .modal-close  { width:38px; height:38px; border-radius:12px; border:none; background:rgba(255,71,87,0.1); color:#ff4757; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:0.2s; flex-shrink:0; }
-    .modal-close:hover { background:#ff4757; color:#fff; }
-    .modal-chips { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px; flex-shrink:0; }
-    .m-chip { padding:14px; border-radius:18px; text-align:center; font-weight:800; font-size:1.4rem; }
-    .m-chip small { display:block; font-size:0.65rem; font-weight:500; opacity:0.7; margin-top:3px; text-transform:uppercase; }
-    .mc-correct { background:rgba(0,255,204,0.1); border:1px solid rgba(0,255,204,0.2); color:var(--correct); }
-    .mc-wrong   { background:rgba(255,71,87,0.1);  border:1px solid rgba(255,71,87,0.2);  color:var(--wrong); }
-    .mc-skip    { background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:#94a3b8; }
-    .q-list { display:flex; flex-direction:column; gap:10px; flex:1; overflow-y:auto; padding-right:6px; min-height:0; }
-    .q-list::-webkit-scrollbar { width:5px; }
-    .q-list::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:10px; }
-    .q-item { border-radius:18px; border:1px solid var(--glass-border); background:rgba(255,255,255,0.02); overflow:hidden; }
-    .q-item.correct-bg { border-left:4px solid var(--correct); }
-    .q-item.wrong-bg   { border-left:4px solid var(--wrong); }
-    .q-item.skip-bg    { border-left:4px solid #475569; }
-    .q-header { display:flex; align-items:flex-start; gap:14px; padding:16px 20px; cursor:pointer; user-select:none; }
-    .q-header:hover { background:rgba(255,255,255,0.02); }
-    .q-badge { min-width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.8rem; font-weight:800; flex-shrink:0; margin-top:2px; }
-    .q-badge.correct { background:var(--correct); color:#0b0f1a; }
-    .q-badge.wrong   { background:var(--wrong);   color:#fff; }
-    .q-badge.skip    { background:#475569;         color:#fff; }
-    .q-text { flex:1; font-size:0.92rem; color:#e2e8f0; font-weight:500; line-height:1.5; }
-    .q-pts  { font-size:0.75rem; color:var(--primary); font-weight:800; padding:4px 8px; background:rgba(79,172,254,0.1); border-radius:6px; white-space:nowrap; flex-shrink:0; }
-    .q-detail { display:none; padding:0 20px 18px 66px; background:rgba(0,0,0,0.1); border-top:1px solid rgba(255,255,255,0.04); }
-    .q-item.open .q-detail { display:block; }
-    .detail-inner { padding-top:12px; }
-    .detail-label { font-size:0.65rem; color:#475569; text-transform:uppercase; margin-bottom:8px; font-weight:700; letter-spacing:1px; }
-    .opt { padding:10px 14px; border-radius:10px; font-size:0.85rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.07); display:flex; align-items:center; gap:10px; color:#94a3b8; margin-bottom:6px; word-break:break-word; }
-    .opt.is-correct { background:rgba(0,255,204,0.1); border-color:rgba(0,255,204,0.3); color:var(--correct); }
-    .opt.is-wrong   { background:rgba(255,71,87,0.1); border-color:rgba(255,71,87,0.3); color:var(--wrong); }
-    .opt i { flex-shrink:0; }
-    .q-img-review { width:100%; border-radius:12px; margin:10px 0; max-height:220px; object-fit:contain; background:#000; border:1px solid var(--glass-border); }
-    .empty-review { text-align:center; padding:40px; color:#475569; font-size:0.9rem; }
-    .empty-review i { font-size:2rem; margin-bottom:10px; display:block; }
-
-    /* ═══════════ RESPONSIVE ═══════════ */
-    @media(max-width:520px){
-      .result-container {
-        padding:28px 18px;
-        border-radius:22px;
-      }
-      .trophy-box  { font-size:3.8rem; }
-      h2           { font-size:1.7rem; }
-      .score-circle { width:130px; height:130px; }
-      .score-big   { font-size:2.8rem; }
-      .info-item   { font-size:.82rem; padding:11px 0; }
-      .btn         { padding:15px; font-size:.82rem; }
-      .btn-group   { gap:10px; }
-      .modal-box   { padding:20px 16px; border-radius:20px; }
-      .m-chip      { font-size:1.1rem; padding:10px; }
-      .q-header    { padding:13px 14px; }
-      .q-detail    { padding:0 14px 14px 50px; }
-      .q-text      { font-size:.85rem; }
-    }
-    @media(max-width:380px){
-      .result-container { padding:22px 14px; }
-      .trophy-box  { font-size:3.2rem; }
-      h2           { font-size:1.5rem; }
-    }
-    /* PC: align container with proper center */
-    @media(min-width:768px){
-      body { align-items:center; padding:24px; }
-      .result-container { padding:44px 36px; border-radius:32px; }
-      .trophy-box  { font-size:5rem; }
-      h2           { font-size:2.2rem; }
-      .score-circle{ width:160px; height:160px; }
-      .score-big   { font-size:3.8rem; }
-      .info-item   { font-size:.95rem; padding:14px 0; }
-    }
-
-  </style>
+  <title>Kết Quả | Nebula Quiz</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  <script src="script.js" defer></script>
 </head>
-<body>
+<body class="res-body">
 
-<div class="result-container animate__animated animate__zoomIn">
-  <div class="trophy-box" id="trophyIcon">🏆</div>
-  <h2 id="congratsTitle">HOÀN THÀNH!</h2>
-  <p class="status-text">KẾT QUẢ CHUYẾN DU HÀNH</p>
+<!-- ── Thẻ kết quả ── -->
+<div class="res-card animate__animated animate__zoomIn">
 
-  <div class="score-circle animate__animated animate__bounceIn animate__delay-1s">
-    <div class="score-big" id="displayScore">0</div>
-    <div class="score-label">ĐIỂM SỐ</div>
+  <!-- Trophy & tiêu đề -->
+  <span class="res-trophy" id="resTrophy">🏆</span>
+  <h2 class="res-title" id="resTitle">HOÀN THÀNH!</h2>
+  <p class="res-subtitle">KẾT QUẢ CHUYẾN DU HÀNH</p>
+
+  <!-- Vòng điểm số -->
+  <div class="res-score-ring animate__animated animate__bounceIn animate__delay-1s">
+    <div class="res-score-val" id="resScoreVal">0</div>
+    <div class="res-score-lbl">ĐIỂM SỐ</div>
   </div>
 
-  <div class="info-list">
-    <div class="info-item">
-      <div class="label-box"><i class="fas fa-user-astronaut"></i> Thí sinh</div>
-      <div class="val-box" id="resName">...</div>
+  <!-- Thông tin thí sinh -->
+  <div class="res-info">
+    <div class="res-row">
+      <div class="res-row-label">
+        <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        Thí sinh
+      </div>
+      <div class="res-row-val" id="resName">...</div>
     </div>
-    <div class="info-item">
-      <div class="label-box"><i class="fas fa-school"></i> Trường / Lớp</div>
-      <div class="val-box" id="resSchool">...</div>
+    <div class="res-row">
+      <div class="res-row-label">
+        <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+        Trường / Lớp
+      </div>
+      <div class="res-row-val" id="resSchool">...</div>
     </div>
-    <div class="info-item">
-      <div class="label-box"><i class="fas fa-check-circle"></i> Câu đúng</div>
-      <div class="val-box" id="resCorrect" style="color:var(--accent)">0/0</div>
+    <div class="res-row">
+      <div class="res-row-label">
+        <svg viewBox="0 0 24 24" style="fill:var(--accent)"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        Câu đúng
+      </div>
+      <div class="res-row-val" id="resCorrect" style="color:var(--accent)">0/0</div>
     </div>
-    <div class="info-item">
-      <div class="label-box"><i class="fas fa-book-open"></i> Bài thi</div>
-      <div class="val-box" id="resTestName" style="font-size:0.85rem;opacity:0.8">...</div>
+    <div class="res-row">
+      <div class="res-row-label">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+        Bài thi
+      </div>
+      <div class="res-row-val" id="resTestName" style="font-size:.83rem;opacity:.8">...</div>
     </div>
   </div>
 
-  <div id="syncStatus"><i class="fas fa-circle-check"></i> Đã lưu kết quả</div>
+  <!-- Trạng thái lưu -->
+  <div class="res-sync" id="resSyncStatus">
+    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    Đã lưu kết quả
+  </div>
 
-  <div class="btn-group">
-    <button class="btn btn-review"  onclick="openReview()">
-      <i class="fas fa-list-check"></i> Xem lại bài làm
+  <!-- Nút hành động -->
+  <div class="res-btns">
+    <button class="res-btn res-btn-review" onclick="nbOpenReview()">
+      <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+      XEM LẠI BÀI LÀM
     </button>
-    <button class="btn btn-main" onclick="location.href='select.html'">
-      <i class="fas fa-rocket"></i> Về trang bài thi
+    <button class="res-btn res-btn-main" onclick="location.href='select.html'">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+      VỀ TRANG BÀI THI
     </button>
-    <button class="btn btn-outline" onclick="location.href='history.html'">
-      <i class="fas fa-clock-rotate-left"></i> Lịch sử làm bài
+    <button class="res-btn res-btn-outline" onclick="location.href='history.html'">
+      <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+      LỊCH SỬ LÀM BÀI
     </button>
   </div>
+
 </div>
 
-<div class="modal-overlay" id="reviewModal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <div class="modal-title">
-        <i class="fas fa-file-invoice" style="color:var(--accent)"></i> Chi tiết bài làm
+<!-- ── Modal xem lại bài ── -->
+<div class="res-modal" id="resModal">
+  <div class="res-modal-box">
+
+    <div class="res-modal-head">
+      <div class="res-modal-title">
+        <svg viewBox="0 0 24 24"><path d="M20 6H4v2h16V6zm-2 4H6v2h12v-2zm2 4H4v2h16v-2z"/></svg>
+        Chi tiết bài làm
       </div>
-      <button class="modal-close" onclick="closeReview()">
-        <i class="fas fa-times"></i>
+      <button class="res-modal-close" onclick="nbCloseReview()">
+        <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
       </button>
     </div>
-    <div class="modal-chips" id="modalChips"></div>
-    <div class="q-list" id="qReviewList">
-      <div class="empty-review">
-        <i class="fas fa-circle-notch fa-spin"></i>
+
+    <!-- Chips thống kê -->
+    <div class="res-chips" id="resChips">
+      <div class="res-chip res-chip-ok">—<small>Đúng</small></div>
+      <div class="res-chip res-chip-err">—<small>Sai</small></div>
+      <div class="res-chip res-chip-skip">—<small>Bỏ qua</small></div>
+    </div>
+
+    <!-- Danh sách câu hỏi -->
+    <div class="res-q-list" id="resQList">
+      <div class="res-empty">
+        <svg viewBox="0 0 24 24" style="animation:spin .8s linear infinite">
+          <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+        </svg>
         <p>Đang chuẩn bị dữ liệu...</p>
       </div>
     </div>
+
   </div>
 </div>
 
 <script>
-var API = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
-var quizData     = { questions: [], answers: {} };
-var reviewLoaded = false;
-
-// ══════════════════════════════════════════
-//  KHỞI TẠO
-// ══════════════════════════════════════════
-window.onload = function() {
-  var name       = localStorage.getItem("studentName")     || "Người dùng";
-  var school     = localStorage.getItem("schoolName")      || "Tự do";
-  var className  = localStorage.getItem("className")       || "";
-  var testName   = localStorage.getItem("currentTestName") || "Bài thi";
-  var score      = parseFloat(localStorage.getItem("lastScore") || "0");
-  var correctStr = localStorage.getItem("correctCount")    || "0/0";
-
-  document.getElementById("resName").innerText     = name;
-  document.getElementById("resSchool").innerText   = school.replace(/^'+/, "") + (className ? " · " + className : "");
-  document.getElementById("resCorrect").innerText  = correctStr;
-  document.getElementById("resTestName").innerText = testName;
-
-  animateScore(score);
-
-  var title  = document.getElementById("congratsTitle");
-  var trophy = document.getElementById("trophyIcon");
-  if (score >= 8)      { title.innerText = "XUẤT SẮC!";    trophy.innerText = "👑"; }
-  else if (score >= 5) { title.innerText = "TỐT LẮM!";     trophy.innerText = "🚀"; }
-  else                 { title.innerText = "CỐ GẮNG LÊN!"; trophy.innerText = "🎯"; }
-
-  try {
-    quizData.answers   = JSON.parse(localStorage.getItem("quizAnswers")   || "{}");
-    quizData.questions = JSON.parse(localStorage.getItem("quizQuestions") || "[]");
-  } catch(e) {
-    quizData.answers   = {};
-    quizData.questions = [];
-  }
-};
-
-// ══════════════════════════════════════════
-//  MỞ / ĐÓNG MODAL
-// ══════════════════════════════════════════
-async function openReview() {
-  document.getElementById("reviewModal").classList.add("open");
-  if (reviewLoaded) return;
-
-  var listEl = document.getElementById("qReviewList");
-
-  if (!quizData.questions || quizData.questions.length === 0) {
-    var tid = localStorage.getItem("currentTestId");
-    if (!tid) {
-      listEl.innerHTML = '<div class="empty-review" style="color:var(--wrong)"><i class="fas fa-exclamation-circle"></i><p>Không tìm thấy dữ liệu đề thi.</p></div>';
-      return;
-    }
-    listEl.innerHTML = '<div class="empty-review"><i class="fas fa-spinner fa-spin"></i><p>Đang tải câu hỏi...</p></div>';
-    try {
-      var res  = await fetch(API + "?action=getQuestions&testId=" + encodeURIComponent(tid));
-      var data = await res.json();
-      quizData.questions = Array.isArray(data) ? data : [];
-    } catch(e) {
-      listEl.innerHTML = '<div class="empty-review" style="color:var(--wrong)"><i class="fas fa-wifi"></i><p>Lỗi kết nối máy chủ.</p></div>';
-      return;
-    }
-  }
-
-  if (!quizData.questions.length) {
-    listEl.innerHTML = '<div class="empty-review"><i class="fas fa-inbox"></i><p>Không có câu hỏi.</p></div>';
-    return;
-  }
-
-  renderReview();
-  reviewLoaded = true;
-}
-
-function closeReview() {
-  document.getElementById("reviewModal").classList.remove("open");
-}
-
-document.getElementById("reviewModal").addEventListener("click", function(e) {
-  if (e.target === this) closeReview();
-});
-
-function toggleItem(i) {
-  document.getElementById("qi" + i).classList.toggle("open");
-}
-
-// ══════════════════════════════════════════
-//  RENDER DANH SÁCH CÂU HỎI
-// ══════════════════════════════════════════
-function renderReview() {
-  var cntCorrect = 0, cntWrong = 0, cntSkip = 0;
-  var iconMap = { correct: "fa-check", wrong: "fa-times", skip: "fa-minus" };
-
-  var rows = quizData.questions.map(function(q, i) {
-    var userAns    = String(quizData.answers[q.question] || "");
-    var correctAns = String(q.correct || q.correctAnswer || "").trim();
-    var type       = String(q.type || "single").toLowerCase();
-    var isCorrect  = checkAnswer(type, userAns, correctAns);
-    var status     = !userAns ? "skip" : (isCorrect ? "correct" : "wrong");
-
-    if (status === "correct") cntCorrect++;
-    else if (status === "wrong") cntWrong++;
-    else cntSkip++;
-
-    var pts    = parseFloat(q.points) || 0;
-    var ptsStr = (pts > 0) ? ('<div class="q-pts">' + (isCorrect ? "+" + pts : "0") + "đ</div>") : "";
-    var imgStr = (q.image && q.image.length > 10)
-      ? '<img src="' + esc(q.image) + '" class="q-img-review" onerror="this.style.display=\'none\'">'
-      : "";
-
-    return ''
-      + '<div class="q-item ' + status + '-bg" id="qi' + i + '">'
-      +   '<div class="q-header" onclick="toggleItem(' + i + ')">'
-      +     '<div class="q-badge ' + status + '"><i class="fas ' + iconMap[status] + '"></i></div>'
-      +     '<div class="q-text">Câu ' + (i + 1) + ': ' + esc(q.question) + '</div>'
-      +     ptsStr
-      +   '</div>'
-      +   '<div class="q-detail">'
-      +     '<div class="detail-inner">' + imgStr + buildDetail(q, userAns, correctAns, status, type) + '</div>'
-      +   '</div>'
-      + '</div>';
+  /* Đóng modal khi click nền */
+  document.getElementById('resModal').addEventListener('click', function(e){
+    if(e.target === this) nbCloseReview();
   });
 
-  document.getElementById("modalChips").innerHTML =
-      '<div class="m-chip mc-correct">' + cntCorrect + '<small>Đúng</small></div>'
-    + '<div class="m-chip mc-wrong">'   + cntWrong   + '<small>Sai</small></div>'
-    + '<div class="m-chip mc-skip">'    + cntSkip    + '<small>Bỏ qua</small></div>';
-
-  document.getElementById("qReviewList").innerHTML = rows.join("");
-}
-
-// ══════════════════════════════════════════
-//  KIỂM TRA ĐÁP ÁN
-// ══════════════════════════════════════════
-function checkAnswer(type, userAns, correctAns) {
-  if (!userAns) return false;
-  var norm  = function(s) { return String(s).trim().toLowerCase().replace(/\s+/g, " "); };
-  var sort  = function(s) { return String(s).split("|").map(function(x) { return norm(x); }).sort().join("|"); };
-  var order = function(s) { return String(s).split("|").map(function(x) { return norm(x); }).join("|"); };
-  if (type === "ordering")                          return order(userAns) === order(correctAns);
-  if (type === "multiple" || type === "matching")   return sort(userAns)  === sort(correctAns);
-  return norm(userAns) === norm(correctAns);
-}
-
-// ══════════════════════════════════════════
-//  BUILD HTML CHI TIẾT ĐÁP ÁN
-// ══════════════════════════════════════════
-function buildDetail(q, userAns, correctAns, status, type) {
-  var html = '<div class="detail-label">Chi tiết đáp án</div>';
-
-  // ── Trắc nghiệm / Đúng-Sai / Nhiều đáp án ──
-  if (type === "single" || type === "mcq" || type === "tf" || type === "multiple") {
-    var opts = getOptions(q, type);
-    if (opts.length > 0) {
-      var uArr = userAns ? userAns.split("|").map(function(x) { return x.trim(); }) : [];
-      var cArr = correctAns ? correctAns.split("|").map(function(x) { return x.trim(); }) : [];
-      for (var j = 0; j < opts.length; j++) {
-        var optStr   = String(opts[j]).trim();
-        var chosen   = uArr.indexOf(optStr) >= 0;
-        var right    = cArr.indexOf(optStr) >= 0;
-        var cls  = "";
-        var icon = "fa-circle";
-        if (right) {
-          cls  = "is-correct";
-          icon = "fa-circle-check";
-        } else if (chosen && !right) {
-          cls  = "is-wrong";
-          icon = "fa-circle-xmark";
-        }
-        html += '<div class="opt ' + cls + '"><i class="fas ' + icon + '"></i> ' + esc(optStr) + '</div>';
-      }
-      return html;
-    }
-    // Không có options → fallback hiện thô
-    html += '<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: ' + esc(correctAns || "—") + '</div>';
-    if (userAns) {
-      var rawCls = (status === "correct") ? "is-correct" : "is-wrong";
-      html += '<div class="opt ' + rawCls + '"><i class="fas fa-pen"></i> Bài làm: ' + esc(userAns) + '</div>';
-    }
-    return html;
-  }
-
-  // ── Sắp xếp ──
-  if (type === "ordering") {
-    var oCls = (status === "correct") ? "is-correct" : "is-wrong";
-    html += '<div class="opt ' + oCls + '" style="margin-bottom:6px">'
-      + '<i class="fas fa-list-ol"></i> Thứ tự bạn chọn: '
-      + esc(userAns ? userAns.replace(/\|/g, " → ") : "(Chưa sắp xếp)")
-      + '</div>';
-    if (status !== "correct") {
-      html += '<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: '
-        + esc(correctAns.replace(/\|/g, " → ")) + '</div>';
-    }
-    return html;
-  }
-
-  // ── Nối chéo ──
-  if (type === "matching") {
-    var mCls = (status === "correct") ? "is-correct" : "is-wrong";
-    html += '<div class="opt ' + mCls + '" style="margin-bottom:6px">'
-      + '<i class="fas fa-link"></i> Bạn ghép: '
-      + esc(userAns ? userAns.replace(/\|/g, " | ") : "(Chưa ghép)")
-      + '</div>';
-    if (status !== "correct") {
-      html += '<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: '
-        + esc(correctAns.replace(/\|/g, " | ")) + '</div>';
-    }
-    return html;
-  }
-
-  // ── Fill / Khác ──
-  var fCls  = (status === "correct") ? "is-correct" : "is-wrong";
-  var fIcon = (status === "correct") ? "fa-check-circle" : "fa-times-circle";
-  html += '<div class="opt ' + fCls + '" style="margin-bottom:6px">'
-    + '<i class="fas ' + fIcon + '"></i> Bài làm: ' + esc(userAns || "(Trống)") + '</div>';
-  html += '<div class="opt is-correct"><i class="fas fa-star"></i> Đáp án đúng: ' + esc(correctAns || "—") + '</div>';
-  return html;
-}
-
-// ══════════════════════════════════════════
-//  LẤY DANH SÁCH OPTION
-// ══════════════════════════════════════════
-function getOptions(q, type) {
-  if (type === "tf") return ["Đúng", "Sai"];
-  try {
-    var det = q.details;
-    if (!det) {
-      det = (typeof q.answer === "string") ? JSON.parse(q.answer) : (q.answer || {});
-    }
-    var items = det.items || det.options || [];
-    return items.map(function(o) {
-      if (typeof o === "object" && o !== null) return o.text || JSON.stringify(o);
-      return String(o);
-    });
-  } catch(e) {
-    return [];
-  }
-}
-
-// ══════════════════════════════════════════
-//  ESCAPE HTML
-// ══════════════════════════════════════════
-function esc(str) {
-  return String(str || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-// ══════════════════════════════════════════
-//  ANIMATE ĐIỂM
-// ══════════════════════════════════════════
-function animateScore(end) {
-  var el = document.getElementById("displayScore");
-  if (!el) return;
-  var startTime = null;
-  var duration  = 1200;
-  function step(ts) {
-    if (!startTime) startTime = ts;
-    var progress = Math.min((ts - startTime) / duration, 1);
-    var val = (progress * end).toFixed(1);
-    el.innerHTML = val.endsWith(".0") ? val.slice(0, -2) : val;
-    if (progress < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
+  document.addEventListener('DOMContentLoaded', function(){
+    if(typeof nbResultInit === 'function') nbResultInit();
+  });
 </script>
 </body>
 </html>
