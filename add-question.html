@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Nebula - Thiết Kế Câu Hỏi</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <title>Nebula — Thiết Kế Câu Hỏi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 </head>
@@ -15,35 +15,39 @@
 
     <!-- NAV HEADER -->
     <div class="nav-header-aq">
-      <button class="btn-nav" title="Quay lại" onclick="location.href='question-list.html'">
-        <i class="fas fa-arrow-left"></i>
+      <button class="btn-nav" title="Quay lại danh sách câu hỏi" onclick="location.href='question-list.html'">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       </button>
-      <div id="testInfo" style="font-weight:800;color:#90caf9;font-size:.9rem;text-align:center;flex:1;padding:0 12px">
-        BÀI THI: ĐANG TẢI...
-      </div>
+      <div id="testInfo">BÀI THI: ĐANG TẢI...</div>
       <button class="btn-nav" title="Trang quản trị" onclick="location.href='dashboard.html'">
-        <i class="fas fa-home"></i>
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       </button>
     </div>
 
+    <!-- TIÊU ĐỀ -->
     <h2 class="aq-title" id="pageTitle">
-      <i class="fas fa-atom"></i> THIẾT KẾ CÂU HỎI NEBULA
+      <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--primary);flex-shrink:0">
+        <path d="M14 6l-1-2H5v17h2v-7h5l1 2h7V6h-6zm4 8h-4l-1-2H7V6h5l1 2h5v6z"/>
+      </svg>
+      THIẾT KẾ CÂU HỎI NEBULA
     </h2>
 
     <!-- CÀI ĐẶT BÀI THI -->
     <div class="setup-grid">
       <div>
         <label class="form-group-aq" style="display:block">
-          <span style="font-size:.75rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px">
-            <i class="fas fa-hourglass-half"></i> Thời gian (Phút)
+          <span style="font-size:.72rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:6px">
+            <svg style="width:13px;height:13px;fill:#90caf9" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
+            Thời gian (Phút)
           </span>
           <input type="number" id="testTime" class="input-control" value="15" style="margin-top:8px">
         </label>
       </div>
       <div>
         <label class="form-group-aq" style="display:block">
-          <span style="font-size:.75rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px">
-            <i class="fas fa-chart-pie"></i> Cách tính điểm
+          <span style="font-size:.72rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:6px">
+            <svg style="width:13px;height:13px;fill:#90caf9" viewBox="0 0 24 24"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2.03 0v8.99H22c-.47-4.74-4.24-8.52-8.97-8.99zm0 11.01V22c4.74-.47 8.5-4.25 8.97-8.99h-8.97z"/></svg>
+            Cách tính điểm
           </span>
           <select id="scoreMode" class="input-control" onchange="toggleScoreUI()" style="margin-top:8px">
             <option value="equal">Chia đều tổng điểm</option>
@@ -53,7 +57,7 @@
       </div>
       <div id="boxTotalScore">
         <label class="form-group-aq" style="display:block">
-          <span style="font-size:.75rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px">
+          <span style="font-size:.72rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px">
             Tổng điểm bài thi
           </span>
           <input type="number" id="totalScore" class="input-control" value="10"
@@ -63,7 +67,7 @@
       </div>
       <div id="boxPoint" style="display:none">
         <label class="form-group-aq" style="display:block">
-          <span style="font-size:.75rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px">
+          <span style="font-size:.72rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px">
             Điểm cho câu này
           </span>
           <input type="number" id="qPoint" class="input-control" value="1" step="0.1" style="margin-top:8px">
@@ -73,14 +77,20 @@
 
     <!-- NỘI DUNG CÂU HỎI -->
     <div class="form-group-aq">
-      <label><i class="fas fa-pencil-alt"></i> Nội dung câu hỏi <span style="color:var(--danger)">*</span></label>
+      <label>
+        <svg style="width:13px;height:13px;fill:#90caf9" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+        Nội dung câu hỏi <span style="color:var(--danger)">*</span>
+      </label>
       <textarea id="qText" class="input-control" rows="3"
         placeholder="Nhập câu hỏi tại đây..."></textarea>
     </div>
 
     <!-- ẢNH CÂU HỎI -->
     <div class="form-group-aq">
-      <label><i class="fas fa-image"></i> Ảnh minh họa câu hỏi (tùy chọn)</label>
+      <label>
+        <svg style="width:13px;height:13px;fill:#90caf9" viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>
+        Ảnh minh họa câu hỏi (tùy chọn)
+      </label>
       <div style="display:flex;gap:14px;align-items:center;background:rgba(255,255,255,.03);padding:14px;border-radius:18px;border:1px dashed var(--border2)">
         <div id="qPrevBox" class="preview-box">
           <img id="qPrevImg" src="" alt="preview">
@@ -90,9 +100,12 @@
           <input type="text" id="qUrl" class="input-control"
             placeholder="Dán link ảnh (https://...)" oninput="handleLinkInput(this.value)">
           <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;
-            background:rgba(79,172,254,.1);color:var(--primary);padding:8px 16px;border-radius:10px;
+            background:rgba(79,172,254,.1);color:var(--primary);padding:9px 16px;border-radius:10px;
             border:1px dashed rgba(79,172,254,.4);width:fit-content;font-size:.8rem;font-weight:700">
-            <i class="fas fa-upload"></i> Tải ảnh lên
+            <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24">
+              <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+            </svg>
+            Tải ảnh lên
             <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="handleFile(this)">
           </label>
         </div>
@@ -102,8 +115,11 @@
 
     <!-- LOẠI CÂU HỎI -->
     <div class="form-group-aq">
-      <label><i class="fas fa-list-ul"></i> Dạng câu hỏi</label>
-      <select id="qType" class="input-control" onchange="renderEditor()">
+      <label>
+        <svg style="width:13px;height:13px;fill:#90caf9" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+        Dạng câu hỏi
+      </label>
+      <select id="qType" class="input-control" onchange="renderEditor();showTypeHint()">
         <optgroup label="── Trắc nghiệm ──">
           <option value="single">📌 Một đáp án đúng (Radio)</option>
           <option value="multiple">☑️ Nhiều đáp án đúng (Checkbox)</option>
@@ -122,26 +138,29 @@
     <!-- KHU VỰC ĐÁP ÁN -->
     <div id="answerArea">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-        <label id="ansLabel" style="margin:0;font-size:.75rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px">
-          <i class="fas fa-th-list"></i> Thiết lập đáp án
+        <label id="ansLabel" style="margin:0;font-size:.72rem;color:#90caf9;text-transform:uppercase;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:6px">
+          <svg style="width:13px;height:13px;fill:#90caf9" viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+          Thiết lập đáp án
         </label>
         <button id="addBtn" class="btn-add-ans" onclick="addAnsRow()">
-          <i class="fas fa-plus"></i> Thêm phương án
+          <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Thêm phương án
         </button>
       </div>
       <div id="ansList"></div>
     </div>
 
     <!-- TYPE HINTS -->
-    <div id="typeHint" style="margin-top:12px;padding:12px 16px;border-radius:12px;
-      background:rgba(79,172,254,.06);border:1px solid rgba(79,172,254,.15);
-      font-size:.78rem;color:rgba(255,255,255,.55);display:none">
+    <div id="typeHint" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>
+      <span id="typeHintText"></span>
     </div>
 
     <!-- KẾT QUẢ CHẤM ĐIỂM -->
     <div class="correct-area">
-      <label style="color:var(--success)">
-        <i class="fas fa-fingerprint"></i> Dữ liệu chấm điểm
+      <label>
+        <svg viewBox="0 0 24 24"><path d="M17.81 4.47c-.08 0-.16-.02-.23-.06C15.66 3.42 14 3 12.01 3c-1.98 0-3.86.47-5.57 1.41-.24.13-.54.04-.68-.2-.13-.24-.04-.55.2-.68C7.82 2.52 9.86 2 12.01 2c2.13 0 3.99.47 6.03 1.52.25.13.34.43.21.67-.09.18-.26.28-.44.28zM3.5 9.72c-.1 0-.2-.03-.29-.09-.23-.16-.28-.47-.12-.7.99-1.4 2.25-2.5 3.75-3.27C9.98 4.04 14 4.03 17.15 6.07c1.5.77 2.76 1.86 3.75 3.28.16.23.11.54-.12.7-.23.16-.54.11-.7-.12-.9-1.26-2.04-2.25-3.39-2.94-2.87-1.47-6.54-1.47-9.4.01-1.36.7-2.5 1.7-3.4 2.96-.08.14-.23.21-.39.21z"/></svg>
+        Dữ liệu chấm điểm
       </label>
       <input type="text" id="finalCorrect" class="input-control" readonly
         style="border-color:var(--success);color:var(--success);font-weight:700;
@@ -152,7 +171,10 @@
 
     <!-- NÚT LƯU -->
     <button id="saveBtn" class="btn-save-aq" onclick="saveData()">
-      <i class="fas fa-cloud-upload-alt"></i> ĐỒNG BỘ LÊN CLOUD HỆ THỐNG
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor">
+        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+      </svg>
+      ĐỒNG BỘ LÊN CLOUD HỆ THỐNG
     </button>
 
   </div>
@@ -160,9 +182,8 @@
 
 <script src="script.js" defer></script>
 <script>
-/* ─── Khởi tạo trang ─── */
 window.onload = async function(){
-  nbAddQuestionInit(); /* từ script.js */
+  nbAddQuestionInit();
 
   const testData = JSON.parse(localStorage.getItem('currentTest'));
   if(!testData) return location.href = 'dashboard.html';
@@ -173,7 +194,10 @@ window.onload = async function(){
     window._aqEditMode = true;
     const editData = JSON.parse(editDataString);
     window._aqOriginalQ = editData.question;
-    document.getElementById('pageTitle').innerHTML = '<i class="fas fa-pen-nib"></i> CẬP NHẬT CÂU HỎI';
+    document.getElementById('pageTitle').innerHTML = `
+      <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--primary);flex-shrink:0">
+        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+      </svg> CẬP NHẬT CÂU HỎI`;
     fillEditData(editData);
   } else {
     renderEditor();
@@ -182,7 +206,6 @@ window.onload = async function(){
   showTypeHint();
 };
 
-/* ─── Hint theo loại câu hỏi ─── */
 function showTypeHint(){
   const type = document.getElementById('qType').value;
   const hints = {
@@ -193,49 +216,38 @@ function showTypeHint(){
     ordering: 'Nhập từng bước/mục theo thứ tự đúng. Học sinh kéo sắp xếp lại.',
     fill:     'Điền khuyết. Có thể thêm nhiều đáp án được chấp nhận (phân cách bằng "|").',
   };
-  const hintEl = document.getElementById('typeHint');
+  const hintEl    = document.getElementById('typeHint');
+  const hintText  = document.getElementById('typeHintText');
   if(hints[type]){
-    hintEl.style.display = 'block';
-    hintEl.innerHTML = `<i class="fas fa-lightbulb" style="color:var(--warning)"></i> ${hints[type]}`;
+    hintEl.style.display = 'flex';
+    hintText.textContent = hints[type];
   } else {
     hintEl.style.display = 'none';
   }
-  /* Cập nhật label đáp án */
   const labels = {
-    single:'Các phương án (đánh radio vào đáp án đúng)',
-    multiple:'Các phương án (tick checkbox vào đáp án đúng)',
-    matching:'Ghép cặp vế A ↔ vế B',
-    ordering:'Các mục (theo thứ tự đúng từ trên xuống)',
-    fill:'Đáp án chấp nhận (có thể thêm nhiều)',
-    tf:'Lựa chọn đúng/sai',
+    single:   'Các phương án (đánh radio vào đáp án đúng)',
+    multiple: 'Các phương án (tick checkbox vào đáp án đúng)',
+    matching: 'Ghép cặp vế A ↔ vế B',
+    ordering: 'Các mục (theo thứ tự đúng từ trên xuống)',
+    fill:     'Đáp án chấp nhận (có thể thêm nhiều)',
+    tf:       'Lựa chọn đúng/sai',
   };
   const ansLbl = document.getElementById('ansLabel');
-  if(ansLbl) ansLbl.innerHTML = `<i class="fas fa-th-list"></i> ${labels[type]||'Thiết lập đáp án'}`;
+  if(ansLbl) ansLbl.querySelector('span') 
+    ? ansLbl.querySelector('span').textContent = labels[type]||'Thiết lập đáp án'
+    : null;
 
-  /* Hint đúng */
   const chints = {
-    single:'Đáp án đúng sẽ được ghi tự động khi tick radio.',
-    multiple:'Nhiều đáp án đúng phân cách bằng "|".',
-    matching:'Định dạng: VếA-VếB | VếA-VếB | ...',
-    ordering:'Thứ tự đúng từ trái sang phải, phân cách bằng "|".',
-    fill:'Tất cả đáp án được chấp nhận, phân cách bằng "|".',
-    tf:'Giá trị: "Đúng" hoặc "Sai".',
+    single:   'Đáp án đúng sẽ được ghi tự động khi tick radio.',
+    multiple: 'Nhiều đáp án đúng phân cách bằng "|".',
+    matching: 'Định dạng: VếA-VếB | VếA-VếB | ...',
+    ordering: 'Thứ tự đúng từ trái sang phải, phân cách bằng "|".',
+    fill:     'Tất cả đáp án được chấp nhận, phân cách bằng "|".',
+    tf:       'Giá trị: "Đúng" hoặc "Sai".',
   };
   const cHint = document.getElementById('correctHint');
   if(cHint) cHint.innerText = chints[type]||'';
 }
-
-/* Hook qType onchange để cập nhật hint */
-document.addEventListener('DOMContentLoaded', function(){
-  const qTypeEl = document.getElementById('qType');
-  if(qTypeEl){
-    const orig = qTypeEl.onchange;
-    qTypeEl.addEventListener('change', function(){
-      if(orig) orig.call(this);
-      showTypeHint();
-    });
-  }
-});
 </script>
 </body>
 </html>

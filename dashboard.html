@@ -339,8 +339,9 @@
 <script>
 /* ─── State ─── */
 let tests=[], results=[], pending=[], ispringList=[];
-window._nbResults = results;
-window._nbPending = pending;
+/* FIX: window._nbResults phải được gán lại mỗi khi results thay đổi, không dùng reference */
+window._nbResults = [];
+window._nbPending = [];
 
 /* ─── Init ─── */
 window.addEventListener('DOMContentLoaded', async function(){
@@ -517,8 +518,8 @@ async function loadData(manual=false){
   try{
     const[tData,rData,pData]=await Promise.all([callAPI('getTests'),callAPI('getResults'),callAPI('getPendingUsers')]);
     if(tData){ tests=tData; renderTests(); }
-    if(rData){ results=rData; window._nbResults=results; renderResults(); }
-    if(pData){ pending=pData; window._nbPending=pending; renderPending(); }
+    if(rData){ results=rData; window._nbResults=results; window.results=results; renderResults(); }
+    if(pData){ pending=pData; window._nbPending=pending; window.pending=pending; renderPending(); }
     document.getElementById('cTests').innerText   = tests.length;
     document.getElementById('cResults').innerText = results.length;
     document.getElementById('cPending').innerText = pending.length;
