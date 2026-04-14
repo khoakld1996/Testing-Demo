@@ -1244,3 +1244,175 @@ input,select,textarea,button { font-family:var(--font); }
   .res-body { align-items:center; padding:24px; }
   .res-card { padding:44px 36px; border-radius:32px; }
 }
+
+/* ═══════════════════════════════════════════════
+   ENHANCEMENTS v2026.3 — iSpring + Modern Popups
+   ═══════════════════════════════════════════════ */
+
+/* ── iSpring result card on player ── */
+.isp-result-overlay {
+  position:fixed;inset:0;z-index:8000;background:var(--bg);
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+  display:none;
+}
+.isp-result-overlay.on { display:block; }
+.isp-result-inner {
+  min-height:100%;display:flex;align-items:center;
+  justify-content:center;padding:20px 14px 48px;
+}
+.isp-result-card {
+  width:100%;max-width:420px;
+  background:rgba(15,23,42,.97);
+  border:1px solid rgba(249,115,22,.2);
+  border-radius:28px;padding:34px 24px;
+  text-align:center;
+  box-shadow:0 28px 70px rgba(0,0,0,.65),
+             0 0 0 1px rgba(249,115,22,.05);
+}
+.isp-result-trophy { font-size:3.5rem;display:block;margin-bottom:10px;animation:float 3s ease-in-out infinite; }
+.isp-result-title {
+  font-size:2rem;font-weight:900;margin-bottom:4px;
+  background:linear-gradient(to right,#fff,var(--ispring));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.isp-result-sub {
+  font-size:.65rem;color:#94a3b8;text-transform:uppercase;
+  letter-spacing:3px;margin-bottom:22px;
+}
+/* Score ring for iSpring */
+.isp-score-ring {
+  position:relative;width:140px;height:140px;margin:0 auto 22px;
+}
+.isp-score-ring svg { position:absolute;inset:0;transform:rotate(-90deg); }
+.isp-score-ring .rb { fill:none;stroke:rgba(249,115,22,.15);stroke-width:7; }
+.isp-score-ring .rf {
+  fill:none;stroke:var(--ispring);stroke-width:7;stroke-linecap:round;
+  transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1);
+}
+.isp-score-inner {
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.isp-score-val {
+  font-size:2.4rem;font-weight:900;line-height:1;
+  background:linear-gradient(135deg,#fff,var(--ispring));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.isp-score-lbl { font-size:.58rem;color:var(--ispring);font-weight:700;margin-top:2px; }
+
+/* iSpring info rows */
+.isp-info-box {
+  background:rgba(0,0,0,.22);border-radius:18px;
+  border:1px solid rgba(255,255,255,.06);
+  padding:14px 16px;margin-bottom:20px;
+}
+.isp-info-row {
+  display:flex;justify-content:space-between;align-items:center;
+  padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem;
+}
+.isp-info-row:last-child { border:none; }
+.isp-info-lbl { color:rgba(255,255,255,.5);display:flex;align-items:center;gap:7px; }
+.isp-info-lbl svg { width:14px;height:14px;fill:currentColor;flex-shrink:0; }
+.isp-info-val { font-weight:700;color:#fff;text-align:right;max-width:55%; }
+.isp-info-val.green { color:var(--accent); }
+.isp-info-val.orange { color:var(--ispring); }
+.isp-info-val.red { color:var(--danger); }
+
+/* iSpring sync status */
+.isp-sync-status {
+  font-size:.72rem;margin-bottom:14px;
+  display:flex;align-items:center;justify-content:center;gap:6px;min-height:20px;
+}
+.isp-sync-status.saving { color:var(--orange); }
+.isp-sync-status.ok { color:var(--accent); }
+.isp-sync-status.err { color:var(--danger); }
+.isp-sync-status svg { width:13px;height:13px;fill:currentColor;flex-shrink:0; }
+
+/* iSpring action buttons */
+.isp-btns { display:flex;flex-direction:column;gap:10px; }
+.isp-btn {
+  width:100%;padding:15px;border-radius:14px;border:none;
+  font-weight:800;cursor:pointer;transition:.3s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  text-transform:uppercase;letter-spacing:.8px;font-size:.85rem;
+  font-family:var(--font);position:relative;overflow:hidden;
+}
+.isp-btn::before {
+  content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);
+  transition:.5s;
+}
+.isp-btn:hover::before { left:110%; }
+.isp-btn:hover { transform:translateY(-2px);filter:brightness(1.1); }
+.isp-btn svg { width:16px;height:16px;fill:currentColor;flex-shrink:0; }
+.isp-btn-retry { background:rgba(249,115,22,.13);color:var(--ispring);border:1px solid rgba(249,115,22,.25); }
+.isp-btn-retry:hover { background:var(--ispring);color:#fff; }
+.isp-btn-main { background:linear-gradient(135deg,var(--primary),#00f2fe);color:#0b0f1a; box-shadow:0 8px 20px rgba(79,172,254,.25); }
+.isp-btn-hist { background:rgba(255,255,255,.05);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.1); }
+.isp-btn-hist:hover { background:rgba(255,255,255,.1); }
+
+/* ── Improved SweetAlert2 confirm for iSpring launch ── */
+.swal2-popup.swal-ispring {
+  border-color:rgba(249,115,22,.2) !important;
+  box-shadow:0 40px 80px rgba(0,0,0,.8), 0 0 0 1px rgba(249,115,22,.08) !important;
+}
+.swal2-confirm.swal-ispring-confirm {
+  background:linear-gradient(135deg,var(--ispring),#fb923c) !important;
+  box-shadow:0 8px 20px rgba(249,115,22,.3) !important;
+  color:#fff !important;
+}
+
+/* ── Toast enhancements ── */
+.nb-toast-success { border-color:rgba(16,185,129,.3) !important; }
+.nb-toast-error   { border-color:rgba(239,68,68,.3) !important; }
+.nb-toast-warning { border-color:rgba(245,158,11,.3) !important; }
+.nb-toast-info    { border-color:rgba(79,172,254,.3) !important; }
+
+/* ── Score ring conic gradient (CSS property trick) ── */
+@property --pct {
+  syntax: '<percentage>';
+  initial-value: 0%;
+  inherits: false;
+}
+
+/* ── Responsive player tweaks ── */
+@media(max-width:480px){
+  .isp-result-card  { padding:26px 16px; border-radius:22px; }
+  .isp-result-title { font-size:1.7rem; }
+  .isp-score-ring   { width:116px;height:116px; }
+  .isp-score-val    { font-size:2rem; }
+}
+@media(min-width:768px){
+  .isp-result-inner { align-items:center;padding:24px; }
+  .isp-result-card  { padding:40px 32px; border-radius:32px; }
+}
+
+/* ── Sel title flex fix ── */
+.sel-title {
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+}
+
+/* ── History page improvements ── */
+.hi-badge-isp {
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:.56rem;padding:2px 6px;border-radius:5px;font-weight:700;
+  background:rgba(249,115,22,.12);color:var(--ispring);
+  border:1px solid rgba(249,115,22,.25);margin-left:5px;vertical-align:middle;
+}
+
+/* ── Loading spinner in page ── */
+.nb-page-loader {
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:12px;padding:48px 20px;opacity:.45;
+}
+.nb-page-loader svg { animation:spin .8s linear infinite; }
+.nb-page-loader span { font-size:.82rem; }
+
+/* ── iSpring select section highlight ── */
+.sel-section-isp {
+  background:rgba(249,115,22,.04);
+  border-radius:12px;padding:0 8px 4px;margin-top:4px;
+}

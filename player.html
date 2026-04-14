@@ -6,17 +6,15 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Nebula | iSpring</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --p:#4facfe; --a:#00ffcc; --o:#f97316; --d:#ff4757;
-      --bg:#0b0f1a; --bd:rgba(255,255,255,.1);
-      --sf:rgba(15,23,42,.97); --mu:rgba(255,255,255,.45);
-      --hh:52px;
+    :root{
+      --p:#4facfe;--a:#00ffcc;--o:#f97316;--d:#ff4757;
+      --bg:#0b0f1a;--bd:rgba(255,255,255,.1);
+      --sf:rgba(15,23,42,.97);--mu:rgba(255,255,255,.45);
+      --hh:52px;--font:'Segoe UI',system-ui,-apple-system,sans-serif;
     }
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{height:100%;overflow:hidden;background:var(--bg);color:#f1f5f9;
-      font-family:'Segoe UI',system-ui,-apple-system,sans-serif}
+    html,body{height:100%;overflow:hidden;background:var(--bg);color:#f1f5f9;font-family:var(--font)}
 
     /* HEADER */
     #hdr{position:fixed;top:0;left:0;right:0;z-index:500;height:var(--hh);
@@ -24,31 +22,26 @@
       background:rgba(11,15,26,.98);border-bottom:1px solid var(--bd);
       backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
     .hl{display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden}
-    .hl i{color:var(--o);font-size:1rem;flex-shrink:0}
-    .hn{font-size:.84rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;
-      text-overflow:ellipsis;flex:1}
+    .hl-icon{color:var(--o);font-size:1.1rem;flex-shrink:0;width:18px;height:18px;fill:var(--o)}
+    .hn{font-size:.84rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
     .hbg{font-size:.58rem;padding:2px 7px;border-radius:20px;font-weight:700;
       background:rgba(249,115,22,.15);color:var(--o);border:1px solid rgba(249,115,22,.3);
       flex-shrink:0;white-space:nowrap}
     .hr{display:flex;align-items:center;gap:6px;flex-shrink:0}
-    .hst{font-size:.68rem;color:var(--mu);max-width:88px;white-space:nowrap;
-      overflow:hidden;text-overflow:ellipsis}
+    .hst{font-size:.68rem;color:var(--mu);max-width:88px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     @media(max-width:400px){.hst{display:none}}
 
-    #pgb{position:fixed;top:var(--hh);left:0;right:0;height:2px;
-      background:rgba(249,115,22,.15);z-index:499}
+    #pgb{position:fixed;top:var(--hh);left:0;right:0;height:2px;background:rgba(249,115,22,.15);z-index:499}
     #pgf{height:100%;width:0;background:var(--o);transition:width .5s;border-radius:2px}
 
     /* EXIT BTN */
     #btnX{display:flex;align-items:center;gap:5px;padding:7px 11px;border-radius:10px;
-      border:none;font-size:.72rem;font-weight:700;font-family:inherit;
+      border:none;font-size:.72rem;font-weight:700;font-family:var(--font);
       transition:.2s;cursor:pointer;white-space:nowrap}
-    #btnX.lk{background:rgba(255,255,255,.05);color:rgba(255,255,255,.2);
-      cursor:not-allowed;pointer-events:none}
-    #btnX.wn{background:rgba(249,115,22,.14);color:var(--o);
-      border:1px solid rgba(249,115,22,.3)}
-    #btnX.fr{background:rgba(255,71,87,.14);color:var(--d);
-      border:1px solid rgba(255,71,87,.25)}
+    #btnX svg{width:13px;height:13px;fill:currentColor;flex-shrink:0}
+    #btnX.lk{background:rgba(255,255,255,.05);color:rgba(255,255,255,.2);cursor:not-allowed;pointer-events:none}
+    #btnX.wn{background:rgba(249,115,22,.14);color:var(--o);border:1px solid rgba(249,115,22,.3)}
+    #btnX.fr{background:rgba(255,71,87,.14);color:var(--d);border:1px solid rgba(255,71,87,.25)}
     #btnX.wn:active,#btnX.fr:active{opacity:.7}
 
     /* FRAME */
@@ -66,116 +59,127 @@
 
     /* CONFIRM DIALOG */
     #dlg{display:none;position:fixed;inset:0;z-index:9000;
-      background:rgba(5,8,20,.92);backdrop-filter:blur(16px);
-      -webkit-backdrop-filter:blur(16px);
+      background:rgba(5,8,20,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
       align-items:center;justify-content:center;padding:20px}
     #dlg.on{display:flex}
-    .db{background:var(--sf);border:1px solid rgba(249,115,22,.3);
-      border-radius:22px;padding:28px 22px;max-width:340px;width:100%;
-      text-align:center;animation:pi .2s cubic-bezier(.34,1.56,.64,1)}
+    .db{background:var(--sf);border:1px solid rgba(249,115,22,.3);border-radius:22px;
+      padding:28px 22px;max-width:340px;width:100%;text-align:center;
+      animation:pi .2s cubic-bezier(.34,1.56,.64,1)}
     @keyframes pi{from{transform:scale(.88);opacity:0}to{transform:scale(1);opacity:1}}
     .de{font-size:2rem;margin-bottom:10px}
     .dh{font-size:1.05rem;font-weight:800;margin-bottom:7px}
     .dp{font-size:.8rem;color:var(--mu);line-height:1.6;margin-bottom:20px}
     .dbs{display:flex;flex-direction:column;gap:9px}
     .dbt{padding:13px;border-radius:12px;border:none;cursor:pointer;
-      font-size:.82rem;font-weight:700;font-family:inherit;transition:.2s}
+      font-size:.82rem;font-weight:700;font-family:var(--font);transition:.2s}
     .dbt:active{opacity:.72}
     .ds{background:rgba(79,172,254,.14);color:var(--p);border:1px solid rgba(79,172,254,.25)}
     .ds:hover{background:var(--p);color:#0b0f1a}
     .dl{background:rgba(255,71,87,.1);color:var(--d);border:1px solid rgba(255,71,87,.2)}
     .dl:hover{background:var(--d);color:#fff}
 
-    /* RESULT */
+    /* RESULT OVERLAY */
     #res{display:none;position:fixed;inset:0;z-index:8000;background:var(--bg);
       overflow-y:auto;-webkit-overflow-scrolling:touch}
     #res.on{display:block}
-    .ri{min-height:100%;display:flex;align-items:center;justify-content:center;
-      padding:20px 14px 44px}
+    .ri{min-height:100%;display:flex;align-items:center;justify-content:center;padding:20px 14px 48px}
     .rc{width:100%;max-width:420px;background:rgba(15,23,42,.97);
-      border:1px solid var(--bd);border-radius:24px;padding:30px 22px;
+      border:1px solid rgba(249,115,22,.2);border-radius:28px;padding:32px 22px;
       text-align:center;box-shadow:0 28px 70px rgba(0,0,0,.65)}
-    .rt{font-size:3.4rem;margin-bottom:8px;animation:fl 3s ease-in-out infinite}
+
+    /* trophy */
+    .rt{font-size:3.5rem;display:block;margin-bottom:10px;animation:fl 3s ease-in-out infinite}
     @keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-    .rh{font-size:1.6rem;font-weight:900;margin-bottom:4px;
+    .rh{font-size:1.9rem;font-weight:900;margin-bottom:4px;
       background:linear-gradient(to right,#fff,var(--a));
       -webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .rs{font-size:.65rem;color:var(--mu);text-transform:uppercase;
-      letter-spacing:2px;margin-bottom:22px}
+    .rs{font-size:.63rem;color:var(--mu);text-transform:uppercase;letter-spacing:3px;margin-bottom:22px}
 
     /* ring */
-    .rg{position:relative;width:128px;height:128px;margin:0 auto 22px}
+    .rg{position:relative;width:130px;height:130px;margin:0 auto 22px}
     .rg svg{position:absolute;inset:0;transform:rotate(-90deg)}
     .rb{fill:none;stroke:rgba(249,115,22,.15);stroke-width:7}
     .rf{fill:none;stroke:var(--o);stroke-width:7;stroke-linecap:round;
       transition:stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1)}
-    .rin{position:absolute;inset:0;display:flex;flex-direction:column;
-      align-items:center;justify-content:center}
-    .rsc{font-size:2.5rem;font-weight:900;line-height:1;
+    .rin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+    .rsc{font-size:2.4rem;font-weight:900;line-height:1;
       background:linear-gradient(135deg,#fff,var(--o));
       -webkit-background-clip:text;-webkit-text-fill-color:transparent}
-    .rl{font-size:.6rem;color:var(--o);font-weight:700;margin-top:2px}
+    .rl{font-size:.58rem;color:var(--o);font-weight:700;margin-top:2px}
 
     /* info box */
-    .ib{background:rgba(0,0,0,.22);border-radius:16px;
-      border:1px solid var(--bd);padding:14px 16px;margin-bottom:20px}
+    .ib{background:rgba(0,0,0,.22);border-radius:16px;border:1px solid var(--bd);padding:14px 16px;margin-bottom:20px}
     .ir{display:flex;justify-content:space-between;align-items:center;
       padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:.82rem}
     .ir:last-child{border:none}
     .il{color:var(--mu);display:flex;align-items:center;gap:7px}
+    .il svg{width:13px;height:13px;fill:currentColor;flex-shrink:0}
     .iv{font-weight:700;color:#fff;text-align:right;max-width:55%}
-    .iv.g{color:var(--a)} .iv.w{color:var(--o)} .iv.b{color:var(--d)}
+    .iv.g{color:var(--a)}.iv.w{color:var(--o)}.iv.b{color:var(--d)}
 
     /* sync */
     #sy{font-size:.72rem;margin-bottom:14px;display:flex;
       align-items:center;justify-content:center;gap:6px;min-height:20px}
+    #sy svg{width:13px;height:13px;fill:currentColor;flex-shrink:0;animation:sp .8s linear infinite}
+    #sy.ok svg{animation:none}
     #sy.sav{color:var(--o)} #sy.ok{color:var(--a)} #sy.er{color:var(--d)}
 
     /* result btns */
-    .rbs{display:flex;flex-direction:column;gap:9px}
-    .rb2{padding:13px;border-radius:12px;border:none;cursor:pointer;
-      font-size:.83rem;font-weight:700;font-family:inherit;
-      display:flex;align-items:center;justify-content:center;gap:7px;transition:.2s}
+    .rbs{display:flex;flex-direction:column;gap:10px}
+    .rb2{padding:14px;border-radius:13px;border:none;cursor:pointer;
+      font-size:.84rem;font-weight:800;font-family:var(--font);
+      display:flex;align-items:center;justify-content:center;gap:8px;
+      transition:.25s;position:relative;overflow:hidden}
+    .rb2::before{content:"";position:absolute;top:0;left:-100%;width:100%;height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transition:.5s}
+    .rb2:hover::before{left:110%}
     .rb2:active{opacity:.75}
+    .rb2 svg{width:15px;height:15px;fill:currentColor;flex-shrink:0}
     .rry{background:rgba(249,115,22,.13);color:var(--o);border:1px solid rgba(249,115,22,.25)}
-    .rry:hover{background:var(--o);color:#fff}
-    .rmn{background:linear-gradient(135deg,var(--p),#00f2fe);color:#0b0f1a}
-    .rmn:hover{filter:brightness(1.08)}
+    .rry:hover{background:var(--o);color:#fff;transform:translateY(-2px)}
+    .rmn{background:linear-gradient(135deg,var(--p),#00f2fe);color:#0b0f1a;box-shadow:0 8px 20px rgba(79,172,254,.25)}
+    .rmn:hover{filter:brightness(1.08);transform:translateY(-2px)}
     .rhs{background:rgba(255,255,255,.05);color:rgba(255,255,255,.65);border:1px solid var(--bd)}
     .rhs:hover{background:rgba(255,255,255,.1)}
 
     /* ERROR */
     #er{display:none;position:fixed;inset:0;z-index:9900;background:var(--bg);
-      flex-direction:column;align-items:center;justify-content:center;
-      gap:12px;padding:24px;text-align:center}
+      flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:24px;text-align:center}
     #er.on{display:flex}
     .eic{font-size:2.8rem;color:var(--d)}
     .eh{font-size:1.15rem;font-weight:800}
     .ep{font-size:.8rem;color:var(--mu);line-height:1.6;max-width:280px}
     .eb{margin-top:6px;padding:11px 24px;border-radius:12px;border:none;
-      background:rgba(79,172,254,.14);color:var(--p);
-      border:1px solid rgba(79,172,254,.25);
-      cursor:pointer;font-size:.82rem;font-weight:700;font-family:inherit}
+      background:rgba(79,172,254,.14);color:var(--p);border:1px solid rgba(79,172,254,.25);
+      cursor:pointer;font-size:.82rem;font-weight:700;font-family:var(--font)}
     .eb:hover{background:var(--p);color:#0b0f1a}
 
     @media(max-width:420px){
       :root{--hh:48px}
       .rc{padding:24px 16px}
       .rg{width:116px;height:116px}
-      .rsc{font-size:2.1rem}
-      .rh{font-size:1.4rem}
+      .rsc{font-size:2rem}
+      .rh{font-size:1.55rem}
+    }
+    @media(min-width:768px){
+      .ri{align-items:center}
+      .rc{padding:38px 30px;border-radius:32px}
     }
   </style>
 </head>
 <body>
 <div id="hdr">
-  <div class="hl"><i class="fas fa-rocket"></i>
+  <div class="hl">
+    <svg class="hl-icon" viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/></svg>
     <span class="hn" id="hdT">Đang tải...</span>
     <span class="hbg">iSpring</span>
   </div>
   <div class="hr">
     <span class="hst" id="hdS"></span>
-    <button id="btnX" class="lk" onclick="onExit()"><i class="fas fa-times"></i> Thoát</button>
+    <button id="btnX" class="lk" onclick="onExit()">
+      <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      Thoát
+    </button>
   </div>
 </div>
 <div id="pgb"><div id="pgf"></div></div>
@@ -194,192 +198,348 @@
     <div class="dh">Thoát bài thi?</div>
     <div class="dp">Bài làm <b>chưa hoàn thành</b>.<br>Kết quả sẽ không được lưu nếu thoát lúc này.</div>
     <div class="dbs">
-      <button class="dbt ds" onclick="closeDlg()"><i class="fas fa-arrow-left"></i> Tiếp tục làm bài</button>
-      <button class="dbt dl" onclick="forceExit()"><i class="fas fa-door-open"></i> Thoát không lưu</button>
+      <button class="dbt ds" onclick="closeDlg()">
+        <svg style="width:13px;height:13px;fill:currentColor;display:inline;margin-right:5px" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Tiếp tục làm bài
+      </button>
+      <button class="dbt dl" onclick="forceExit()">
+        <svg style="width:13px;height:13px;fill:currentColor;display:inline;margin-right:5px" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+        Thoát không lưu
+      </button>
     </div>
   </div>
 </div>
 
+<!-- RESULT PANEL -->
 <div id="res">
   <div class="ri"><div class="rc">
-    <div class="rt" id="rTr">🏆</div>
+    <span class="rt" id="rTr">🏆</span>
     <div class="rh" id="rTi">HOÀN THÀNH!</div>
     <div class="rs">KẾT QUẢ BÀI THI iSPRING</div>
+
     <div class="rg">
-      <svg viewBox="0 0 128 128" width="128" height="128">
-        <circle class="rb" cx="64" cy="64" r="55"/>
-        <circle class="rf" id="rfg" cx="64" cy="64" r="55"
-                stroke-dasharray="345.4" stroke-dashoffset="345.4"/>
+      <svg viewBox="0 0 130 130" width="130" height="130">
+        <circle class="rb" cx="65" cy="65" r="56"/>
+        <circle class="rf" id="rfg" cx="65" cy="65" r="56" stroke-dasharray="351.9" stroke-dashoffset="351.9"/>
       </svg>
-      <div class="rin"><div class="rsc" id="rSc">0</div><div class="rl">/ 100</div></div>
+      <div class="rin">
+        <div class="rsc" id="rSc">0</div>
+        <div class="rl">/ 100</div>
+      </div>
     </div>
+
     <div class="ib">
-      <div class="ir"><span class="il"><i class="fas fa-user"></i> Thí sinh</span><span class="iv" id="rNm">—</span></div>
-      <div class="ir"><span class="il"><i class="fas fa-school"></i> Trường/Lớp</span><span class="iv" id="rSch">—</span></div>
-      <div class="ir"><span class="il"><i class="fas fa-file-alt"></i> Bài thi</span><span class="iv" id="rTs">—</span></div>
-      <div class="ir"><span class="il"><i class="fas fa-star-half-alt"></i> Trạng thái</span><span class="iv" id="rSt">—</span></div>
+      <div class="ir">
+        <span class="il"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg> Thí sinh</span>
+        <span class="iv" id="rNm">—</span>
+      </div>
+      <div class="ir">
+        <span class="il"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg> Trường/Lớp</span>
+        <span class="iv" id="rSch">—</span>
+      </div>
+      <div class="ir">
+        <span class="il"><svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg> Bài thi</span>
+        <span class="iv" id="rTs" style="font-size:.75rem;opacity:.8">—</span>
+      </div>
+      <div class="ir">
+        <span class="il"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Trạng thái</span>
+        <span class="iv" id="rSt">—</span>
+      </div>
     </div>
-    <div id="sy" class="sav"><i class="fas fa-circle-notch fa-spin"></i> Đang lưu kết quả...</div>
+
+    <div id="sy" class="sav">
+      <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+      Đang lưu kết quả...
+    </div>
+
     <div class="rbs">
-      <button class="rb2 rry" onclick="retry()"><i class="fas fa-redo"></i> Làm lại bài này</button>
-      <button class="rb2 rmn" onclick="goSel()"><i class="fas fa-list"></i> Về danh sách bài thi</button>
-      <button class="rb2 rhs" onclick="goHist()"><i class="fas fa-history"></i> Xem lịch sử làm bài</button>
+      <button class="rb2 rry" onclick="retry()">
+        <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+        LÀM LẠI BÀI NÀY
+      </button>
+      <button class="rb2 rmn" onclick="goSel()">
+        <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+        VỀ DANH SÁCH BÀI THI
+      </button>
+      <button class="rb2 rhs" onclick="goHist()">
+        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+        XEM LỊCH SỬ LÀM BÀI
+      </button>
     </div>
   </div></div>
 </div>
 
+<!-- ERROR PANEL -->
 <div id="er">
-  <div class="eic"><i class="fas fa-exclamation-circle"></i></div>
+  <div style="font-size:2.8rem;color:var(--d)">
+    <svg width="52" height="52" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+  </div>
   <div class="eh" id="erH">Lỗi tải bài</div>
   <div class="ep" id="erP">Không tìm thấy đường dẫn.</div>
-  <button class="eb" onclick="goSel()"><i class="fas fa-arrow-left"></i> Quay lại</button>
+  <button class="eb" onclick="goSel()">
+    <svg style="width:13px;height:13px;fill:currentColor;display:inline;margin-right:5px" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    Quay lại chọn bài
+  </button>
 </div>
 
 <script>
+/* ── CONFIG ── */
 var API  = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
 var p    = new URLSearchParams(location.search);
 var path = (p.get("path")||"").trim();
-var sn   = localStorage.getItem("studentName")  || "Ẩn danh";
-var sc   = localStorage.getItem("schoolName")   || "";
-var cl   = localStorage.getItem("className")    || "";
-var isn  = localStorage.getItem("currentIspringName") || "";
 
-var state = "idle"; /* idle | doing | done */
-var done_f= false;
-var ss    = 0;  /* scorm score */
-var sst   = ""; /* scorm status */
+/* ── Student info from localStorage ── */
+var sn  = (localStorage.getItem("studentName") ||"Ẩn danh").trim();
+var sc  = (localStorage.getItem("schoolName")  ||"").replace(/^'+/,"");
+var cl  = (localStorage.getItem("className")   ||"").replace(/^'+/,"");
+var isn = localStorage.getItem("currentIspringName") || "";
 
+var state  = "idle"; /* idle | doing | done */
+var done_f = false;
+var ss     = 0;   /* scorm score 0-100 */
+var sst    = "";  /* scorm status */
+
+/* ── Boot ── */
 (function boot(){
   document.getElementById("hdS").textContent = sn;
   document.getElementById("ldN").textContent = isn;
-  if (!path){ showErr("Không có đường dẫn","Quay lại chọn bài iSpring."); return; }
+  if(!path){ showErr("Không có đường dẫn","Quay lại chọn bài iSpring."); return; }
   var nm = isn || path.split("/").slice(-2,-1)[0] || "iSpring";
   document.getElementById("hdT").textContent = nm;
   document.title = "Nebula | " + nm;
   var fr = document.getElementById("frame");
   fr.src = path;
-  fr.onload = function(){ hide("ld"); state="doing"; setX("wn"); pg(30); };
-  fr.onerror= function(){ showErr("Không tải được bài","Đường dẫn không tồn tại."); };
+  fr.onload = function(){
+    hide("ld"); state="doing"; setX("wn"); pg(30);
+    /* Thử inject SCORM vào iframe sau khi load */
+    try{ injectSCORM(fr.contentWindow); }catch(e){ /* cross-origin = bình thường */ }
+  };
+  fr.onerror = function(){ showErr("Không tải được bài","Đường dẫn không tồn tại hoặc bị chặn."); };
 })();
 
-/* SCORM 1.2 */
-window.API={
-  LMSInitialize:function(){return"true"},LMSFinish:function(){return"true"},
-  LMSGetValue:function(){return""},LMSGetLastError:function(){return"0"},
-  LMSGetErrorString:function(){return"No error"},LMSGetDiagnostic:function(){return""},
-  LMSSetValue:function(k,v){
-    if(k==="cmi.core.score.raw")ss=parseFloat(v)||0;
-    if(k==="cmi.core.lesson_status")sst=String(v).toLowerCase();
-    return"true";
-  },
-  LMSCommit:function(){
-    if(sst==="passed"||sst==="completed"||sst==="failed")onDone();
-    return"true";
-  }
-};
-
-/* SCORM 2004 */
-window.API_1484_11={
-  Initialize:function(){return"true"},Terminate:function(){onDone();return"true"},
-  GetValue:function(){return""},GetLastError:function(){return"0"},
-  GetErrorString:function(){return"No error"},GetDiagnostic:function(){return""},
-  SetValue:function(k,v){
-    if(k==="cmi.score.raw")ss=parseFloat(v)||0;
-    if(k==="cmi.success_status"||k==="cmi.completion_status")sst=String(v).toLowerCase();
-    return"true";
-  },
-  Commit:function(){onDone();return"true"}
-};
-
-function onDone(){
-  if(state==="done")return;
-  state="done"; setX("fr"); pg(100);
-  showRes(ss, sst||"completed");
-  saveRes(ss, sst||"completed");
+/* ── Inject SCORM vào iframe (same-origin) ── */
+function injectSCORM(w){
+  if(!w) return;
+  /* Cấp SCORM API cho iSpring tìm kiếm từ parent */
+  w.API = buildScorm12();
+  w.API_1484_11 = buildScorm2004();
 }
 
-function showRes(score,status){
-  var el=document.getElementById("res"); el.classList.add("on"); el.scrollTop=0;
-  var tr=document.getElementById("rTr"),ti=document.getElementById("rTi");
-  if(score>=80){tr.textContent="👑";ti.textContent="XUẤT SẮC!";}
-  else if(score>=50){tr.textContent="🚀";ti.textContent="TỐT LẮM!";}
-  else{tr.textContent="🎯";ti.textContent="CỐ GẮNG LÊN!";}
-  var cx=cl?" · "+cl:"";
-  document.getElementById("rNm").textContent  = sn;
-  document.getElementById("rSch").textContent = sc.replace(/^'+/,"")+cx;
-  document.getElementById("rTs").textContent  = isn||"Bài thi iSpring";
-  var se=document.getElementById("rSt");
-  var sm={passed:"Đạt ✓",completed:"Hoàn thành ✓",failed:"Chưa đạt ✗",incomplete:"Chưa xong"};
-  se.textContent=sm[status]||"Hoàn thành";
-  se.className="iv "+(status==="passed"||status==="completed"?"g":status==="failed"?"b":"w");
-  animN("rSc",0,score,1100);
-  setTimeout(function(){
-    var c=345.4;
-    document.getElementById("rfg").style.strokeDashoffset=c-(score/100)*c;
-  },80);
+/* ── SCORM 1.2 API ── */
+window.API = buildScorm12();
+function buildScorm12(){
+  return {
+    LMSInitialize: function(){ return "true"; },
+    LMSFinish:     function(){ onDone(); return "true"; },
+    LMSGetValue:   function(){ return ""; },
+    LMSGetLastError:   function(){ return "0"; },
+    LMSGetErrorString: function(){ return "No error"; },
+    LMSGetDiagnostic:  function(){ return ""; },
+    LMSSetValue: function(k,v){
+      if(k==="cmi.core.score.raw")      ss=parseFloat(v)||0;
+      if(k==="cmi.core.lesson_status")  sst=String(v).toLowerCase();
+      if(k==="cmi.core.exit")           { if(sst==="passed"||sst==="completed"||sst==="failed") onDone(); }
+      return "true";
+    },
+    LMSCommit: function(){
+      if(sst==="passed"||sst==="completed"||sst==="failed") onDone();
+      return "true";
+    }
+  };
 }
 
-async function saveRes(score,status){
-  if(done_f)return; done_f=true;
-  var sy=document.getElementById("sy");
-  var tn="[iSpring] "+(isn||path.split("/").slice(-2,-1)[0]||"Bài tập");
-  sy.className="sav";
-  sy.innerHTML='<i class="fas fa-circle-notch fa-spin"></i> Đang lưu kết quả...';
+/* ── SCORM 2004 API ── */
+window.API_1484_11 = buildScorm2004();
+function buildScorm2004(){
+  return {
+    Initialize:  function(){ return "true"; },
+    Terminate:   function(){ onDone(); return "true"; },
+    GetValue:    function(){ return ""; },
+    GetLastError:    function(){ return "0"; },
+    GetErrorString:  function(){ return "No error"; },
+    GetDiagnostic:   function(){ return ""; },
+    SetValue: function(k,v){
+      if(k==="cmi.score.raw")                 ss=parseFloat(v)||0;
+      if(k==="cmi.success_status")            sst=String(v).toLowerCase();
+      if(k==="cmi.completion_status")         { if(!sst||sst==="unknown") sst=String(v).toLowerCase(); }
+      if(k==="cmi.exit")                      { if(sst) onDone(); }
+      return "true";
+    },
+    Commit: function(){ onDone(); return "true"; }
+  };
+}
+
+/* ── Fallback: watch postMessage from iSpring ── */
+window.addEventListener("message", function(ev){
+  if(!ev.data) return;
+  var d = ev.data;
+  /* iSpring thường gửi dạng JSON hoặc string */
   try{
-    var r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({action:"submitResult",student:sn,
-        school:sc.replace(/^'+/,""),testName:tn,score:score,total:score+"/100",
-        answers:JSON.stringify({status:status,source:"iSpring SCORM"})})});
-    var j=await r.json();
+    if(typeof d === "string"){
+      if(d.indexOf("score:")===0){ ss=parseFloat(d.split(":")[1])||0; }
+      if(d==="completed"||d==="passed"||d==="finished"){ sst=d; onDone(); }
+    } else if(typeof d === "object"){
+      if(d.score!==undefined) ss=parseFloat(d.score)||0;
+      if(d.status) sst=String(d.status).toLowerCase();
+      if(d.action==="finished"||d.action==="completed"||
+         sst==="passed"||sst==="completed"||sst==="failed"){
+        onDone();
+      }
+    }
+  }catch(e){}
+});
+
+/* ── Auto-detect result from iframe URL change ── */
+var _doneTimer = null;
+function watchIframeUrl(){
+  clearInterval(_doneTimer);
+  _doneTimer = setInterval(function(){
+    if(state!=="doing") { clearInterval(_doneTimer); return; }
+    try{
+      var fr = document.getElementById("frame");
+      var href = fr.contentWindow.location.href;
+      /* iSpring thường redirect đến result/summary page */
+      if(/result|summary|finish|complete|score/i.test(href)){
+        clearInterval(_doneTimer);
+        /* extract score if any */
+        var m = href.match(/score[=:](\d+)/i);
+        if(m) ss=parseFloat(m[1])||ss;
+        onDone();
+      }
+    }catch(e){}
+  }, 1500);
+}
+
+/* ── iSpring khi hoàn thành sẽ trigger SCORM Finish / Terminate ──
+   Fallback: nếu sau 3 phút không có signal, auto-check ── */
+var _autoCheckTimer = null;
+function startAutoCheck(){
+  clearInterval(_autoCheckTimer);
+  var elapsed = 0;
+  _autoCheckTimer = setInterval(function(){
+    elapsed += 5;
+    /* pg bar tăng dần */
+    if(state==="doing") pg(Math.min(30 + elapsed/3, 90));
+  }, 5000);
+}
+
+/* ── onDone: called once when iSpring reports completion ── */
+function onDone(){
+  if(state==="done") return;
+  state="done";
+  clearInterval(_doneTimer);
+  clearInterval(_autoCheckTimer);
+  setX("fr"); pg(100);
+  /* Normalize score to 0-10 scale if needed for Nebula display */
+  var displayScore = ss;
+  /* iSpring scores are 0-100 by default */
+  showRes(displayScore, sst||"completed");
+  saveRes(displayScore, sst||"completed");
+}
+
+/* ── Show result panel ── */
+function showRes(score, status){
+  var el=document.getElementById("res"); el.classList.add("on"); el.scrollTop=0;
+  var tr=document.getElementById("rTr"), ti=document.getElementById("rTi");
+  if(score>=80){ tr.textContent="👑"; ti.textContent="XUẤT SẮC!"; }
+  else if(score>=50){ tr.textContent="🚀"; ti.textContent="TỐT LẮM!"; }
+  else{ tr.textContent="🎯"; ti.textContent="CỐ GẮNG LÊN!"; }
+  var cx = cl ? " · " + cl : "";
+  document.getElementById("rNm").textContent  = sn;
+  document.getElementById("rSch").textContent = sc + cx;
+  document.getElementById("rTs").textContent  = isn || "Bài thi iSpring";
+  var se = document.getElementById("rSt");
+  var sm = {passed:"Đạt ✓",completed:"Hoàn thành ✓",failed:"Chưa đạt ✗",incomplete:"Chưa xong",passed:"Đạt ✓"};
+  se.textContent = sm[status] || "Hoàn thành";
+  se.className   = "iv " + (status==="passed"||status==="completed"?"g":status==="failed"?"b":"w");
+  animN("rSc", 0, score, 1100);
+  setTimeout(function(){
+    var c=351.9;
+    document.getElementById("rfg").style.strokeDashoffset = c - (score/100)*c;
+  }, 80);
+}
+
+/* ── Save result to Google Sheet (via Nebula API) ── */
+async function saveRes(score, status){
+  if(done_f) return; done_f=true;
+  var sy  = document.getElementById("sy");
+  var tn  = "[iSpring] " + (isn || path.split("/").slice(-2,-1)[0] || "Bài tập");
+
+  sy.className = "sav";
+  sy.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Đang lưu kết quả...';
+
+  try{
+    var r = await fetch(API, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        action:   "submitResult",
+        student:  sn,
+        school:   sc,
+        testName: tn,
+        score:    score,
+        total:    score + "/100",
+        answers:  JSON.stringify({status:status, source:"iSpring SCORM", score:score})
+      })
+    });
+    var j = await r.json();
     if(j.status==="ok"){
-      sy.className="ok";
-      sy.innerHTML='<i class="fas fa-check-circle"></i> Đã lưu kết quả!';
-    }else throw new Error(j.message||"err");
-  }catch(e){
-    done_f=false;
-    sy.className="er";
-    sy.innerHTML='<i class="fas fa-exclamation-triangle"></i> Lưu thất bại. '
-      +'<u style="cursor:pointer" onclick="saveRes('+score+',\''+status+'\')">Thử lại</u>';
+      sy.className = "ok";
+      sy.innerHTML = '<svg style="animation:none" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!';
+    } else {
+      throw new Error(j.message||"err");
+    }
+  } catch(e){
+    done_f = false;
+    sy.className = "er";
+    sy.innerHTML = '<svg style="animation:none" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Lưu thất bại. <u style="cursor:pointer" onclick="saveRes('+score+',"'+status+'")">Thử lại</u>';
   }
 }
 
+/* ── Exit button ── */
 function setX(c){
-  var b=document.getElementById("btnX"); b.className=c;
-  b.innerHTML=c==="lk"?'<i class="fas fa-lock"></i> Thoát'
-    :c==="wn"?'<i class="fas fa-sign-out-alt"></i> Thoát'
-    :'<i class="fas fa-times"></i> Đóng';
+  var b = document.getElementById("btnX");
+  b.className = c;
+  if(c==="lk") b.innerHTML='<svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg> Thoát';
+  else if(c==="wn") b.innerHTML='<svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg> Thoát';
+  else b.innerHTML='<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg> Đóng';
 }
-
 function onExit(){
-  if(state==="done"){goSel();return;}
-  if(state==="doing")document.getElementById("dlg").classList.add("on");
+  if(state==="done"){ goSel(); return; }
+  if(state==="doing") document.getElementById("dlg").classList.add("on");
 }
-function closeDlg(){document.getElementById("dlg").classList.remove("on");}
-function forceExit(){goSel();}
+function closeDlg(){ document.getElementById("dlg").classList.remove("on"); }
+function forceExit(){ goSel(); }
 
+/* ── Retry ── */
 function retry(){
-  state="idle";done_f=false;ss=0;sst="";
+  state="idle"; done_f=false; ss=0; sst="";
   document.getElementById("res").classList.remove("on");
   document.getElementById("ld").style.display="flex";
-  setX("lk");pg(0);
-  var fr=document.getElementById("frame");fr.src="";
+  setX("lk"); pg(0);
+  var fr=document.getElementById("frame"); fr.src="";
   setTimeout(function(){
     fr.src=path;
-    fr.onload=function(){hide("ld");state="doing";setX("wn");pg(30);};
-  },150);
+    fr.onload=function(){
+      hide("ld"); state="doing"; setX("wn"); pg(30);
+      try{ injectSCORM(fr.contentWindow); }catch(e){}
+      startAutoCheck(); watchIframeUrl();
+    };
+  }, 150);
 }
 
+/* ── Back/nav guard ── */
 history.pushState(null,"",location.href);
 window.addEventListener("popstate",function(){
   history.pushState(null,"",location.href);
-  if(state==="doing")document.getElementById("dlg").classList.add("on");
-  else if(state==="done")goSel();
+  if(state==="doing") document.getElementById("dlg").classList.add("on");
+  else if(state==="done") goSel();
 });
 
-function goSel(){location.href="select.html";}
-function goHist(){location.href="history.html";}
-function hide(id){document.getElementById(id).style.display="none";}
-function pg(v){document.getElementById("pgf").style.width=v+"%";}
+function goSel(){ location.href="select.html"; }
+function goHist(){ location.href="history.html"; }
+function hide(id){ document.getElementById(id).style.display="none"; }
+function pg(v){ document.getElementById("pgf").style.width=v+"%"; }
 function showErr(h,p2){
   hide("ld");
   document.getElementById("erH").textContent=h;
@@ -387,16 +547,21 @@ function showErr(h,p2){
   document.getElementById("er").classList.add("on");
 }
 function animN(id,from,to,ms){
-  var el=document.getElementById(id);if(!el)return;
+  var el=document.getElementById(id); if(!el) return;
   var s=null;
   function step(ts){
-    if(!s)s=ts;var p2=Math.min((ts-s)/ms,1);
+    if(!s)s=ts; var p2=Math.min((ts-s)/ms,1);
     var v=(p2*(to-from)+from).toFixed(1);
     el.textContent=v.endsWith(".0")?v.slice(0,-2):v;
-    if(p2<1)requestAnimationFrame(step);
+    if(p2<1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
 }
+
+/* Start watchers after frame loads */
+document.getElementById("frame").addEventListener("load", function(){
+  if(state==="doing"){ startAutoCheck(); watchIframeUrl(); }
+});
 </script>
 </body>
 </html>
