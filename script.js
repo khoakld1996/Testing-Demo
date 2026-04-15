@@ -1487,3 +1487,388 @@ document.addEventListener('DOMContentLoaded', function(){
    truy cập URL params và SCORM API cục bộ.
    Script này chỉ expose helper chung.
    ══════════════════════════════════════════════ */
+
+/* ══════════════════════════════════════════════════════════
+   PAGE: player.html — iSpring SCORM wrapper (v2026.5)
+   ──────────────────────────────────────────────────────────
+   FIX v2026.5:
+   • SCORM LMSGetValue trả "not attempted" cho lesson_status
+     → iSpring KHÔNG hỏi "resume?" nữa, luôn bắt đầu mới
+   • CLOSE button trong iSpring được bắt qua:
+     1. window.close() override
+     2. postMessage từ iframe
+     3. LMSFinish / Terminate callback
+     4. URL polling (result/summary page)
+   • onDone() guard: chỉ trigger 1 lần
+   • saveResult retry + 3 UI states
+   ══════════════════════════════════════════════════════════ */
+window.nbPlayerInit = function(){
+  const API  = NB_API;
+  const p    = new URLSearchParams(location.search);
+  const path = (p.get('path')||'').trim();
+
+  /* ── Thông tin học sinh ── */
+  const sName  = (localStorage.getItem('studentName')||'Ẩn danh').trim();
+  const sSchool= (localStorage.getItem('schoolName') ||'').replace(/^'+/,'');
+  const sCls   = (localStorage.getItem('className')  ||'').replace(/^'+/,'');
+  const iName  = localStorage.getItem('currentIspringName')||'';
+
+  /* ── State ── */
+  let state  = 'idle';
+  let doneF  = false;
+  let saveF  = false;
+  let score  = 0;
+  let status = '';
+
+  /* ── DOM ── */
+  const $   = id => document.getElementById(id);
+  const pg  = v  => { const e=$('pl-pgf'); if(e) e.style.width=v+'%'; };
+  const hide= id => { const e=$('pl-'+id); if(e) e.style.display='none'; };
+
+  function setExit(mode){
+    const btn=$('pl-exit'); if(!btn) return;
+    btn.className=mode;
+    if(mode==='locked')
+      btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg> Thoát';
+    else if(mode==='ready')
+      btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg> Thoát';
+    else
+      btn.innerHTML='<svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg> Đóng';
+  }
+
+  function showError(title,msg){
+    hide('loading');
+    const et=$('pl-err-title'), em=$('pl-err-msg');
+    if(et) et.textContent=title;
+    if(em) em.textContent=msg;
+    const ep=$('pl-error'); if(ep) ep.classList.add('open');
+  }
+
+  /* ══════════════════════════════════════════════
+     SCORM 1.2 API
+     KEY FIX: LMSGetValue trả "not attempted" cho
+     lesson_status → iSpring không hỏi resume
+     suspend_data rỗng → không có state cũ
+     ══════════════════════════════════════════════ */
+  function mkScorm12(){
+    return {
+      LMSInitialize: ()=>'true',
+      LMSFinish:     ()=>{ onDone(); return 'true'; },
+      LMSGetLastError:   ()=>'0',
+      LMSGetErrorString: ()=>'No error',
+      LMSGetDiagnostic:  ()=>'',
+      /* Trả về giá trị đúng để iSpring biết đây là session MỚI */
+      LMSGetValue: (k)=>{
+        if(k==='cmi.core.lesson_status')  return 'not attempted';
+        if(k==='cmi.core.lesson_mode')    return 'normal';
+        if(k==='cmi.core.score.raw')      return '';
+        if(k==='cmi.suspend_data')        return '';
+        if(k==='cmi.core.student_id')     return localStorage.getItem('username')||'student';
+        if(k==='cmi.core.student_name')   return sName;
+        if(k==='cmi.student_data.mastery_score') return '0';
+        return '';
+      },
+      LMSSetValue: (k,v)=>{
+        if(k==='cmi.core.score.raw')     score=parseFloat(v)||0;
+        if(k==='cmi.core.lesson_status'){
+          status=String(v).toLowerCase();
+          if(['passed','completed','failed'].includes(status)) onDone();
+        }
+        if(k==='cmi.core.exit'){ if(status) onDone(); }
+        return 'true';
+      },
+      LMSCommit: ()=>{ if(['passed','completed','failed'].includes(status)) onDone(); return 'true'; }
+    };
+  }
+
+  /* ══════════════════════════════════════════════
+     SCORM 2004 API
+     completion_status: "not attempted" → session mới
+     ══════════════════════════════════════════════ */
+  function mkScorm2004(){
+    return {
+      Initialize:  ()=>'true',
+      Terminate:   ()=>{ onDone(); return 'true'; },
+      GetLastError:    ()=>'0',
+      GetErrorString:  ()=>'No error',
+      GetDiagnostic:   ()=>'',
+      GetValue: (k)=>{
+        if(k==='cmi.completion_status')  return 'not attempted';
+        if(k==='cmi.success_status')     return 'unknown';
+        if(k==='cmi.entry')              return 'ab-initio'; /* bắt buộc bắt đầu mới */
+        if(k==='cmi.score.raw')          return '';
+        if(k==='cmi.suspend_data')       return '';
+        if(k==='cmi.learner_id')         return localStorage.getItem('username')||'student';
+        if(k==='cmi.learner_name')       return sName;
+        if(k==='cmi.mode')               return 'normal';
+        return '';
+      },
+      SetValue: (k,v)=>{
+        if(k==='cmi.score.raw')        score=parseFloat(v)||0;
+        if(k==='cmi.success_status'){
+          status=String(v).toLowerCase();
+          if(['passed','failed'].includes(status)) onDone();
+        }
+        if(k==='cmi.completion_status'){
+          if(!status||status==='unknown') status=String(v).toLowerCase();
+          if(status==='completed') onDone();
+        }
+        if(k==='cmi.exit'){ if(status) onDone(); }
+        return 'true';
+      },
+      Commit: ()=>{ onDone(); return 'true'; }
+    };
+  }
+
+  /* Gắn SCORM API ở window parent — iSpring tự leo lên tìm */
+  window.API         = mkScorm12();
+  window.API_1484_11 = mkScorm2004();
+
+  /* ══════════════════════════════════════════════
+     CLOSE BUTTON FIX
+     iSpring's CLOSE button gọi window.close() trên
+     iframe context. Ta override window.close ở parent
+     để bắt khi iframe gọi parent.close hoặc top.close.
+     ══════════════════════════════════════════════ */
+  const _origClose = window.close.bind(window);
+  window.close = function(){
+    /* Nếu iSpring đang chạy và gọi close → trigger onDone */
+    if(state==='doing'||state==='done') onDone();
+  };
+
+  /* ══════════════════════════════════════════════
+     postMessage listener
+     iSpring gửi nhiều dạng message khi finish/close
+     ══════════════════════════════════════════════ */
+  window.addEventListener('message', function(ev){
+    if(!ev.data) return;
+    const d=ev.data;
+    try{
+      if(typeof d==='string'){
+        const s=d.trim().toLowerCase();
+        /* Bắt tất cả signal close/finish từ iSpring */
+        if(['close','exit','quit','finished','done','quizfinished'].includes(s)||
+           /^(completed|passed|failed|incomplete)$/.test(s)){
+          if(/^(completed|passed|failed)$/.test(s)) status=s;
+          onDone(); return;
+        }
+        if(s.startsWith('score:')){ score=parseFloat(s.split(':')[1])||0; }
+      } else if(typeof d==='object' && d!==null){
+        /* iSpring internal events: {type, action, score, status} */
+        if(typeof d.score==='number') score=d.score;
+        else if(d.score!==undefined)  score=parseFloat(d.score)||0;
+        if(d.status)  status=String(d.status).toLowerCase();
+        const act=(d.action||d.type||'').toLowerCase();
+        if(['lmsfinish','terminate','close','exit','quit',
+            'quizfinished','finished','done'].includes(act)||
+           ['passed','completed','failed'].includes(status)){
+          onDone();
+        }
+      }
+    }catch(e){}
+  }, false);
+
+  /* ── URL polling: iSpring redirect sang result/summary page ── */
+  let _urlTimer=null;
+  function watchUrl(){
+    clearInterval(_urlTimer);
+    _urlTimer=setInterval(()=>{
+      if(state!=='doing'){ clearInterval(_urlTimer); return; }
+      try{
+        const href=$('pl-frame').contentWindow.location.href;
+        /* iSpring result page thường có "result" hoặc "score" trong URL */
+        if(/result|summary|finish|complete|score/i.test(href)){
+          clearInterval(_urlTimer);
+          const m=href.match(/[?&]score[=:](\d+)/i);
+          if(m) score=parseFloat(m[1])||score;
+          onDone();
+        }
+      }catch(e){/* cross-origin: bình thường */}
+    },1500);
+  }
+
+  /* ── iframe title change polling: iSpring thay title khi về result ── */
+  let _titleTimer=null;
+  function watchTitle(){
+    let lastTitle='';
+    clearInterval(_titleTimer);
+    _titleTimer=setInterval(()=>{
+      if(state!=='doing'){ clearInterval(_titleTimer); return; }
+      try{
+        const t=$('pl-frame').contentDocument&&$('pl-frame').contentDocument.title||'';
+        if(t!==lastTitle){
+          lastTitle=t;
+          if(/result|score|finish|complete|pass|fail/i.test(t)) onDone();
+        }
+      }catch(e){}
+    },2000);
+  }
+
+  /* ── Progress bar tự tăng khi đang làm bài ── */
+  let _pgTimer=null, _pgElapsed=0;
+  function startAutoCheck(){
+    clearInterval(_pgTimer); _pgElapsed=0;
+    _pgTimer=setInterval(()=>{
+      _pgElapsed+=5;
+      if(state==='doing') pg(Math.min(30+_pgElapsed/3,90));
+    },5000);
+  }
+
+  /* ══════════════════════════════════════════════
+     BOOT — tải iframe
+     ══════════════════════════════════════════════ */
+  (function boot(){
+    const sEl=$('pl-student'); if(sEl) sEl.textContent=sName;
+    const nEl=$('pl-load-name'); if(nEl) nEl.textContent=iName;
+    if(!path){ showError('Không có đường dẫn','Quay lại chọn bài iSpring.'); return; }
+    const nm=iName||path.split('/').slice(-2,-1)[0]||'iSpring';
+    const titleEl=$('pl-name'); if(titleEl) titleEl.textContent=nm;
+    document.title='Nebula | '+nm;
+
+    const fr=$('pl-frame');
+    fr.src=path;
+    fr.addEventListener('load',function onLoad(){
+      const ld=$('pl-loading'); if(ld) ld.style.display='none';
+      state='doing'; setExit('ready'); pg(30);
+      startAutoCheck(); watchUrl(); watchTitle();
+    });
+    fr.addEventListener('error',function(){
+      showError('Không tải được bài','Đường dẫn không tồn tại hoặc bị chặn.');
+    });
+  })();
+
+  /* ══════════════════════════════════════════════
+     onDone — trigger 1 lần khi iSpring xong/close
+     ══════════════════════════════════════════════ */
+  function onDone(){
+    if(doneF) return;
+    doneF=true; state='done';
+    clearInterval(_urlTimer); clearInterval(_pgTimer); clearInterval(_titleTimer);
+    setExit('done'); pg(100);
+    showResult(score, status||'completed');
+    saveResult(score, status||'completed');
+  }
+
+  /* ── Show result overlay ── */
+  function showResult(sc, st){
+    const panel=$('pl-result');
+    if(panel){ panel.classList.add('open'); panel.scrollTop=0; }
+
+    const tr=$('pl-trophy'), ti=$('pl-result-title');
+    if(sc>=80){ if(tr)tr.textContent='👑'; if(ti)ti.textContent='XUẤT SẮC!'; }
+    else if(sc>=50){ if(tr)tr.textContent='🚀'; if(ti)ti.textContent='TỐT LẮM!'; }
+    else{ if(tr)tr.textContent='🎯'; if(ti)ti.textContent='CỐ GẮNG LÊN!'; }
+
+    const cx=sCls?' · '+sCls:'';
+    const sv=(id,v)=>{ const e=$('pl-r-'+id); if(e) e.textContent=v; };
+    sv('name',  sName);
+    sv('school',sSchool+cx);
+    sv('test',  iName||'Bài thi iSpring');
+    const stEl=$('pl-r-status');
+    const stMap={passed:'Đạt ✓',completed:'Hoàn thành ✓',failed:'Chưa đạt ✗',incomplete:'Chưa xong'};
+    if(stEl){
+      stEl.textContent=stMap[st]||'Hoàn thành';
+      stEl.className='pl-info-val '+(['passed','completed'].includes(st)?'ok':st==='failed'?'bad':'warn');
+    }
+
+    /* Animate score ring */
+    animNum('pl-score-num',0,sc,1100);
+    setTimeout(()=>{
+      const fg=$('pl-ring-fg'); if(!fg) return;
+      const C=2*Math.PI*56; /* r=56, C≈351.86 */
+      fg.style.strokeDashoffset=String(C-(sc/100)*C);
+    },80);
+  }
+
+  /* ── Save result to Google Sheet ── */
+  async function saveResult(sc, st){
+    if(saveF) return; saveF=true;
+    const syncEl=$('pl-sync');
+    const tn='[iSpring] '+(iName||path.split('/').slice(-2,-1)[0]||'Bài tập');
+    const syncSaving=()=>{
+      if(!syncEl) return;
+      syncEl.className='saving';
+      syncEl.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Đang lưu kết quả...';
+    };
+    syncSaving();
+    try{
+      const r=await fetch(API,{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({
+          action:'submitResult', student:sName, school:sSchool,
+          testName:tn, score:sc, total:sc+'/100',
+          answers:JSON.stringify({status:st,source:'iSpring SCORM',score:sc})
+        })
+      });
+      const j=await r.json();
+      if(j.status==='ok'){
+        if(syncEl){ syncEl.className='ok'; syncEl.innerHTML='<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!'; }
+      } else { throw new Error(j.message||'err'); }
+    }catch(e){
+      saveF=false;
+      if(syncEl){ syncEl.className='err'; syncEl.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Lưu thất bại. <u style="cursor:pointer" onclick="window._plRetrySave()">Thử lại</u>`; }
+    }
+  }
+
+  /* ── Public handlers (gọi từ onclick trong HTML) ── */
+  window._plRetrySave = ()=>{ saveF=false; saveResult(score, status||'completed'); };
+  window._plExit = function(){
+    if(state==='done'){ location.href='select.html'; return; }
+    if(state==='doing'){ const d=$('pl-dlg'); if(d) d.classList.add('open'); }
+  };
+  window._plCloseDlg  = ()=>{ const d=$('pl-dlg'); if(d) d.classList.remove('open'); };
+  window._plForceExit = ()=>{ location.href='select.html'; };
+  window._plGoSel     = ()=>{ location.href='select.html'; };
+  window._plGoHist    = ()=>{ location.href='history.html'; };
+
+  /* ── Làm lại bài ── */
+  window._plRetry = function(){
+    state='idle'; doneF=false; saveF=false; score=0; status='';
+    const rp=$('pl-result'); if(rp) rp.classList.remove('open');
+    const ld=$('pl-loading'); if(ld) ld.style.display='';
+    setExit('locked'); pg(0);
+    /* Rebuild SCORM API với state mới */
+    window.API         = mkScorm12();
+    window.API_1484_11 = mkScorm2004();
+    const fr=$('pl-frame');
+    fr.src='';
+    setTimeout(()=>{
+      fr.src=path;
+      fr.addEventListener('load',function once(){
+        fr.removeEventListener('load',once);
+        const ld=$('pl-loading'); if(ld) ld.style.display='none';
+        state='doing'; setExit('ready'); pg(30);
+        startAutoCheck(); watchUrl(); watchTitle();
+      });
+    },200);
+  };
+
+  /* ── Back button guard ── */
+  history.pushState(null,'',location.href);
+  window.addEventListener('popstate',function(){
+    history.pushState(null,'',location.href);
+    if(state==='doing'){ const d=$('pl-dlg'); if(d) d.classList.add('open'); }
+    else if(state==='done') location.href='select.html';
+  });
+};
+
+/* ── Auto-init ── */
+document.addEventListener('DOMContentLoaded',function(){
+  if(window.location.pathname.includes('player.html')) window.nbPlayerInit();
+});
+
+/* ── animNum helper ── */
+if(typeof animNum==='undefined'){
+  window.animNum=function(id,from,to,ms){
+    const el=document.getElementById(id); if(!el) return;
+    let st=null;
+    (function step(ts){
+      if(!st) st=ts;
+      const p=Math.min((ts-st)/ms,1);
+      const v=(p*(to-from)+from).toFixed(1);
+      el.textContent=v.endsWith('.0')?v.slice(0,-2):v;
+      if(p<1) requestAnimationFrame(step);
+    })(performance.now());
+  };
+}
