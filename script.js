@@ -9,7 +9,7 @@
 'use strict';
 
 /* ─── CONFIG ─── */
-const NB_API = "https://script.google.com/macros/s/AKfycbzLQ2F8M6I5BS2KKgiG8tYbDgXN8WKK2Gs0mfmdWtP99leUgFlGj9cZM1p0egJwLfBN/exec";
+const NB_API = "https://script.google.com/macros/s/AKfycbwsvJwrD8yDPaUcjP0EPkk6tL_pO4hIT3daZC9stD0wOkku8RvDeedpAitQSy6Yjsq8/exec";
 
 window.API        = NB_API;
 window.API_URL    = NB_API;
@@ -1706,7 +1706,7 @@ window.nbPlayerInit = function(){
     },5000);
   }
 
-  
+
   (function boot(){
     const sEl=$('pl-student'); if(sEl) sEl.textContent=sName;
     const nEl=$('pl-load-name'); if(nEl) nEl.textContent=iName;
