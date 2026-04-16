@@ -1682,3 +1682,324 @@ html.player-html, html.player-html body {
   .pl-ring { width:150px; height:150px; }
   .pl-score-val { font-size:2.8rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE OVERHAUL v2026.7
+   Tối ưu cho điện thoại mọi kích thước + tablet
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Safe area cho điện thoại notch/punch-hole ── */
+:root {
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+}
+
+/* ── Touch target minimum 44px ── */
+button, .btn, .idx-btn, .sel-card, .sel-logout,
+.lgn-btn, .nm-btn, .res-btn, .pl-result-btn {
+  min-height: 44px;
+}
+
+/* ────────────────────────────
+   INDEX / LANDING — Mobile
+   ──────────────────────────── */
+@media(max-width:480px){
+  .idx-container { padding:16px; }
+  .idx-box { padding:36px 20px; border-radius:24px; }
+  .idx-title { font-size:1.9rem; }
+  .idx-desc { font-size:.92rem; margin-bottom:28px; }
+  .idx-btn { padding:16px 18px; font-size:.88rem; border-radius:16px; }
+  .idx-status-badge { font-size:.64rem; padding:5px 14px; }
+}
+@media(max-width:360px){
+  .idx-title { font-size:1.6rem; }
+  .idx-logo-svg { width:60px; height:60px; }
+}
+
+/* ────────────────────────────
+   LOGIN — Mobile
+   ──────────────────────────── */
+@media(max-width:480px){
+  .lgn-box { padding:28px 18px; border-radius:22px; }
+  .lgn-header { font-size:1.3rem; }
+  .lgn-btn { padding:15px; font-size:.9rem; }
+}
+@media(max-width:360px){
+  .lgn-box { padding:22px 14px; }
+}
+
+/* ────────────────────────────
+   SELECT — Mobile full fix
+   ──────────────────────────── */
+@media(max-width:768px){
+  .sel-body {
+    padding: calc(72px + var(--safe-top)) 12px 24px;
+    background-attachment: scroll;
+    align-items: flex-start;
+  }
+  .sel-nav {
+    padding: calc(10px + var(--safe-top)) 16px 10px;
+    height: auto;
+  }
+  .sel-brand { font-size:1.1rem; }
+  .sel-container {
+    max-width: 100%;
+    padding-bottom: calc(20px + var(--safe-bottom));
+  }
+  .sel-box { padding:16px 14px; border-radius:18px; }
+  .sel-title { font-size:1.25rem; }
+  .sel-welcome { font-size:.82rem; margin-bottom:14px; }
+  .sel-card { padding:13px 14px; border-radius:13px; }
+  .sel-card-name { font-size:.9rem; }
+  .sel-card-meta { gap:8px; font-size:.68rem; }
+  .sel-play-btn { width:32px; height:32px; border-radius:9px; }
+  .sel-search input { font-size:16px; padding:12px 16px 12px 40px; }
+  .sel-section-title { font-size:.72rem; }
+  .sel-history-btn { font-size:.82rem; }
+}
+@media(max-width:380px){
+  .sel-nav { padding: calc(8px + var(--safe-top)) 12px 8px; }
+  .sel-user-info { max-width:120px; }
+  .sel-user-name { font-size:.8rem; }
+  .sel-brand span { display:none; }
+}
+
+/* ────────────────────────────
+   QUIZ — Mobile bottom panel fix
+   ──────────────────────────── */
+@media(max-width:900px){
+  body.quiz-page {
+    padding-bottom: calc(168px + var(--safe-bottom));
+  }
+  .nav-panel {
+    padding-bottom: calc(14px + var(--safe-bottom)) !important;
+  }
+  .float-submit {
+    bottom: calc(12px + var(--safe-bottom)) !important;
+  }
+}
+@media(max-width:480px){
+  .question-card { padding:18px 14px; border-radius:16px; }
+  .q-text { font-size:.95rem; }
+  .option-label { padding:13px 12px; font-size:.87rem; gap:10px; }
+  .quiz-header { padding:10px 14px; }
+  #quizTitle { font-size:.9rem; max-width:55vw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #timer { font-size:1.1rem; }
+}
+@media(max-width:380px){
+  .q-text { font-size:.88rem; }
+  .option-label { padding:12px 10px; font-size:.82rem; }
+  .q-grid { grid-template-columns:repeat(5,1fr) !important; gap:5px; }
+}
+
+/* ────────────────────────────
+   RESULT — Mobile
+   ──────────────────────────── */
+@media(max-width:480px){
+  .res-body {
+    padding: calc(16px + var(--safe-top)) 12px calc(16px + var(--safe-bottom));
+    background-attachment: scroll;
+  }
+  .res-card { padding:24px 14px; border-radius:20px; }
+  .res-trophy { font-size:3.6rem; }
+  .res-title { font-size:1.55rem; }
+  .res-score-ring { width:120px; height:120px; }
+  .res-score-val { font-size:2.6rem; }
+  .res-row { font-size:.79rem; padding:10px 0; }
+  .res-row-label { gap:7px; }
+  .res-btn { padding:14px; font-size:.8rem; border-radius:14px; }
+  .res-modal-box { padding:16px 12px; border-radius:18px; }
+  .res-chips { gap:8px; }
+  .res-chip { padding:12px 8px; font-size:1.1rem; }
+  .res-q-head { padding:12px 12px; }
+  .res-q-text { font-size:.82rem; }
+}
+@media(max-width:360px){
+  .res-card { padding:20px 10px; }
+  .res-trophy { font-size:3rem; }
+}
+
+/* ────────────────────────────
+   PLAYER — Mobile header compact
+   ──────────────────────────── */
+@media(max-width:420px){
+  :root { --ph: 46px; }
+  #pl-hdr { padding:0 10px; gap:6px; }
+  .pl-name { font-size:.78rem; }
+  .pl-badge { font-size:.54rem; padding:2px 6px; }
+  #pl-exit { padding:6px 9px; font-size:.68rem; }
+  #pl-exit svg { width:12px; height:12px; }
+  .pl-result-card { padding:22px 14px; border-radius:20px; }
+  .pl-ring { width:110px; height:110px; }
+  .pl-score-val { font-size:1.9rem; }
+  .pl-result-title { font-size:1.5rem; }
+  .pl-info-row { font-size:.78rem; }
+}
+
+/* Player safe areas */
+.player-body {
+  padding-top: var(--safe-top);
+}
+#pl-hdr {
+  top: var(--safe-top);
+  height: calc(var(--ph) + var(--safe-top));
+  padding-top: calc(8px + var(--safe-top));
+}
+#pl-pgb { top: calc(var(--ph) + var(--safe-top)); }
+#pl-wrap { top: calc(var(--ph) + var(--safe-top) + 2px); }
+
+/* Player result safe area */
+.pl-result-inner {
+  padding-bottom: calc(40px + var(--safe-bottom));
+  padding-left:   max(14px, var(--safe-left));
+  padding-right:  max(14px, var(--safe-right));
+}
+
+/* ────────────────────────────
+   HISTORY — Mobile
+   ──────────────────────────── */
+.hist-body {
+  min-height:100vh;
+  background:var(--bg) url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
+  background-size:cover;
+  color:var(--text);
+  padding-top: max(20px, var(--safe-top));
+}
+@media(max-width:768px){
+  .hist-body {
+    background-attachment: scroll;
+    padding: calc(14px + var(--safe-top)) 12px calc(20px + var(--safe-bottom));
+  }
+}
+
+/* ────────────────────────────
+   DASHBOARD — Mobile compact
+   ──────────────────────────── */
+@media(max-width:600px){
+  .dash-body { padding:10px; }
+  .stats-grid { grid-template-columns:1fr 1fr; gap:10px; }
+  .stat-box h2 { font-size:1.5rem; }
+  .tab-nav { flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .tab-nav::-webkit-scrollbar { display:none; }
+  .tab-btn { white-space:nowrap; flex-shrink:0; }
+  .glass-card { padding:14px; border-radius:16px; }
+  .result-row { font-size:.76rem; }
+}
+@media(max-width:400px){
+  .stats-grid { grid-template-columns:1fr; }
+  .nav-header h1 { font-size:1.3rem; }
+}
+
+/* ────────────────────────────
+   ADD QUESTION — Mobile
+   ──────────────────────────── */
+@media(max-width:480px){
+  .aq-body { padding:12px 8px; }
+  .glass-panel { padding:18px 12px; border-radius:18px; }
+  .aq-title { font-size:1rem; letter-spacing:.3px; }
+  .setup-grid { grid-template-columns:1fr; gap:10px; }
+  .btn-save-aq { padding:16px; font-size:.9rem; }
+  .ans-row { flex-wrap:wrap; gap:8px; }
+}
+
+/* ────────────────────────────
+   MODAL — Mobile full screen
+   ──────────────────────────── */
+@media(max-width:600px){
+  .modal-box {
+    max-height: calc(100vh - 32px);
+    border-radius: var(--radius-lg);
+    padding: 18px 14px;
+  }
+  .sel-modal-inner {
+    width:100vw; height:100vh; border-radius:0;
+    max-width:none;
+  }
+  .sel-modal-head { padding:12px 14px; }
+  .sel-modal-close { padding:6px 11px; font-size:.72rem; }
+}
+
+/* ────────────────────────────
+   GLOBAL — All pages touch UX
+   ──────────────────────────── */
+
+/* Smooth scrolling on iOS */
+.res-modal, .res-q-list, .modal-body, #histList {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text selection on interactive elements */
+.sel-card, .q-num, .option-label, .res-btn, .btn,
+.pl-result-btn, .pl-dlg-btn {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Better tap feedback */
+.sel-card:active { transform:scale(.985) !important; }
+.btn:active, .res-btn:active, .idx-btn:active { opacity:.82; }
+
+/* Prevent zoom on input focus (iOS) */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  font-size: max(16px, 1em) !important;
+}
+
+/* Fix background-attachment:fixed on iOS (causes flicker) */
+@supports (-webkit-touch-callout: none) {
+  .sel-body, .res-body, .nm-body, .aq-body,
+  .hist-body, .dash-body {
+    background-attachment: scroll !important;
+  }
+  .idx-bg-image {
+    background-attachment: scroll !important;
+  }
+}
+
+/* ────────────────────────────
+   TABLET (iPad, 768-1024px)
+   ──────────────────────────── */
+@media(min-width:769px) and (max-width:1024px){
+  .sel-container { max-width:600px; }
+  .idx-container { max-width:440px; }
+  .res-card { max-width:440px; }
+  .main-layout { grid-template-columns:1fr 260px; gap:18px; }
+  .stats-grid { grid-template-columns:repeat(3,1fr); }
+}
+
+/* ────────────────────────────
+   LANDSCAPE PHONE
+   ──────────────────────────── */
+@media(max-height:500px) and (orientation:landscape){
+  .idx-box { padding:24px 32px; }
+  .idx-logo-container { display:none; }
+  .idx-status-badge { display:none; }
+  .idx-title { font-size:1.6rem; }
+  .lgn-box { padding:18px 24px; }
+  .lgn-icon { display:none; }
+  .res-trophy { display:none; }
+  .res-card { padding:16px; }
+  .res-score-ring { width:90px; height:90px; }
+  /* Player landscape — good already */
+}
+
+/* ────────────────────────────
+   HISTORY PAGE SPECIFIC
+   ──────────────────────────── */
+.hist-nav {
+  position:sticky; top:0; z-index:100;
+  background:rgba(10,15,30,.88); backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  padding:12px 20px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+@media(max-width:600px){
+  .hist-nav { padding:10px 14px; }
+}
