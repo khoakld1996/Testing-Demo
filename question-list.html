@@ -2,156 +2,51 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Nebula - Quản Lý Câu Hỏi</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
   <style>
-    :root {
-      --primary: #448aff; --secondary: #00e5ff; --danger: #ff5252;
-      --warning: #ffb142; --bg-dark: #0a0f1c; --glass: rgba(15, 23, 42, 0.85);
-      --glass-border: rgba(255, 255, 255, 0.1); --accent: #7c4dff;
-    }
-
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-
-    body {
-      min-height: 100vh;
-      background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.8)), 
-                  url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072') no-repeat center center fixed;
-      background-size: cover; color: #fff;
-      display: flex; justify-content: center; padding: 40px 20px;
-    }
-
-    .container { width: 100%; max-width: 1000px; }
-
-    .glass-panel {
-      background: var(--glass); backdrop-filter: blur(25px);
-      border: 1px solid var(--glass-border); border-radius: 35px;
-      padding: 40px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-    }
-
-    /* Header & Search */
-    .header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 30px; gap: 20px;
-    }
-    .header h2 {
-      font-size: 1.6rem; font-weight: 800; background: linear-gradient(to right, #fff, var(--secondary));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-
-    .search-box {
-      flex: 1; position: relative; max-width: 400px;
-    }
-    .search-box input {
-      width: 100%; padding: 12px 20px 12px 45px; border-radius: 15px;
-      background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
-      color: white; outline: none; transition: 0.3s;
-    }
-    .search-box input:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
-    .search-box i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); }
-
-    /* Question List Area */
-    #questionList {
-      max-height: 60vh; overflow-y: auto; padding-right: 10px;
-      margin: 20px 0;
-    }
-
-    .q-card {
-      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border);
-      border-radius: 20px; padding: 20px; margin-bottom: 15px;
-      display: flex; align-items: center; gap: 20px;
-      transition: 0.3s; animation: fadeInUp 0.5s ease backwards;
-    }
-    .q-card:hover {
-      background: rgba(255, 255, 255, 0.07); transform: translateX(5px);
-      border-color: var(--primary);
-    }
-
-    .q-thumb {
-      width: 70px; height: 70px; border-radius: 12px; object-fit: cover;
-      border: 1px solid var(--glass-border); cursor: pointer;
-    }
-    .no-thumb {
-      width: 70px; height: 70px; border-radius: 12px;
-      background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center;
-      color: rgba(255,255,255,0.1); border: 1px dashed var(--glass-border);
-    }
-
-    .q-info { flex: 1; min-width: 0; }
-    .q-title {
-      display: block; font-size: 1rem; font-weight: 600; margin-bottom: 8px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #e2e8f0;
-    }
-
-    .badge {
-      font-size: 0.65rem; padding: 4px 10px; border-radius: 8px;
-      font-weight: 700; text-transform: uppercase; display: inline-flex; align-items: center; gap: 5px;
-    }
+    /* Chỉ giữ lại CSS đặc thù không có trong style.css */
+    .q-thumb { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; border: 1px solid var(--glass-border); cursor: pointer; }
+    .no-thumb { width: 70px; height: 70px; border-radius: 12px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1); border: 1px dashed var(--glass-border); }
     .badge-mcq { background: rgba(68, 138, 255, 0.1); color: var(--primary); border: 1px solid var(--primary); }
     .badge-tf { background: rgba(0, 229, 255, 0.1); color: var(--secondary); border: 1px solid var(--secondary); }
     .badge-other { background: rgba(124, 77, 255, 0.1); color: var(--accent); border: 1px solid var(--accent); }
-
-    /* Actions */
-    .btn-group { display: flex; gap: 8px; }
-    .btn-action {
-      width: 38px; height: 38px; border-radius: 10px; border: none;
-      cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
-    }
     .btn-edit { background: rgba(255, 177, 66, 0.15); color: var(--warning); }
     .btn-edit:hover { background: var(--warning); color: #000; }
     .btn-delete { background: rgba(255, 82, 82, 0.15); color: var(--danger); }
     .btn-delete:hover { background: var(--danger); color: #fff; }
-
-    .footer {
-      display: flex; justify-content: space-between; align-items: center; margin-top: 30px;
-    }
-    .btn-main {
-      padding: 15px 30px; border-radius: 15px; border: none; font-weight: 700;
-      cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 10px;
-      text-transform: uppercase; letter-spacing: 1px;
-    }
-    .btn-add { background: linear-gradient(135deg, var(--primary), var(--accent)); color: white; }
-    .btn-add:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(68, 138, 255, 0.3); }
-    
-    .btn-back { background: rgba(255,255,255,0.05); color: #fff; border: 1px solid var(--glass-border); }
-    .btn-back:hover { background: rgba(255,255,255,0.1); }
-
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
   </style>
 </head>
-<body>
+<body style="background: var(--bg); padding: 16px; display: flex; justify-content: center;">
 
-<div class="container animate__animated animate__fadeIn">
+<div class="container animate__animated animate__fadeIn" style="width:100%; max-width:1000px;">
   <div class="glass-panel">
     
-    <div class="header">
+    <div class="header" style="display:flex; justify-content:space-between; margin-bottom:20px;">
       <h2 id="testNameDisplay"><i class="fas fa-database"></i> TỔNG KHO CÂU HỎI</h2>
-      <div class="search-box">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Tìm kiếm nội dung câu hỏi..." oninput="filterQuestions()">
+      <div class="search-box" style="position:relative; max-width:300px;">
+        <i class="fas fa-search" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--muted);"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm câu hỏi..." oninput="filterQuestions()" style="width:100%; padding:12px 20px 12px 45px; border-radius:30px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:#fff;">
       </div>
     </div>
 
-    <div id="questionList">
+    <div id="questionList" style="max-height:60vh; overflow-y:auto; padding-right:5px;">
       <div style="text-align:center; padding:50px; opacity:0.5;">
         <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-        <p style="margin-top:15px;">Đang quét luồng dữ liệu...</p>
+        <p style="margin-top:15px;">Đang quét dữ liệu...</p>
       </div>
     </div>
 
-    <div class="footer">
-      <button class="btn-main btn-back" onclick="location.href='dashboard.html'">
+    <div class="footer" style="display:flex; justify-content:space-between; margin-top:20px;">
+      <button class="btn btn-outline" onclick="location.href='dashboard.html'">
         <i class="fas fa-chevron-left"></i> Trang quản trị
       </button>
-      <button class="btn-main btn-add" onclick="goToAdd()">
+      <button class="btn btn-glow" onclick="goToAdd()">
         <i class="fas fa-plus-circle"></i> Thêm câu hỏi mới
       </button>
     </div>
@@ -159,8 +54,9 @@
   </div>
 </div>
 
+<script src="script.js"></script>
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
+  const API = window.API;
   const currentTest = JSON.parse(localStorage.getItem("currentTest") || "{}");
   let allQuestions = [];
 
@@ -177,35 +73,33 @@
       allQuestions = await resp.json();
       renderList(allQuestions);
     } catch (err) {
-      listEl.innerHTML = `<div style="text-align:center; color:var(--danger); padding:40px;">⚠️ Không thể kết nối Cloud. Vui lòng kiểm tra lại!</div>`;
+      listEl.innerHTML = `<div style="text-align:center; color:var(--danger); padding:40px;">⚠️ Không thể kết nối Cloud.</div>`;
     }
   }
 
   function renderList(data) {
     const listEl = document.getElementById("questionList");
     if (!data || data.length === 0) {
-      listEl.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.2; border: 1px dashed #fff; border-radius:20px;">
-        <i class="fas fa-folder-open fa-3x"></i><p style="margin-top:10px;">Chưa có câu hỏi nào trong bài thi này.</p>
-      </div>`;
+      listEl.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.5;"><i class="fas fa-folder-open fa-3x"></i><p>Chưa có câu hỏi nào.</p></div>`;
       return;
     }
 
     listEl.innerHTML = data.map((q, i) => {
       const type = getBadge(q.type);
       return `
-        <div class="q-card" style="animation-delay: ${i * 0.05}s">
+        <div class="q-card animate__animated animate__fadeInUp" style="animation-delay:${i * 0.03}s; display:flex; gap:15px; padding:15px; background:rgba(255,255,255,0.03); border-radius:16px; margin-bottom:12px; border:1px solid var(--glass-border);">
           ${q.image && q.image.length > 20 ? 
             `<img src="${q.image}" class="q-thumb" onclick="previewImg('${q.image}')">` : 
             `<div class="no-thumb"><i class="fas fa-image"></i></div>`}
           
-          <div class="q-info">
-            <span class="q-title" title="${q.question}">${i + 1}. ${q.question}</span>
+          <div style="flex:1;">
+            <span style="display:block; font-weight:600; margin-bottom:8px;">${i+1}. ${q.question}</span>
             <span class="badge ${type.class}"><i class="fas ${type.icon}"></i> ${type.label}</span>
           </div>
 
-          <div class="btn-group">
-            <button class="btn-action btn-edit" title="Chỉnh sửa" onclick="editQuestion(${i})"><i class="fas fa-pen"></i></button>
-            <button class="btn-action btn-delete" title="Xóa" onclick="deleteQuestion('${q.question}', this)"><i class="fas fa-trash-alt"></i></button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-action btn-edit" onclick="editQuestion(${i})"><i class="fas fa-pen"></i></button>
+            <button class="btn-action btn-delete" onclick="deleteQuestion('${q.question}', this)"><i class="fas fa-trash-alt"></i></button>
           </div>
         </div>
       `;
@@ -231,12 +125,12 @@
   async function deleteQuestion(qText, btn) {
     const confirm = await Swal.fire({
       title: 'Xác nhận xóa?',
-      text: "Dữ liệu sẽ bị gỡ khỏi Cloud hệ thống!",
+      text: "Dữ liệu sẽ bị xóa vĩnh viễn!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#ff5252',
       background: '#0a0f1c', color: '#fff',
-      confirmButtonText: 'Xóa ngay', cancelButtonText: 'Hủy'
+      confirmButtonText: 'Xóa', cancelButtonText: 'Hủy'
     });
 
     if (!confirm.isConfirmed) return;
@@ -252,10 +146,10 @@
 
       await fetch(API, { method: "POST", mode: "no-cors", body: fd });
       
-      Swal.fire({ icon: 'success', title: 'Đã gửi lệnh xóa', timer: 1500, showConfirmButton: false, background: '#0a0f1c', color: '#fff' });
+      Swal.fire({ icon: 'success', title: 'Đã xóa', timer: 1500, showConfirmButton: false, background: '#0a0f1c', color: '#fff' });
       setTimeout(loadQuestions, 2000);
     } catch (e) {
-      Swal.fire("Lỗi", "Không thể xóa lúc này!", "error");
+      Swal.fire("Lỗi", "Không thể xóa!", "error");
       btn.innerHTML = '<i class="fas fa-trash-alt"></i>';
       btn.disabled = false;
     }
@@ -272,9 +166,8 @@
   }
 
   function previewImg(src) {
-    Swal.fire({ imageUrl: src, imageAlt: 'Preview', background: 'rgba(0,0,0,0.9)', showConfirmButton: false, showCloseButton: true });
+    Swal.fire({ imageUrl: src, background: '#000', showConfirmButton: false, showCloseButton: true });
   }
 </script>
-
 </body>
 </html>

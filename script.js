@@ -1,18 +1,15 @@
 /* ================================================================
-   NEBULA QUIZ SYSTEM — script.js  (v2026.6 — FINAL)
+   NEBULA QUIZ SYSTEM — script.js  (v2026.7 — FINAL)
    ================================================================
-   BUG FIXES v2026.6:
-   1. LOGIN: clear iSpring + quiz cache ngay khi đăng nhập mới
-   2. PLAYER: SCORM luôn trả 'not attempted' + suspend_data='' → không hỏi Resume
-   3. PLAYER: MutationObserver bắt nút Close trong iframe + override window.close
-   4. PLAYER: Retry bài thi rebuild SCORM API hoàn toàn mới
-   5. PLAYER: Score normalise (0-1 scaled → *100)
-   6. SELECT: cache clear khi vào trang + _nbRenderAll exposed
+   FIXES:
+   1. Đồng bộ logic Train/Test Mode với quiz.html
+   2. Sửa lỗi cache iSpring/Quiz khi đăng nhập
+   3. Tối ưu hiển thị History
    ================================================================ */
 'use strict';
 
 /* ─── CONFIG ─── */
-const NB_API = "https://script.google.com/macros/s/AKfycbxR9imqpVxYMB4M7CmV_C-ZiVO9nhRJTGwz44O0dlz0_Ru1dbBuToiOj8ciUE0TgSWT/exec";
+const NB_API = "https://script.google.com/macros/s/AKfycbzLQ2F8M6I5BS2KKgiG8tYbDgXN8WKK2Gs0mfmdWtP99leUgFlGj9cZM1p0egJwLfBN/exec";
 
 window.API        = NB_API;
 window.API_URL    = NB_API;
@@ -980,7 +977,7 @@ window.nbLgnHandle = async function(action){
         });
         /* FIX: Clear iSpring + quiz state khi đăng nhập mới */
         ['currentIspringName','currentTestId','currentTestName','currentTestDuration',
-         'currentTest','quizAnswers','quizQuestions','lastScore','correctCount'].forEach(k=>nb.del(k));
+         'currentTest','quizAnswers','quizQuestions','lastScore','correctCount','quizMode'].forEach(k=>nb.del(k));
         if(typeof Swal!=='undefined'){
           Swal.fire({
             icon:'success', title:`Chào mừng, ${result.name}!`,
@@ -1098,8 +1095,7 @@ window.nbNameSubmit = function(){
 };
 
 /* ══════════════════════════════════════════════
-   PAGE: select.html — FIX: không load cache cũ,
-   không hiện bài thi cũ của user khác
+   PAGE: select.html — FIX: không load cache cũ
    ══════════════════════════════════════════════ */
 window.nbSelectInit = function(){
   if(!nb.isLogged()){ location.replace('login.html'); return; }
@@ -1117,6 +1113,7 @@ window.nbSelectInit = function(){
   nb.del('quizQuestions');
   nb.del('lastScore');
   nb.del('correctCount');
+  nb.del('quizMode');
 
   function _initUser(){
     const u=nb.user();
@@ -1215,49 +1212,13 @@ window.nbSelectInit = function(){
       </div>`).join('');
   }
 
-  /* ── FIX: Expose _nbRenderAll đúng tên ── */
   window._nbRenderAll = window.nbRenderAll = function(){
     const q=(document.getElementById('selSearch')?.value||'').toLowerCase();
     _renderTests(q);
     _renderIspring(q);
   };
 
-  window._nbConfirmLaunch = function(testJson){
-    const test=JSON.parse(testJson);
-    if(!test.qCount||test.qCount===0){
-      nbAlert('info','Đề thi đang cập nhật','Đề thi này chưa có câu hỏi. Vui lòng thử lại sau!');
-      return;
-    }
-    Swal.fire({
-      title:'Bắt đầu bài thi?',
-      html:`<div style="text-align:left;font-size:.9rem;line-height:2;color:rgba(255,255,255,.8)">
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
-          <svg width="16" height="16" fill="var(--primary)" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
-          <span>Bài thi: <b style="color:var(--primary)">${nbEsc(test.name)}</b></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
-          <svg width="16" height="16" fill="var(--warning)" viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm.5 15h-1v-6h1v6zm0-8h-1V7h1v2z"/></svg>
-          <span>Thời gian: <b>${test.duration} phút</b></span>
-        </div>
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
-          <svg width="16" height="16" fill="var(--success)" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          <span>Số câu: <b>${test.qCount} câu hỏi</b></span>
-        </div></div>`,
-      icon:'question', showCancelButton:true,
-      confirmButtonText:'BẮT ĐẦU NGAY', cancelButtonText:'ĐỂ SAU',
-      background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
-    }).then(res=>{
-      if(res.isConfirmed){
-        nb.setMany({
-          currentTestId:      test.id,
-          currentTestName:    test.name,
-          currentTestDuration:test.duration,
-          currentTest:        JSON.stringify(test),
-        });
-        location.href='quiz.html';
-      }
-    });
-  };
+  // LƯU Ý: Hàm _nbConfirmLaunch đã được ghi đè trong select.html để thêm Mode
 
   window._nbLaunchIspring = function(testJson){
     const test=JSON.parse(testJson);
@@ -1486,26 +1447,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 /* ══════════════════════════════════════════════
    PAGE: player.html — iSpring SCORM player
-   Tất cả logic của player.html đã được tích hợp
-   vào chính file player.html (inline) vì cần
-   truy cập URL params và SCORM API cục bộ.
-   Script này chỉ expose helper chung.
    ══════════════════════════════════════════════ */
-
-/* ══════════════════════════════════════════════════════════
-   PAGE: player.html — iSpring SCORM wrapper (v2026.5)
-   ──────────────────────────────────────────────────────────
-   FIX v2026.5:
-   • SCORM LMSGetValue trả "not attempted" cho lesson_status
-     → iSpring KHÔNG hỏi "resume?" nữa, luôn bắt đầu mới
-   • CLOSE button trong iSpring được bắt qua:
-     1. window.close() override
-     2. postMessage từ iframe
-     3. LMSFinish / Terminate callback
-     4. URL polling (result/summary page)
-   • onDone() guard: chỉ trigger 1 lần
-   • saveResult retry + 3 UI states
-   ══════════════════════════════════════════════════════════ */
 window.nbPlayerInit = function(){
   const API  = NB_API;
   const p    = new URLSearchParams(location.search);
@@ -1549,8 +1491,7 @@ window.nbPlayerInit = function(){
   }
 
   /* ═══════════════════════════════════════════════════════
-     SCORM 1.2 API — FIX: luôn trả "not attempted" + không
-     có suspend_data → iSpring KHÔNG hỏi "Resume?" bao giờ
+     SCORM 1.2 API — FIX: luôn trả "not attempted"
      ═══════════════════════════════════════════════════════ */
   function mkScorm12(){
     const _data = {};
@@ -1561,7 +1502,6 @@ window.nbPlayerInit = function(){
       LMSGetErrorString: ()=>'No error',
       LMSGetDiagnostic:  ()=>'',
       LMSGetValue: (k)=>{
-        /* Trả "not attempted" để iSpring biết đây là session HOÀN TOÀN MỚI */
         if(k==='cmi.core.lesson_status')        return 'not attempted';
         if(k==='cmi.core.lesson_mode')          return 'normal';
         if(k==='cmi.core.score.raw')            return '';
@@ -1569,7 +1509,7 @@ window.nbPlayerInit = function(){
         if(k==='cmi.core.score.max')            return '100';
         if(k==='cmi.core.session_time')         return '';
         if(k==='cmi.core.total_time')           return '0000:00:00.0';
-        if(k==='cmi.suspend_data')              return ''; /* QUAN TRỌNG: không có data cũ */
+        if(k==='cmi.suspend_data')              return '';
         if(k==='cmi.launch_data')               return '';
         if(k==='cmi.core.student_id')           return localStorage.getItem('username')||'student';
         if(k==='cmi.core.student_name')         return sName;
@@ -1596,7 +1536,7 @@ window.nbPlayerInit = function(){
   }
 
   /* ═══════════════════════════════════════════════════════
-     SCORM 2004 API — cmi.entry = "ab-initio" bắt buộc mới
+     SCORM 2004 API — cmi.entry = "ab-initio"
      ═══════════════════════════════════════════════════════ */
   function mkScorm2004(){
     const _data = {};
@@ -1628,7 +1568,6 @@ window.nbPlayerInit = function(){
         if(k==='cmi.score.raw'||k==='cmi.score.scaled'){
           let n=parseFloat(v);
           if(!isNaN(n)){
-            /* scaled = 0-1, raw = 0-100 */
             score = (k==='cmi.score.scaled' && n<=1 && n>=0) ? n*100 : n;
           }
         }
@@ -1648,24 +1587,19 @@ window.nbPlayerInit = function(){
     };
   }
 
-  /* Gắn SCORM API ở window (parent) — iSpring tự tìm lên */
+
   window.API         = mkScorm12();
   window.API_1484_11 = mkScorm2004();
 
-  /* ═══════════════════════════════════════════════════════
-     FIX: Override window.close — bắt nút "Close" iSpring
-     iSpring gọi window.close() hoặc top.close() trên iframe
-     ═══════════════════════════════════════════════════════ */
+
   window.close = function(){
     if(state==='doing'||state==='idle'){ onDone(); }
     else if(state==='done'){ location.href='select.html'; }
   };
-  /* Cũng gắn top.close nếu cùng origin */
+
   try{ if(window.top && window.top!==window) window.top.close=window.close; }catch(e){}
 
-  /* ═══════════════════════════════════════════════════════
-     postMessage listener — bắt mọi signal từ iframe iSpring
-     ═══════════════════════════════════════════════════════ */
+
   window.addEventListener('message', function(ev){
     if(!ev.data) return;
     const d=ev.data;
@@ -1677,7 +1611,7 @@ window.nbPlayerInit = function(){
           if(/^(completed|passed|failed)$/.test(s)) status=s;
           onDone(); return;
         }
-        /* iSpring gửi score dạng "score:75" hoặc "result:75" */
+
         const mScore = s.match(/^(?:score|result|points)[:\s]+([\d.]+)/);
         if(mScore){ score=parseFloat(mScore[1])||score; }
       } else if(typeof d==='object' && d!==null){
@@ -1694,10 +1628,7 @@ window.nbPlayerInit = function(){
     }catch(e){}
   }, false);
 
-  /* ═══════════════════════════════════════════════════════
-     FIX: MutationObserver trên iframe — bắt khi iSpring
-     thêm nút Close vào DOM và click nó hoặc navigate away
-     ═══════════════════════════════════════════════════════ */
+
   let _mutObs=null;
   function watchIframeDom(){
     const fr=$('pl-frame'); if(!fr) return;
@@ -1707,21 +1638,20 @@ window.nbPlayerInit = function(){
         const iDoc=fr.contentDocument||fr.contentWindow&&fr.contentWindow.document;
         if(!iDoc||!iDoc.body) return false;
 
-        /* Override close trên iframe window */
+
         try{
           fr.contentWindow.close=function(){ onDone(); };
           if(fr.contentWindow.top && fr.contentWindow.top!==window){
             fr.contentWindow.top.close=function(){ onDone(); };
           }
         }catch(e){}
-
-        /* Bắt click trên bất kỳ nút Close/Đóng nào trong iframe */
+        
         iDoc.addEventListener('click', function(e){
           if(state!=='doing') return;
           const t=e.target&&e.target.closest('button,a,[role="button"]');
           if(!t) return;
           const txt=(t.textContent||t.title||t.getAttribute('aria-label')||'').toLowerCase();
-          /* iSpring dùng nhiều text cho nút Close */
+
           if(/^(close|exit|quit|đóng|thoát|finish|done|завершить|закрыть)$/i.test(txt.trim())||
              /close|exit|finish/i.test(t.className)||
              /close|exit|finish/i.test(t.id)){
@@ -1730,7 +1660,6 @@ window.nbPlayerInit = function(){
           }
         }, true);
 
-        /* MutationObserver: theo dõi thay đổi title/URL trong iframe */
         _mutObs = new MutationObserver(function(){
           try{
             const title=(iDoc.title||'').toLowerCase();
@@ -1741,7 +1670,7 @@ window.nbPlayerInit = function(){
         return true;
       }catch(e){ return false; }
     }
-    /* Thử ngay, nếu cross-origin sẽ fail silently */
+
     if(!tryAttach()){
       const t=setInterval(()=>{ if(tryAttach()) clearInterval(t); },500);
       setTimeout(()=>clearInterval(t), 10000);
@@ -1749,7 +1678,7 @@ window.nbPlayerInit = function(){
   }
   function clearMutObs(){ if(_mutObs){ _mutObs.disconnect(); _mutObs=null; } }
 
-  /* ── URL polling: iSpring navigate sang result page ── */
+
   let _urlTimer=null;
   function watchUrl(){
     clearInterval(_urlTimer);
@@ -1763,11 +1692,11 @@ window.nbPlayerInit = function(){
           if(m){ const n=parseFloat(m[1]); if(!isNaN(n)) score=n; }
           onDone();
         }
-      }catch(e){/* cross-origin — bình thường */}
+      }catch(e){}
     },1500);
   }
 
-  /* ── Progress bar tự tăng khi đang làm ── */
+
   let _pgTimer=null, _pgElapsed=0;
   function startAutoCheck(){
     clearInterval(_pgTimer); _pgElapsed=0;
@@ -1777,9 +1706,7 @@ window.nbPlayerInit = function(){
     },5000);
   }
 
-  /* ═══════════════════════════════════════════════════════
-     BOOT
-     ═══════════════════════════════════════════════════════ */
+  
   (function boot(){
     const sEl=$('pl-student'); if(sEl) sEl.textContent=sName;
     const nEl=$('pl-load-name'); if(nEl) nEl.textContent=iName;
@@ -1800,21 +1727,16 @@ window.nbPlayerInit = function(){
     });
   })();
 
-  /* ═══════════════════════════════════════════════════════
-     onDone — trigger 1 lần khi iSpring xong / đóng
-     ═══════════════════════════════════════════════════════ */
   function onDone(){
     if(doneF) return;
     doneF=true; state='done';
     clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs();
     setExit('done'); pg(100);
-    /* Chuẩn hoá score: nếu iSpring gửi dạng 0-1 scaled → *100 */
     if(score>0 && score<=1) score=Math.round(score*100);
     showResult(score, status||'completed');
     saveResult(score, status||'completed');
   }
 
-  /* ── Show result overlay ── */
   function showResult(sc, st){
     const panel=$('pl-result');
     if(panel){ panel.classList.add('open'); panel.scrollTop=0; }
@@ -1844,7 +1766,6 @@ window.nbPlayerInit = function(){
     },80);
   }
 
-  /* ── Save result to Google Sheet ── */
   async function saveResult(sc, st){
     if(saveF) return; saveF=true;
     const syncEl=$('pl-sync');
@@ -1873,7 +1794,6 @@ window.nbPlayerInit = function(){
     }
   }
 
-  /* ── Public handlers ── */
   window._plRetrySave = ()=>{ saveF=false; saveResult(score, status||'completed'); };
   window._plExit = function(){
     if(state==='done'){ location.href='select.html'; return; }
@@ -1884,14 +1804,12 @@ window.nbPlayerInit = function(){
   window._plGoSel     = ()=>{ location.href='select.html'; };
   window._plGoHist    = ()=>{ location.href='history.html'; };
 
-  /* ── Làm lại bài — FIX: rebuild SCORM + clear state hoàn toàn ── */
   window._plRetry = function(){
     state='idle'; doneF=false; saveF=false; score=0; status='';
     clearMutObs();
     const rp=$('pl-result'); if(rp) rp.classList.remove('open');
     const ld=$('pl-loading'); if(ld) ld.style.display='';
     setExit('locked'); pg(0);
-    /* Rebuild SCORM API với state SẠCH */
     window.API         = mkScorm12();
     window.API_1484_11 = mkScorm2004();
     const fr=$('pl-frame');
@@ -1907,7 +1825,6 @@ window.nbPlayerInit = function(){
     },200);
   };
 
-  /* ── Back button guard ── */
   history.pushState(null,'',location.href);
   window.addEventListener('popstate',function(){
     history.pushState(null,'',location.href);

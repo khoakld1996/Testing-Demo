@@ -128,6 +128,63 @@
     document.addEventListener('DOMContentLoaded', function(){
       if(typeof nbSelectInit === 'function') nbSelectInit();
     });
+
+    // Override hàm xác nhận để thêm lựa chọn Mode (Train/Test)
+    // Hàm này sẽ ghi đè hàm _nbConfirmLaunch trong script.js
+    window._nbConfirmLaunch = function(testJson){
+        const test = JSON.parse(testJson);
+        if(!test.qCount || test.qCount === 0){
+            if(typeof Swal !== 'undefined') Swal.fire({ icon: 'info', title: 'Đề thi đang cập nhật', text: 'Đề thi này chưa có câu hỏi. Vui lòng thử lại sau!', background: '#131c2f', color: '#fff' });
+            return;
+        }
+        
+        const modeHtml = `
+        <div style="margin: 15px 0; text-align: left;">
+            <label style="display: block; margin-bottom: 8px; color: #a0aec0; font-size: 0.9rem;">Chọn chế độ làm bài:</label>
+            <select id="swal-mode-select" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: 1px solid #4a5568; border-radius: 8px;">
+                <option value="train" selected>🎓 LUYỆN TẬP (Không giới hạn, xem đáp án ngay)</option>
+                <option value="test">⏱️ KIỂM TRA (Tính giờ, chấm điểm cuối bài)</option>
+            </select>
+        </div>
+        `;
+
+        Swal.fire({
+            title: 'Bắt đầu bài thi?',
+            html: `
+                <div style="text-align:left;font-size:.9rem;line-height:2;color:rgba(255,255,255,.8)">
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+                        <span>📝 Bài thi: <b style="color:var(--primary)">${test.name}</b></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+                        <span>⏳ Thời gian: <b>${test.duration} phút</b></span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+                        <span>❓ Số câu: <b>${test.qCount} câu hỏi</b></span>
+                    </div>
+                    ${modeHtml}
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'BẮT ĐẦU',
+            cancelButtonText: 'ĐỂ SAU',
+            background: 'rgba(10,15,30,0.97)',
+            color: '#f1f5f9',
+            preConfirm: () => {
+                return document.getElementById('swal-mode-select').value;
+            }
+        }).then(res => {
+            if (res.isConfirmed) {
+                const selectedMode = res.value || 'train';
+                localStorage.setItem('currentTestId', test.id);
+                localStorage.setItem('currentTestName', test.name);
+                localStorage.setItem('currentTestDuration', test.duration);
+                localStorage.setItem('currentTest', JSON.stringify(test));
+                localStorage.setItem('quizMode', selectedMode);
+                location.href = 'quiz.html';
+            }
+        });
+    };
   </script>
 </body>
 </html>
