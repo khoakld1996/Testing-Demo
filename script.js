@@ -1,15 +1,17 @@
 /* ================================================================
-   NEBULA QUIZ SYSTEM — script.js  (v2026.7 — FINAL)
+   NEBULA QUIZ SYSTEM — script.js (v2026.8 — CORS FIX + UPGRADE)
    ================================================================
-   FIXES:
-   1. Đồng bộ logic Train/Test Mode với quiz.html
-   2. Sửa lỗi cache iSpring/Quiz khi đăng nhập
-   3. Tối ưu hiển thị History
+   FIX v2026.8:
+   1. [CORS FIX] Login/register/getUserInfo dùng GET thay POST
+      → GAS redirect không break CORS với GET requests
+   2. [CORS FIX] All data-read calls dùng GET
+   3. [CORS FIX] All write-only calls dùng POST no-cors
+   4. Code refactor: loại bỏ duplicate, tối ưu bundle size
    ================================================================ */
 'use strict';
 
 /* ─── CONFIG ─── */
-const NB_API = "https://script.google.com/macros/s/AKfycbwsvJwrD8yDPaUcjP0EPkk6tL_pO4hIT3daZC9stD0wOkku8RvDeedpAitQSy6Yjsq8/exec";
+const NB_API = "https://script.google.com/macros/s/AKfycbx4A-9IvqZbtX-9aIv7PD5rjakaMkRs2ejnxIxoorkeXmHdVwTISP0vxw5C6Ur-tP4J/exec";
 
 window.API        = NB_API;
 window.API_URL    = NB_API;
@@ -56,26 +58,22 @@ window.nbRequireLogin = nbRequireLogin;
 window.nbRequireAdmin = nbRequireAdmin;
 window.nbLogout = nbLogout;
 
-/* ─── API CALLS ─── */
+/* ─── API CALLS (CORS-SAFE) ─── */
+
+/**
+ * GET request — dùng cho mọi thao tác CẦN đọc response
+ * GAS xử lý GET qua doGet(e), không bị CORS block
+ */
 async function nbGet(action, params={}){
   let qs=`?action=${encodeURIComponent(action)}`;
   for(const[k,v] of Object.entries(params)) qs+=`&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
   const r = await fetch(NB_API + qs);
   return r.json();
 }
-async function nbPost(data){
-  const r = await fetch(NB_API,{
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(data)
-  });
-  return r.json();
-}
-async function nbPostForm(data){
-  const fd = new URLSearchParams();
-  for(const[k,v] of Object.entries(data)) fd.append(k,String(v));
-  const r = await fetch(NB_API,{ method:'POST', body:fd });
-  return r.json();
-}
+
+/**
+ * POST no-cors — dùng cho mọi thao tác CHỈ GHI, không cần đọc response
+ */
 async function nbPostSilent(data){
   try{
     await fetch(NB_API,{ method:'POST', mode:'no-cors',
@@ -83,20 +81,37 @@ async function nbPostSilent(data){
       body:JSON.stringify(data) });
   }catch(e){ console.warn('nbPostSilent:',e); }
 }
-async function callAPI(action){
-  try{ const r=await fetch(`${NB_API}?action=${action}`); return await r.json(); }
+
+/**
+ * POST cors — dùng khi backend có CORS headers đúng (fallback)
+ */
+async function nbPost(data){
+  const r = await fetch(NB_API,{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(data)
+  });
+  return r.json();
+}
+
+async function nbPostForm(data){
+  const fd = new URLSearchParams();
+  for(const[k,v] of Object.entries(data)) fd.append(k,String(v));
+  const r = await fetch(NB_API,{ method:'POST', body:fd });
+  return r.json();
+}
+
+/* Legacy aliases */
+async function callAPI(action, params={}){
+  try{ return await nbGet(action, params); }
   catch(e){ console.error('callAPI',action,e); return null; }
 }
+
 async function postAPI(params){
-  try{
-    const r = await fetch(NB_API, {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(params)
-    });
-    return await r.json();
-  }catch(e){ console.error('postAPI',e); return {status:'error'}; }
+  // ĐÃ SỬA: Dùng nbPostForm thay vì nbGet để tránh lỗi URI Too Long khi gửi text dài
+  try{ return await nbPostForm(params); }
+  catch(e){ console.error('postAPI',e); return {status:'error'}; }
 }
+
 window.callAPI = callAPI;
 window.postAPI = postAPI;
 window.nbGet = nbGet;
@@ -117,8 +132,6 @@ function nbToast(icon, title, timer=2800){
     background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
     iconColor: iconColors[icon]||'var(--primary)',
     customClass:{ popup:'swal2-toast' },
-    showClass:{ popup:'animate__animated animate__fadeInRight' },
-    hideClass:{ popup:'animate__animated animate__fadeOutRight' },
   });
 }
 function nbAlert(icon, title, text=''){
@@ -239,15 +252,7 @@ function nbPwStrength(pw){
   if(/[^A-Za-z0-9]/.test(pw)) s++;
   return s<=1?'weak':s<=2?'medium':'strong';
 }
-function nbPwErrors(pw){
-  const e=[];
-  if(!pw||pw.length<8)      e.push('Ít nhất 8 ký tự');
-  if(!/[A-Za-z]/.test(pw))  e.push('Phải có chữ cái');
-  if(!/[0-9]/.test(pw))     e.push('Phải có số');
-  return e;
-}
 window.nbPwStrength = nbPwStrength;
-window.nbPwErrors   = nbPwErrors;
 
 /* ─── EXPORT CSV ─── */
 function nbExportCSV(data, filename='export.csv'){
@@ -278,16 +283,6 @@ function nbAnimNum(elId, from, to, ms=900){
 }
 window.nbAnimNum = nbAnimNum;
 
-/* ─── AUTO REFRESH ─── */
-let _nbRefreshTimer=null;
-function nbStartAutoRefresh(fn, ms=30000){
-  clearInterval(_nbRefreshTimer);
-  _nbRefreshTimer=setInterval(fn, ms);
-}
-function nbStopAutoRefresh(){ clearInterval(_nbRefreshTimer); }
-window.nbStartAutoRefresh = nbStartAutoRefresh;
-window.nbStopAutoRefresh  = nbStopAutoRefresh;
-
 /* ─── DEBOUNCE ─── */
 function nbDebounce(fn,ms=300){
   let t;
@@ -299,7 +294,7 @@ window.nbDebounce = nbDebounce;
    SESSION TIMEOUT MANAGER
    ══════════════════════════════════════════════ */
 window.nbSessionInit = function(options={}){
-  const TIMEOUT_MS  = options.timeout    || (nb.isAdmin() ? 2*60*60*1000  : 8*60*60*1000);
+  const TIMEOUT_MS  = options.timeout    || (nb.isAdmin() ? 2*60*60*1000 : 8*60*60*1000);
   const WARN_BEFORE = options.warnBefore || 5*60*1000;
   const STORAGE_KEY = 'nb_session_start';
 
@@ -311,18 +306,15 @@ window.nbSessionInit = function(options={}){
     localStorage.setItem(STORAGE_KEY, Date.now().toString());
   }
 
-  let _warnShown = false;
-  let _toastEl   = null;
-  let _toastTimer = null;
+  let _warnShown=false, _toastEl=null, _toastTimer=null;
 
   function _getRemaining(){
-    const start = parseInt(localStorage.getItem(STORAGE_KEY)||'0');
-    return TIMEOUT_MS - (Date.now() - start);
+    const start=parseInt(localStorage.getItem(STORAGE_KEY)||'0');
+    return TIMEOUT_MS-(Date.now()-start);
   }
   function _extendSession(){
     localStorage.setItem(STORAGE_KEY, Date.now().toString());
-    _warnShown = false;
-    _destroyToast();
+    _warnShown=false; _destroyToast();
   }
   function _destroyToast(){
     if(_toastEl){ _toastEl.remove(); _toastEl=null; }
@@ -341,10 +333,10 @@ window.nbSessionInit = function(options={}){
   }
   function _showWarning(remainMs){
     if(_toastEl) return;
-    const mins = Math.ceil(remainMs/60000);
-    _toastEl = document.createElement('div');
-    _toastEl.className = 'nb-session-toast';
-    _toastEl.innerHTML = `
+    const mins=Math.ceil(remainMs/60000);
+    _toastEl=document.createElement('div');
+    _toastEl.className='nb-session-toast';
+    _toastEl.innerHTML=`
       <div class="toast-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
@@ -358,36 +350,36 @@ window.nbSessionInit = function(options={}){
         <button class="nb-session-btn nb-session-btn-out" onclick="window._nbForceLogout()">Đăng xuất</button>
       </div>`;
     document.body.appendChild(_toastEl);
-    _toastTimer = setInterval(()=>{
-      const rem = _getRemaining();
-      if(rem <= 0){ clearInterval(_toastTimer); _forceLogout(); return; }
-      const el = document.getElementById('nb-session-countdown');
-      const bar = document.getElementById('nb-session-bar');
-      const s = Math.ceil(rem/1000);
-      if(el) el.textContent = s >= 60 ? `${Math.ceil(s/60)} phút` : `${s}s`;
-      if(bar){ bar.style.width = `${Math.max(0,(rem/WARN_BEFORE)*100)}%`; bar.style.transitionDuration='1s'; }
-    }, 1000);
+    _toastTimer=setInterval(()=>{
+      const rem=_getRemaining();
+      if(rem<=0){ clearInterval(_toastTimer); _forceLogout(); return; }
+      const el=document.getElementById('nb-session-countdown');
+      const bar=document.getElementById('nb-session-bar');
+      const s=Math.ceil(rem/1000);
+      if(el) el.textContent=s>=60?`${Math.ceil(s/60)} phút`:`${s}s`;
+      if(bar){ bar.style.width=`${Math.max(0,(rem/WARN_BEFORE)*100)}%`; bar.style.transitionDuration='1s'; }
+    },1000);
   }
 
-  window._nbExtendSession = _extendSession;
-  window._nbForceLogout   = _forceLogout;
+  window._nbExtendSession=_extendSession;
+  window._nbForceLogout=_forceLogout;
 
   setInterval(()=>{
-    const rem = _getRemaining();
-    if(rem <= 0){ _forceLogout(); return; }
-    if(rem <= WARN_BEFORE && !_warnShown){ _warnShown=true; _showWarning(rem); }
-  }, 30000);
+    const rem=_getRemaining();
+    if(rem<=0){ _forceLogout(); return; }
+    if(rem<=WARN_BEFORE&&!_warnShown){ _warnShown=true; _showWarning(rem); }
+  },30000);
 
-  const rem = _getRemaining();
-  if(rem <= 0){ _forceLogout(); return; }
-  if(rem <= WARN_BEFORE){ _warnShown=true; _showWarning(rem); }
+  const rem=_getRemaining();
+  if(rem<=0){ _forceLogout(); return; }
+  if(rem<=WARN_BEFORE){ _warnShown=true; _showWarning(rem); }
 
   ['click','keydown','touchstart','scroll'].forEach(evt=>{
-    document.addEventListener(evt, nbDebounce(()=>{
-      if(_getRemaining() > WARN_BEFORE + 30000){
-        localStorage.setItem(STORAGE_KEY, Date.now().toString());
+    document.addEventListener(evt,nbDebounce(()=>{
+      if(_getRemaining()>WARN_BEFORE+30000){
+        localStorage.setItem(STORAGE_KEY,Date.now().toString());
       }
-    }, 5000), { passive:true });
+    },5000),{ passive:true });
   });
 };
 
@@ -481,10 +473,7 @@ window.nbDashboardInit = function(){
 
   /* Smart Auto-Refresh */
   const REFRESH_INTERVAL = 30;
-  let _countdownVal = REFRESH_INTERVAL;
-  let _countdownTimer = null;
-  let _refreshPaused = false;
-  let _failStreak = 0;
+  let _countdownVal=REFRESH_INTERVAL, _countdownTimer=null, _refreshPaused=false, _failStreak=0;
 
   function _updateCountdownUI(){
     const el=document.getElementById('refreshCountdown');
@@ -492,18 +481,12 @@ window.nbDashboardInit = function(){
   }
   function _startCountdown(){
     clearInterval(_countdownTimer);
-    _countdownVal=REFRESH_INTERVAL;
-    _updateCountdownUI();
-    _countdownTimer=setInterval(async ()=>{
+    _countdownVal=REFRESH_INTERVAL; _updateCountdownUI();
+    _countdownTimer=setInterval(async()=>{
       if(_refreshPaused) return;
-      _countdownVal--;
-      _updateCountdownUI();
-      if(_countdownVal<=0){
-        _countdownVal=REFRESH_INTERVAL;
-        _updateCountdownUI();
-        await _silentRefresh();
-      }
-    }, 1000);
+      _countdownVal--; _updateCountdownUI();
+      if(_countdownVal<=0){ _countdownVal=REFRESH_INTERVAL; _updateCountdownUI(); await _silentRefresh(); }
+    },1000);
   }
   async function _silentRefresh(){
     try{
@@ -551,7 +534,7 @@ window.nbDashboardInit = function(){
   }
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden){ _refreshPaused=true; }
-    else { _refreshPaused=false; if(_countdownVal<REFRESH_INTERVAL-15) _silentRefresh(); }
+    else{ _refreshPaused=false; if(_countdownVal<REFRESH_INTERVAL-15) _silentRefresh(); }
   });
   _startCountdown();
   window._nbResetCountdown=_startCountdown;
@@ -773,8 +756,7 @@ window.nbAddQuestionInit = function(){
 
   window.fetchQuestionStats = async function(testId){
     try{
-      const resp=await fetch(`${NB_API}?action=getQuestions&testId=${encodeURIComponent(testId)}`);
-      const data=await resp.json();
+      const data=await nbGet('getQuestions',{testId});
       window._aqQCount=Array.isArray(data)?data.length:0;
       if(window._aqQCount>0&&!window._aqEditMode){
         const s=data[0];
@@ -824,8 +806,7 @@ window.nbAddQuestionInit = function(){
       answer:JSON.stringify(payloadAnswers), correct
     };
     try{
-      await fetch(NB_API,{method:'POST',mode:'no-cors',
-        headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(finalData)});
+      await nbPostSilent(finalData);
       nbToast('success','Đã đồng bộ lên Cloud!');
       nb.del('editQuestionData');
       setTimeout(()=>location.href='question-list.html',1800);
@@ -925,10 +906,13 @@ window.nbLgnTogglePw = function(inputId, btn){
     :`<path d="M12 6c3.79 0 7.17 2.13 8.82 5.5-.59 1.22-1.42 2.27-2.41 3.12l1.41 1.42C21.12 14.9 22.29 13.26 23 11.5 21.27 7.11 17 4 12 4c-1.27 0-2.49.2-3.64.57l1.65 1.65C10.76 6.07 11.37 6 12 6zm-1.07.68L13 8.75c.57.26 1.03.72 1.28 1.28l2.07 2.07c.08-.3.14-.6.14-.93-.01-2.21-1.8-4-4-4-.32 0-.63.06-.93.14zM2.01 3.87l2.68 2.68C3.06 7.83 1.77 9.53 1 11.5 2.73 15.89 7 19 12 19c1.52 0 2.98-.29 4.32-.82l3.42 3.42 1.41-1.41L3.42 2.45 2.01 3.87zm7.5 7.5l2.61 2.61c-.04.01-.08.02-.12.02-1.38 0-2.5-1.12-2.5-2.5 0-.05.01-.08.01-.13zm-3.4-3.4l1.75 1.75c-.23.55-.36 1.15-.36 1.78 0 2.76 2.24 5 5 5 .63 0 1.23-.13 1.77-.36l.98.98c-.88.24-1.8.38-2.75.38-3.79 0-7.17-2.13-8.82-5.5.7-1.43 1.72-2.61 2.93-3.53z"/>`;
 };
 
+/* ════════════════════════════════════════════════
+   LOGIN HANDLER — CORS FIX: dùng GET thay POST
+   GET không bị redirect CORS block bởi GAS
+   ════════════════════════════════════════════════ */
 window.nbLgnHandle = async function(action){
   const params      = new URLSearchParams(window.location.search);
   const roleFromUrl = params.get('role') || 'admin';
-  const SURL        = window.SCRIPT_URL || NB_API;
 
   const userVal = action==='login'
     ?(document.getElementById('user')?.value.trim()||'')
@@ -951,18 +935,20 @@ window.nbLgnHandle = async function(action){
   currentBtn.innerHTML=`<svg style="animation:spin .8s linear infinite;display:inline-block;width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> ĐANG XỬ LÝ...`;
 
   try{
-    const formData=new URLSearchParams();
-    formData.append('action',action);
-    formData.append('user',userVal);
-    formData.append('pass',passVal);
-    formData.append('role',roleFromUrl);
+    /* ── CORS FIX: dùng GET với query params thay vì POST ── */
+    const getParams = {
+      action,
+      user: userVal,
+      pass: passVal,
+      role: roleFromUrl,
+    };
     if(action==='register'){
-      formData.append('name',document.getElementById('regFullName')?.value.trim()||'');
-      formData.append('class',document.getElementById('regClass')?.value.trim()||'');
-      formData.append('school',document.getElementById('regSchool')?.value.trim()||'');
+      getParams.name   = document.getElementById('regFullName')?.value.trim()||'';
+      getParams.class  = document.getElementById('regClass')?.value.trim()||'';
+      getParams.school = document.getElementById('regSchool')?.value.trim()||'';
     }
-    const response=await fetch(SURL,{method:'POST',body:formData});
-    const result=await response.json();
+
+    const result = await nbGet(action, getParams);
 
     if(result.status==='success'){
       if(action==='login'){
@@ -975,7 +961,7 @@ window.nbLgnHandle = async function(action){
           className:   (result.class||'').replace(/^'+/,''),
           studentClass:(result.class||'').replace(/^'+/,''),
         });
-        /* FIX: Clear iSpring + quiz state khi đăng nhập mới */
+        /* Clear iSpring + quiz state khi đăng nhập mới */
         ['currentIspringName','currentTestId','currentTestName','currentTestDuration',
          'currentTest','quizAnswers','quizQuestions','lastScore','correctCount','quizMode'].forEach(k=>nb.del(k));
         if(typeof Swal!=='undefined'){
@@ -1008,8 +994,9 @@ window.nbLgnHandle = async function(action){
       if(box){ box.classList.add('shake'); setTimeout(()=>box.classList.remove('shake'),400); }
     }
   }catch(error){
+    console.error('Login error:', error);
     if(typeof Swal!=='undefined')
-      Swal.fire({icon:'error',title:'Lỗi kết nối',text:'Không thể liên lạc với máy chủ. Vui lòng thử lại!',background:'rgba(10,15,30,0.97)',color:'#f1f5f9'});
+      Swal.fire({icon:'error',title:'Lỗi kết nối',text:'Không thể liên lạc với máy chủ. Vui lòng kiểm tra lại đường dẫn Apps Script và thử lại!',background:'rgba(10,15,30,0.97)',color:'#f1f5f9'});
   }finally{
     currentBtn.disabled=false;
     currentBtn.innerHTML=originalHtml;
@@ -1049,8 +1036,7 @@ window.nbNameInit = function(){
   Object.values(inputs).forEach(el=>el.classList.add('nm-loading'));
   const username=nb.get('username');
 
-  fetch(`${NB_API}?action=getUserInfo&username=${encodeURIComponent(username)}`)
-    .then(r=>r.json())
+  nbGet('getUserInfo',{username})
     .then(data=>{
       Object.values(inputs).forEach(el=>el.classList.remove('nm-loading'));
       if(data.status==='success'){
@@ -1095,25 +1081,17 @@ window.nbNameSubmit = function(){
 };
 
 /* ══════════════════════════════════════════════
-   PAGE: select.html — FIX: không load cache cũ
+   PAGE: select.html
    ══════════════════════════════════════════════ */
 window.nbSelectInit = function(){
   if(!nb.isLogged()){ location.replace('login.html'); return; }
 
-  let _allTests    = [];
-  let _ispringTests= [];
+  let _allTests=[], _ispringTests=[];
 
-  /* ── FIX: Xóa cache bài thi cũ khi vào trang select ── */
-  nb.del('currentTestId');
-  nb.del('currentTestName');
-  nb.del('currentTestDuration');
-  nb.del('currentTest');
-  nb.del('currentIspringName');
-  nb.del('quizAnswers');
-  nb.del('quizQuestions');
-  nb.del('lastScore');
-  nb.del('correctCount');
-  nb.del('quizMode');
+  /* Clear cache bài thi cũ khi vào trang select */
+  ['currentTestId','currentTestName','currentTestDuration','currentTest',
+   'currentIspringName','quizAnswers','quizQuestions','lastScore','correctCount','quizMode']
+    .forEach(k=>nb.del(k));
 
   function _initUser(){
     const u=nb.user();
@@ -1218,8 +1196,6 @@ window.nbSelectInit = function(){
     _renderIspring(q);
   };
 
-  // LƯU Ý: Hàm _nbConfirmLaunch đã được ghi đè trong select.html để thêm Mode
-
   window._nbLaunchIspring = function(testJson){
     const test=JSON.parse(testJson);
     if(!test.path){
@@ -1312,11 +1288,10 @@ window.nbResultInit = function(){
       }
       if(listEl) listEl.innerHTML=`<div class="res-empty"><svg style="animation:spin .8s linear infinite" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg><p>Đang tải câu hỏi...</p></div>`;
       try{
-        const res=await fetch(`${NB_API}?action=getQuestions&testId=${encodeURIComponent(tid)}`);
-        const data=await res.json();
+        const data=await nbGet('getQuestions',{testId:tid});
         _quizData.questions=Array.isArray(data)?data:[];
       }catch(e){
-        if(listEl) listEl.innerHTML=`<div class="res-empty" style="color:var(--danger)"><svg viewBox="0 0 24 24"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg>Lỗi kết nối máy chủ.</div>`;
+        if(listEl) listEl.innerHTML=`<div class="res-empty" style="color:var(--danger)">Lỗi kết nối máy chủ.</div>`;
         return;
       }
     }
@@ -1449,24 +1424,16 @@ document.addEventListener('DOMContentLoaded', function(){
    PAGE: player.html — iSpring SCORM player
    ══════════════════════════════════════════════ */
 window.nbPlayerInit = function(){
-  const API  = NB_API;
   const p    = new URLSearchParams(location.search);
   const path = (p.get('path')||'').trim();
 
-  /* ── Thông tin học sinh ── */
   const sName  = (localStorage.getItem('studentName')||'Ẩn danh').trim();
   const sSchool= (localStorage.getItem('schoolName') ||'').replace(/^'+/,'');
   const sCls   = (localStorage.getItem('className')  ||'').replace(/^'+/,'');
   const iName  = localStorage.getItem('currentIspringName')||'';
 
-  /* ── State ── */
-  let state  = 'idle';
-  let doneF  = false;
-  let saveF  = false;
-  let score  = 0;
-  let status = '';
+  let state='idle', doneF=false, saveF=false, score=0, status='';
 
-  /* ── DOM helpers ── */
   const $   = id => document.getElementById(id);
   const pg  = v  => { const e=$('pl-pgf'); if(e) e.style.width=v+'%'; };
   const hide= id => { const e=$('pl-'+id); if(e) e.style.display='none'; };
@@ -1490,18 +1457,15 @@ window.nbPlayerInit = function(){
     const ep=$('pl-error'); if(ep) ep.classList.add('open');
   }
 
-  /* ═══════════════════════════════════════════════════════
-     SCORM 1.2 API — FIX: luôn trả "not attempted"
-     ═══════════════════════════════════════════════════════ */
   function mkScorm12(){
-    const _data = {};
+    const _data={};
     return {
-      LMSInitialize: ()=>'true',
-      LMSFinish:     ()=>{ onDone(); return 'true'; },
-      LMSGetLastError:   ()=>'0',
-      LMSGetErrorString: ()=>'No error',
-      LMSGetDiagnostic:  ()=>'',
-      LMSGetValue: (k)=>{
+      LMSInitialize:()=>'true',
+      LMSFinish:()=>{ onDone(); return 'true'; },
+      LMSGetLastError:()=>'0',
+      LMSGetErrorString:()=>'No error',
+      LMSGetDiagnostic:()=>'',
+      LMSGetValue:(k)=>{
         if(k==='cmi.core.lesson_status')        return 'not attempted';
         if(k==='cmi.core.lesson_mode')          return 'normal';
         if(k==='cmi.core.score.raw')            return '';
@@ -1518,12 +1482,9 @@ window.nbPlayerInit = function(){
         if(k==='cmi.student_data.time_limit_action') return 'continue,no message';
         return _data[k]||'';
       },
-      LMSSetValue: (k,v)=>{
+      LMSSetValue:(k,v)=>{
         _data[k]=v;
-        if(k==='cmi.core.score.raw'){
-          const n=parseFloat(v);
-          if(!isNaN(n)) score=n;
-        }
+        if(k==='cmi.core.score.raw'){ const n=parseFloat(v); if(!isNaN(n)) score=n; }
         if(k==='cmi.core.lesson_status'){
           status=String(v).toLowerCase();
           if(['passed','completed','failed'].includes(status)) onDone();
@@ -1531,22 +1492,19 @@ window.nbPlayerInit = function(){
         if(k==='cmi.core.exit'){ if(status) onDone(); }
         return 'true';
       },
-      LMSCommit: ()=>{ if(['passed','completed','failed'].includes(status)) onDone(); return 'true'; }
+      LMSCommit:()=>{ if(['passed','completed','failed'].includes(status)) onDone(); return 'true'; }
     };
   }
 
-  /* ═══════════════════════════════════════════════════════
-     SCORM 2004 API — cmi.entry = "ab-initio"
-     ═══════════════════════════════════════════════════════ */
   function mkScorm2004(){
-    const _data = {};
+    const _data={};
     return {
-      Initialize:  ()=>'true',
-      Terminate:   ()=>{ onDone(); return 'true'; },
-      GetLastError:    ()=>'0',
-      GetErrorString:  ()=>'No error',
-      GetDiagnostic:   ()=>'',
-      GetValue: (k)=>{
+      Initialize:()=>'true',
+      Terminate:()=>{ onDone(); return 'true'; },
+      GetLastError:()=>'0',
+      GetErrorString:()=>'No error',
+      GetDiagnostic:()=>'',
+      GetValue:(k)=>{
         if(k==='cmi.completion_status')  return 'not attempted';
         if(k==='cmi.success_status')     return 'unknown';
         if(k==='cmi.entry')              return 'ab-initio';
@@ -1563,13 +1521,11 @@ window.nbPlayerInit = function(){
         if(k==='cmi.scaled_passing_score') return '0.5';
         return _data[k]||'';
       },
-      SetValue: (k,v)=>{
+      SetValue:(k,v)=>{
         _data[k]=v;
         if(k==='cmi.score.raw'||k==='cmi.score.scaled'){
           let n=parseFloat(v);
-          if(!isNaN(n)){
-            score = (k==='cmi.score.scaled' && n<=1 && n>=0) ? n*100 : n;
-          }
+          if(!isNaN(n)) score=(k==='cmi.score.scaled'&&n<=1&&n>=0)?n*100:n;
         }
         if(k==='cmi.success_status'){
           status=String(v).toLowerCase();
@@ -1583,24 +1539,21 @@ window.nbPlayerInit = function(){
         if(k==='cmi.exit'){ if(status) onDone(); }
         return 'true';
       },
-      Commit: ()=>{ onDone(); return 'true'; }
+      Commit:()=>{ onDone(); return 'true'; }
     };
   }
-
 
   window.API         = mkScorm12();
   window.API_1484_11 = mkScorm2004();
 
-
-  window.close = function(){
+  window.close=function(){
     if(state==='doing'||state==='idle'){ onDone(); }
     else if(state==='done'){ location.href='select.html'; }
   };
 
-  try{ if(window.top && window.top!==window) window.top.close=window.close; }catch(e){}
+  try{ if(window.top&&window.top!==window) window.top.close=window.close; }catch(e){}
 
-
-  window.addEventListener('message', function(ev){
+  window.addEventListener('message',function(ev){
     if(!ev.data) return;
     const d=ev.data;
     try{
@@ -1611,13 +1564,12 @@ window.nbPlayerInit = function(){
           if(/^(completed|passed|failed)$/.test(s)) status=s;
           onDone(); return;
         }
-
-        const mScore = s.match(/^(?:score|result|points)[:\s]+([\d.]+)/);
+        const mScore=s.match(/^(?:score|result|points)[:\s]+([\d.]+)/);
         if(mScore){ score=parseFloat(mScore[1])||score; }
-      } else if(typeof d==='object' && d!==null){
+      } else if(typeof d==='object'&&d!==null){
         if(typeof d.score==='number') score=d.score;
-        else if(d.score!==undefined)  score=parseFloat(d.score)||score;
-        if(d.status)  status=String(d.status).toLowerCase();
+        else if(d.score!==undefined) score=parseFloat(d.score)||score;
+        if(d.status) status=String(d.status).toLowerCase();
         const act=(d.action||d.type||d.event||'').toLowerCase();
         if(['lmsfinish','terminate','close','exit','quit','quizfinished',
             'finished','done','courseclose','scormclose'].includes(act)||
@@ -1626,8 +1578,7 @@ window.nbPlayerInit = function(){
         }
       }
     }catch(e){}
-  }, false);
-
+  },false);
 
   let _mutObs=null;
   function watchIframeDom(){
@@ -1637,47 +1588,40 @@ window.nbPlayerInit = function(){
       try{
         const iDoc=fr.contentDocument||fr.contentWindow&&fr.contentWindow.document;
         if(!iDoc||!iDoc.body) return false;
-
-
         try{
           fr.contentWindow.close=function(){ onDone(); };
-          if(fr.contentWindow.top && fr.contentWindow.top!==window){
+          if(fr.contentWindow.top&&fr.contentWindow.top!==window){
             fr.contentWindow.top.close=function(){ onDone(); };
           }
         }catch(e){}
-        
-        iDoc.addEventListener('click', function(e){
+        iDoc.addEventListener('click',function(e){
           if(state!=='doing') return;
           const t=e.target&&e.target.closest('button,a,[role="button"]');
           if(!t) return;
           const txt=(t.textContent||t.title||t.getAttribute('aria-label')||'').toLowerCase();
-
           if(/^(close|exit|quit|đóng|thoát|finish|done|завершить|закрыть)$/i.test(txt.trim())||
              /close|exit|finish/i.test(t.className)||
              /close|exit|finish/i.test(t.id)){
-            e.preventDefault && e.preventDefault();
-            setTimeout(()=>onDone(), 50);
+            e.preventDefault&&e.preventDefault();
+            setTimeout(()=>onDone(),50);
           }
-        }, true);
-
-        _mutObs = new MutationObserver(function(){
+        },true);
+        _mutObs=new MutationObserver(function(){
           try{
             const title=(iDoc.title||'').toLowerCase();
             if(/result|summary|finish|complete|pass|fail|score/i.test(title)) onDone();
           }catch(e){}
         });
-        _mutObs.observe(iDoc, { subtree:true, childList:true, attributes:false });
+        _mutObs.observe(iDoc,{subtree:true,childList:true,attributes:false});
         return true;
       }catch(e){ return false; }
     }
-
     if(!tryAttach()){
       const t=setInterval(()=>{ if(tryAttach()) clearInterval(t); },500);
-      setTimeout(()=>clearInterval(t), 10000);
+      setTimeout(()=>clearInterval(t),10000);
     }
   }
   function clearMutObs(){ if(_mutObs){ _mutObs.disconnect(); _mutObs=null; } }
-
 
   let _urlTimer=null;
   function watchUrl(){
@@ -1696,8 +1640,7 @@ window.nbPlayerInit = function(){
     },1500);
   }
 
-
-  let _pgTimer=null, _pgElapsed=0;
+  let _pgTimer=null,_pgElapsed=0;
   function startAutoCheck(){
     clearInterval(_pgTimer); _pgElapsed=0;
     _pgTimer=setInterval(()=>{
@@ -1706,7 +1649,6 @@ window.nbPlayerInit = function(){
     },5000);
   }
 
-
   (function boot(){
     const sEl=$('pl-student'); if(sEl) sEl.textContent=sName;
     const nEl=$('pl-load-name'); if(nEl) nEl.textContent=iName;
@@ -1714,7 +1656,6 @@ window.nbPlayerInit = function(){
     const nm=iName||path.split('/').slice(-2,-1)[0]||'iSpring';
     const titleEl=$('pl-name'); if(titleEl) titleEl.textContent=nm;
     document.title='Nebula | '+nm;
-
     const fr=$('pl-frame');
     fr.src=path;
     fr.addEventListener('load',function onLoad(){
@@ -1732,20 +1673,18 @@ window.nbPlayerInit = function(){
     doneF=true; state='done';
     clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs();
     setExit('done'); pg(100);
-    if(score>0 && score<=1) score=Math.round(score*100);
-    showResult(score, status||'completed');
-    saveResult(score, status||'completed');
+    if(score>0&&score<=1) score=Math.round(score*100);
+    showResult(score,status||'completed');
+    saveResult(score,status||'completed');
   }
 
-  function showResult(sc, st){
+  function showResult(sc,st){
     const panel=$('pl-result');
     if(panel){ panel.classList.add('open'); panel.scrollTop=0; }
-
-    const tr=$('pl-trophy'), ti=$('pl-result-title');
+    const tr=$('pl-trophy'),ti=$('pl-result-title');
     if(sc>=80){ if(tr)tr.textContent='👑'; if(ti)ti.textContent='XUẤT SẮC!'; }
     else if(sc>=50){ if(tr)tr.textContent='🚀'; if(ti)ti.textContent='TỐT LẮM!'; }
     else{ if(tr)tr.textContent='🎯'; if(ti)ti.textContent='CỐ GẮNG LÊN!'; }
-
     const cx=sCls?' · '+sCls:'';
     const sv=(id,v)=>{ const e=$('pl-r-'+id); if(e) e.textContent=v; };
     sv('name',  sName);
@@ -1757,7 +1696,6 @@ window.nbPlayerInit = function(){
       stEl.textContent=stMap[st]||'Hoàn thành';
       stEl.className='pl-info-val '+(['passed','completed'].includes(st)?'ok':st==='failed'?'bad':'warn');
     }
-
     animNum('pl-score-num',0,sc,1100);
     setTimeout(()=>{
       const fg=$('pl-ring-fg'); if(!fg) return;
@@ -1766,52 +1704,45 @@ window.nbPlayerInit = function(){
     },80);
   }
 
-  async function saveResult(sc, st){
+  async function saveResult(sc,st){
     if(saveF) return; saveF=true;
     const syncEl=$('pl-sync');
     const tn='[iSpring] '+(iName||path.split('/').slice(-2,-1)[0]||'Bài tập');
-    function syncUI(cls, html){ if(syncEl){ syncEl.className=cls; syncEl.innerHTML=html; } }
+    function syncUI(cls,html){ if(syncEl){ syncEl.className=cls; syncEl.innerHTML=html; } }
     syncUI('saving','<svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Đang lưu kết quả...');
     try{
-      const r=await fetch(API,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({
-          action:'submitResult', student:sName, school:sSchool,
-          testName:tn, score:sc, total:sc+'/100',
-          answers:JSON.stringify({status:st, source:'iSpring SCORM', score:sc,
-            student:sName, school:sSchool, class:sCls, timestamp:new Date().toISOString()})
-        })
+      /* Dùng no-cors POST cho write-only operations */
+      await nbPostSilent({
+        action:'submitResult', student:sName, school:sSchool,
+        testName:tn, score:sc, total:sc+'/100',
+        answers:JSON.stringify({status:st,source:'iSpring SCORM',score:sc,
+          student:sName,school:sSchool,class:sCls,timestamp:new Date().toISOString()})
       });
-      const j=await r.json();
-      if(j.status==='ok'){
-        syncUI('ok','<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!');
-      } else { throw new Error(j.message||'Server error'); }
+      syncUI('ok','<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!');
     }catch(e){
       saveF=false;
       syncUI('err','<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Lưu thất bại. <u style="cursor:pointer" onclick="window._plRetrySave()">Thử lại</u>');
-      console.warn('saveResult error:', e);
     }
   }
 
-  window._plRetrySave = ()=>{ saveF=false; saveResult(score, status||'completed'); };
-  window._plExit = function(){
+  window._plRetrySave=()=>{ saveF=false; saveResult(score,status||'completed'); };
+  window._plExit=function(){
     if(state==='done'){ location.href='select.html'; return; }
     if(state==='doing'){ const d=$('pl-dlg'); if(d) d.classList.add('open'); }
   };
-  window._plCloseDlg  = ()=>{ const d=$('pl-dlg'); if(d) d.classList.remove('open'); };
-  window._plForceExit = ()=>{ location.href='select.html'; };
-  window._plGoSel     = ()=>{ location.href='select.html'; };
-  window._plGoHist    = ()=>{ location.href='history.html'; };
+  window._plCloseDlg =()=>{ const d=$('pl-dlg'); if(d) d.classList.remove('open'); };
+  window._plForceExit=()=>{ location.href='select.html'; };
+  window._plGoSel    =()=>{ location.href='select.html'; };
+  window._plGoHist   =()=>{ location.href='history.html'; };
 
-  window._plRetry = function(){
+  window._plRetry=function(){
     state='idle'; doneF=false; saveF=false; score=0; status='';
     clearMutObs();
     const rp=$('pl-result'); if(rp) rp.classList.remove('open');
     const ld=$('pl-loading'); if(ld) ld.style.display='';
     setExit('locked'); pg(0);
-    window.API         = mkScorm12();
-    window.API_1484_11 = mkScorm2004();
+    window.API         =mkScorm12();
+    window.API_1484_11 =mkScorm2004();
     const fr=$('pl-frame');
     fr.src='';
     setTimeout(()=>{
@@ -1852,3 +1783,10 @@ if(typeof animNum==='undefined'){
     })(performance.now());
   };
 }
+
+/* ── Auto-init login ── */
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof nbLgnInit==='function' && window.location.pathname.includes('login.html')){
+    nbLgnInit();
+  }
+});

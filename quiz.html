@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>Làm Bài Thi | Nebula Quiz 2026</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="style.css"> <!-- SỬ DỤNG CSS CHUNG -->
+  <link rel="stylesheet" href="style.css"> 
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="script.js"></script>
   <style>
-    /* Chỉ giữ lại CSS đặc thù cho quiz, phần lớn đã có trong style.css */
     .quiz-header {
       width:100%; max-width:1100px; background:var(--card); backdrop-filter:blur(20px);
       padding:16px 20px; border-radius:16px; display:flex; justify-content:space-between;
@@ -51,12 +51,11 @@
   <button class="float-submit" onclick="checkBeforeSubmit()"><i class="fas fa-paper-plane"></i> NỘP BÀI THI</button>
 
 <script>
-  const API = "https://script.google.com/macros/s/AKfycbwsvJwrD8yDPaUcjP0EPkk6tL_pO4hIT3daZC9stD0wOkku8RvDeedpAitQSy6Yjsq8/exec";
+  const API = window.API;
   let questions = [], currentIdx = 0, timeLeft = 0, timerInterval;
   let isSubmitting = false;
-  let quizMode = 'train'; // Mặc định
+  let quizMode = 'train'; 
 
-  // Hàm trộn mảng (Fisher–Yates)
   function shuffleArray(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -93,7 +92,6 @@
         return;
       }
 
-      // 1. Parse dữ liệu
       let rawQuestions = data.map(q => {
         let details = { items: [] };
         try {
@@ -103,31 +101,17 @@
         return { ...q, details, correct: correctVal, points: parseFloat(q.points) || 0 };
       });
 
-      // 2. Xử lý Mode và Trộn câu hỏi
       if (quizMode === 'test') {
         rawQuestions = shuffleArray(rawQuestions);
       }
 
-      // 3. Đảo đáp án cho từng câu (Luôn đảo để tránh học thuộc vị trí)
       questions = rawQuestions.map(q => {
         if (q.details && q.details.items && Array.isArray(q.details.items)) {
-          // Lưu đáp án đúng trước khi trộn
-          const correctTexts = [];
-          q.details.items.forEach(item => {
-            if (item.isCorrect) correctTexts.push(typeof item === 'object' ? (item.text || '') : item);
-          });
-          
-          // Trộn mảng items
           q.details.items = shuffleArray(q.details.items);
-          
-          // Cập nhật lại trường 'correct' nếu cần (Đảm bảo correct string khớp với text mới)
-          // Với single/multiple, correct là text đáp án. Với matching/ordering thì phức tạp hơn.
-          // Giữ nguyên logic hiện tại, chỉ cần đảo vị trí hiển thị.
         }
         return q;
       });
 
-      // Lấy duration
       const durStorage = parseInt(localStorage.getItem("currentTestDuration") || "0");
       const durData    = parseInt(data[0]?.testTime || "0");
       const minutes    = durStorage > 0 ? durStorage : (durData > 0 ? durData : 20);
@@ -311,11 +295,6 @@
     clearInterval(timerInterval);
     Swal.fire({ title:'Đang chấm điểm...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
 
-    // Logic chấm điểm giữ nguyên như cũ...
-    const clean      = s => s ? s.toString().toLowerCase().trim() : "";
-    const cleanArr   = s => s ? s.toString().split('|').map(x=>x.trim().toLowerCase()).sort().join('|') : "";
-    const cleanOrder = s => s ? s.toString().split('|').map(x=>x.trim().toLowerCase()).join('|') : "";
-
     if (!questions.length) { Swal.fire("Lỗi","Không có câu hỏi!","error"); isSubmitting = false; return; }
 
     let scoreCount = 0, totalScoreAchieved = 0;
@@ -327,21 +306,22 @@
       const correctAns = q.correct || "";
       const pts = q.points > 0 ? q.points : (10 / questions.length);
 
+      // ĐÃ SỬA: Đồng bộ logic check đáp án thông qua hàm dùng chung nbCheckAns
       if (["single","mcq","tf","fill"].includes(type)) {
         studentAns = type === "fill"
           ? (document.getElementById(`fill${i}`)?.value || "").trim()
           : (document.querySelector(`input[name="ans${i}"]:checked`)?.value || "").trim();
-        isCorrect = studentAns !== "" && clean(studentAns) === clean(correctAns);
+        isCorrect = nbCheckAns(type, studentAns, correctAns);
       }
       else if (type === "multiple") {
         studentAns = Array.from(document.querySelectorAll(`input[name="chk${i}"]:checked`))
           .map(el => el.value.trim()).sort().join("|");
-        isCorrect = studentAns !== "" && cleanArr(studentAns) === cleanArr(correctAns);
+        isCorrect = nbCheckAns(type, studentAns, correctAns);
       }
       else if (type === "ordering") {
         studentAns = Array.from(document.querySelectorAll(`#sortList${i} .drag-item span`))
           .map(el => el.innerText.trim()).join("|");
-        isCorrect = studentAns !== "" && cleanOrder(studentAns) === cleanOrder(correctAns);
+        isCorrect = nbCheckAns(type, studentAns, correctAns);
       }
       else if (type === "matching") {
         const pairs = [];
@@ -351,7 +331,7 @@
           if (right) pairs.push(`${left}-${right}`);
         });
         studentAns = pairs.sort().join("|");
-        isCorrect = studentAns !== "" && cleanArr(studentAns) === cleanArr(correctAns);
+        isCorrect = nbCheckAns(type, studentAns, correctAns);
       }
 
       quizAnswers[q.question] = studentAns;
@@ -362,7 +342,6 @@
     const rawScore = hasCustomPoints ? totalScoreAchieved : (scoreCount / questions.length) * 10;
     const finalScore = parseFloat(rawScore.toFixed(1));
 
-    // Nếu là mode train, không lưu kết quả vào sheet (tùy chọn, nhưng vẫn hiển thị)
     if (quizMode === 'train') {
         localStorage.setItem("lastScore", finalScore);
         localStorage.setItem("correctCount", `${scoreCount}/${questions.length}`);
@@ -373,7 +352,6 @@
         return;
     }
 
-    // Mode test: Lưu kết quả
     const submitData = {
       action:"submitResult",
       student: localStorage.getItem("studentName") || "Thí sinh",

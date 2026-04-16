@@ -13,7 +13,6 @@
 <body class="dash-body">
 <div class="container animate__animated animate__fadeIn">
 
-  <!-- ══ HEADER ══ -->
   <header class="nav-header">
     <div class="logo-area">
       <h1>
@@ -32,23 +31,19 @@
     <div class="dash-header-actions">
       <span id="apiStatus" class="api-status loading"><span class="dot"></span> Kết nối...</span>
 
-      <!-- Xuất CSV -->
       <button class="btn btn-outline" onclick="exportResults()" title="Xuất CSV kết quả">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
         <span class="hide-sm">Xuất CSV</span>
       </button>
 
-      <!-- Debug -->
       <button class="btn btn-outline" onclick="toggleDebug()" title="Debug log">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5s-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"/></svg>
       </button>
 
-      <!-- Reload -->
       <button class="btn btn-outline" id="btnReload" onclick="loadData(true)" title="Tải lại dữ liệu">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" id="reloadIcon" aria-hidden="true"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
       </button>
 
-      <!-- Logout -->
       <button class="btn btn-outline dash-btn-danger" onclick="logout()" title="Đăng xuất">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
       </button>
@@ -57,7 +52,6 @@
 
   <div id="debugPanel"></div>
 
-  <!-- ══ STATS ══ -->
   <div class="stats-grid">
     <div class="glass-card stat-box">
       <div class="stat-icon" style="background:rgba(59,130,246,.1);color:var(--primary)">
@@ -85,7 +79,6 @@
     </div>
   </div>
 
-  <!-- ══ TABS ══ -->
   <div class="tab-nav">
     <button class="tab-btn active" data-tab="system" onclick="switchTab('system')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 16 18 16s1.5.67 1.5 1.5S18.83 19 18 19zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 6 18 6s1.5.67 1.5 1.5S18.83 9 18 9z"/></svg>
@@ -97,11 +90,9 @@
     </button>
   </div>
 
-  <!-- ══ TAB HỆ THỐNG ══ -->
   <div id="tab-system" class="tab-content active">
     <div class="main-grid">
       <main>
-        <!-- Danh sách đề thi -->
         <div class="glass-card dash-section-card">
           <div class="dash-section-header">
             <h3>
@@ -117,7 +108,6 @@
           <div id="testList" class="item-list"></div>
         </div>
 
-        <!-- Kết quả -->
         <div class="glass-card dash-section-card">
           <div class="dash-section-header">
             <h3>
@@ -138,7 +128,6 @@
       </main>
 
       <aside>
-        <!-- Tạo đề mới -->
         <div class="glass-card dash-section-card dash-create-card">
           <h3 class="dash-aside-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
@@ -158,7 +147,6 @@
           </div>
         </div>
 
-        <!-- Chart -->
         <div class="glass-card dash-section-card">
           <h3 class="dash-aside-title">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/><path d="M5 17h3v-6H5v6zm5 0h3v-9h-3v9zm5 0h3v-3h-3v3z" fill="currentColor"/></svg>
@@ -168,7 +156,6 @@
           <div style="height:220px"><canvas id="chartEl"></canvas></div>
         </div>
 
-        <!-- Pending -->
         <div class="glass-card dash-section-card dash-pending-card">
           <div class="dash-section-header">
             <h3 style="color:var(--warning)">
@@ -186,11 +173,9 @@
     </div>
   </div>
 
-  <!-- ══ TAB ISPRING ══ -->
   <div id="tab-ispring" class="tab-content">
     <div class="ispring-grid">
       <div>
-        <!-- Danh sách iSpring -->
         <div class="glass-card dash-section-card">
           <div class="dash-section-header">
             <h3>
@@ -216,7 +201,6 @@
           </div>
         </div>
 
-        <!-- Cấu trúc thư mục -->
         <div class="glass-card dash-section-card dash-folder-card">
           <h3 class="dash-aside-title" style="color:var(--ispring)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 9h2V7h-2v2zm1 11c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v-6h-2v6z"/></svg>
@@ -238,7 +222,6 @@
       </div>
 
       <aside>
-        <!-- Thêm iSpring -->
         <div class="glass-card ispring-add-form dash-section-card">
           <h3 class="dash-aside-title" style="color:var(--ispring)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -270,7 +253,6 @@
           </div>
         </div>
 
-        <!-- Kết quả iSpring -->
         <div class="glass-card dash-section-card dash-ispring-result-card">
           <h3 class="dash-aside-title" style="color:var(--ispring)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 12l-4-4 1.41-1.41L12 12.17l5.59-5.58L19 8l-7 7z"/></svg>
@@ -289,7 +271,6 @@
           </div>
         </div>
 
-        <!-- Test đường dẫn -->
         <div class="glass-card dash-section-card">
           <h3 class="dash-aside-title" style="color:var(--ispring)">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
@@ -312,7 +293,6 @@
   <footer class="dash-footer">NEBULA ECOSYSTEM &copy; 2026</footer>
 </div>
 
-<!-- ══ iSpring Preview Modal ══ -->
 <div id="ispringModal" class="modal-overlay" style="display:none">
   <div class="modal-box" style="max-width:1100px;height:85vh;padding:0;overflow:hidden">
     <div class="modal-header" style="padding:14px 20px">
@@ -338,7 +318,7 @@ window._nbPending = [];
 
 /* ─── Init ─── */
 window.addEventListener('DOMContentLoaded', async function(){
-  nbDashboardInit();
+  // ĐÃ XÓA: Lời gọi nbDashboardInit() bị trùng lặp ở đây, script.js đã tự gọi
   await Promise.all([ loadIspring(), loadData() ]);
   document.getElementById('ispringModal')
     .addEventListener('click', function(e){ if(e.target===this) closeIspringModal(); });
