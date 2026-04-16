@@ -11,7 +11,7 @@
 'use strict';
 
 /* ─── CONFIG ─── */
-const NB_API = "https://script.google.com/macros/s/AKfycbx4A-9IvqZbtX-9aIv7PD5rjakaMkRs2ejnxIxoorkeXmHdVwTISP0vxw5C6Ur-tP4J/exec";
+const NB_API = "https://script.google.com/macros/s/AKfycbwV5FGWhrws6TsD-ZKURGI_YY6UIyQTxjJ1_6VYeZOLoZ9DF_jpS6fBULxNpDHHh182/exec";
 
 window.API        = NB_API;
 window.API_URL    = NB_API;
@@ -67,7 +67,10 @@ window.nbLogout = nbLogout;
 async function nbGet(action, params={}){
   let qs=`?action=${encodeURIComponent(action)}`;
   for(const[k,v] of Object.entries(params)) qs+=`&${encodeURIComponent(k)}=${encodeURIComponent(v)}`;
-  const r = await fetch(NB_API + qs);
+ const r = await fetch(NB_API + qs, {
+  redirect: 'follow',
+  method: 'GET'
+});
   return r.json();
 }
 
