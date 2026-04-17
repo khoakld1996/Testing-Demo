@@ -49,7 +49,7 @@
             <svg style="width:13px;height:13px;fill:#90caf9" viewBox="0 0 24 24"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2.03 0v8.99H22c-.47-4.74-4.24-8.52-8.97-8.99zm0 11.01V22c4.74-.47 8.5-4.25 8.97-8.99h-8.97z"/></svg>
             Cách tính điểm
           </span>
-          <select id="scoreMode" class="input-control" onchange="toggleScoreUI()" style="margin-top:8px">
+          <select id="scoreMode" class="input-control" onchange="toggleScoreUI();calculatePreviewPoints()" style="margin-top:8px">
             <option value="equal">Chia đều tổng điểm</option>
             <option value="custom">Tùy chỉnh điểm riêng</option>
           </select>

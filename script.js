@@ -11,7 +11,7 @@
 'use strict';
 
 /* ─── CONFIG ─── */
-const NB_API = "https://script.google.com/macros/s/AKfycbwV5FGWhrws6TsD-ZKURGI_YY6UIyQTxjJ1_6VYeZOLoZ9DF_jpS6fBULxNpDHHh182/exec";
+const NB_API = "https://script.google.com/macros/s/AKfycbwtnSXXeuj7mzZMbTmHZODB2y1di4BplnFFEYgivt74Ntp-wkR8yBS5hUHpl6383qkd/exec";
 
 window.API        = NB_API;
 window.API_URL    = NB_API;
@@ -635,19 +635,42 @@ window.nbAddQuestionInit = function(){
     list.appendChild(div);
   };
 
+  /* ── Nén ảnh về kích thước nhỏ để tránh payload quá lớn khi gửi qua GAS ── */
+  function _compressImg(dataUrl, maxW, maxH, quality){
+    maxW=maxW||320; maxH=maxH||320; quality=quality||0.72;
+    return new Promise(function(resolve){
+      var img=new Image();
+      img.onload=function(){
+        var w=img.width, h=img.height;
+        var ratio=Math.min(maxW/w, maxH/h, 1);
+        w=Math.round(w*ratio); h=Math.round(h*ratio);
+        var canvas=document.createElement('canvas');
+        canvas.width=w; canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror=function(){ resolve(dataUrl); };
+      img.src=dataUrl;
+    });
+  }
+
   window.triggerAnsImgUpload = function(placeholder){
-    const input=document.createElement('input'); input.type='file'; input.accept='image/*';
+    var input=document.createElement('input'); input.type='file'; input.accept='image/*';
     input.onchange=function(){
-      const file=input.files[0]; if(!file) return;
-      if(file.size>500*1024){ nbToast('warning','Ảnh quá lớn! Tối đa 500KB'); return; }
-      const reader=new FileReader();
-      reader.onload=e=>{
-        const row=placeholder.closest('.ans-row');
-        const thumb=row.querySelector('.ans-img-thumb');
-        const hidden=row.querySelector('.ans-img-data');
-        if(thumb){ thumb.src=e.target.result; thumb.style.display='block'; }
-        if(placeholder) placeholder.style.display='none';
-        if(hidden) hidden.value=e.target.result;
+      var file=input.files[0]; if(!file) return;
+      if(file.size>3*1024*1024){ nbToast('warning','Ảnh quá lớn! Tối đa 3MB'); return; }
+      var reader=new FileReader();
+      reader.onload=function(e){
+        _compressImg(e.target.result, 320, 320, 0.72).then(function(compressed){
+          var row=placeholder.closest('.ans-row');
+          var thumb=row.querySelector('.ans-img-thumb');
+          var hidden=row.querySelector('.ans-img-data');
+          if(thumb){ thumb.src=compressed; thumb.style.display='block'; }
+          if(placeholder) placeholder.style.display='none';
+          if(hidden) hidden.value=compressed;
+          var kb=Math.round(compressed.length*0.75/1024);
+          nbToast('success','Ảnh đã nén: ~'+kb+'KB');
+        });
       };
       reader.readAsDataURL(file);
     };
@@ -693,19 +716,37 @@ window.nbAddQuestionInit = function(){
     if(boxCust) boxCust.style.display=mode==='custom'?'block':'none';
   };
   window.calculatePreviewPoints = function(){
-    const total=parseFloat(document.getElementById('totalScore')?.value)||0;
-    let count=window._aqEditMode?window._aqQCount:(window._aqQCount+1);
-    const preview=document.getElementById('scorePreview');
-    if(preview) preview.innerText=`Dự kiến: ${(total/(count||1)).toFixed(2)} điểm/câu`;
+    const mode    = document.getElementById('scoreMode')?.value;
+    const preview = document.getElementById('scorePreview');
+    if(!preview) return;
+    if(mode === 'custom'){
+      const pts = parseFloat(document.getElementById('qPoint')?.value)||0;
+      preview.innerText = `Câu này được: ${pts.toFixed(2)} điểm`;
+      return;
+    }
+    const total = parseFloat(document.getElementById('totalScore')?.value)||0;
+    // Edit: số câu không đổi | Thêm mới: +1 câu đang tạo
+    const count = window._aqEditMode
+      ? Math.max(window._aqQCount, 1)
+      : (window._aqQCount + 1);
+    const perQ = count > 0 ? (total / count) : 0;
+    preview.innerText = `${perQ.toFixed(2)} đ/câu · ${count} câu · tổng ${total}đ`;
   };
   window.handleLinkInput = function(val){
     if(val.length>10) updateQPreview(val);
   };
   window.handleFile = function(input){
     const file=input.files[0]; if(!file) return;
-    if(file.size>500*1024){ nbToast('warning','Ảnh quá lớn! Tối đa 500KB'); return; }
+    if(file.size>5*1024*1024){ nbToast('warning','Ảnh quá lớn! Tối đa 5MB'); return; }
     const reader=new FileReader();
-    reader.onload=e=>{ updateQPreview(e.target.result); document.getElementById('qUrl').value='Local File'; };
+    reader.onload=e=>{
+      _compressImg(e.target.result,800,600,0.80).then(compressed=>{
+        updateQPreview(compressed);
+        document.getElementById('qUrl').value='Local File';
+        const kb=Math.round(compressed.length*0.75/1024);
+        nbToast('success','Ảnh câu hỏi đã nén: ~'+kb+'KB');
+      });
+    };
     reader.readAsDataURL(file);
   };
   window.updateQPreview = window.updatePreview = function(src){
@@ -762,11 +803,14 @@ window.nbAddQuestionInit = function(){
       const data=await nbGet('getQuestions',{testId});
       window._aqQCount=Array.isArray(data)?data.length:0;
       if(window._aqQCount>0&&!window._aqEditMode){
+        // Thêm mới: lấy settings từ đề hiện tại để đồng bộ
         const s=data[0];
         document.getElementById('testTime').value=s.testTime||15;
         document.getElementById('scoreMode').value=s.scoreMode||'equal';
         document.getElementById('totalScore').value=s.totalScore||10;
+        toggleScoreUI();
       }
+      // Cả 2 mode đều cần cập nhật preview điểm với count đúng
       calculatePreviewPoints();
     }catch(e){}
   };
@@ -782,6 +826,8 @@ window.nbAddQuestionInit = function(){
       return nbAlert('warning','Thiếu đáp án','Vui lòng thiết lập ít nhất 1 đáp án đúng!');
     btn.disabled=true;
     btn.innerHTML=`<svg style="animation:spin .8s linear infinite;display:inline-block;width:18px;height:18px;fill:currentColor" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> ĐANG ĐỒNG BỘ...`;
+
+    /* ── Build answer payload ── */
     const payloadAnswers={items:[]};
     document.querySelectorAll('.ans-row').forEach(row=>{
       if(type==='single'||type==='multiple'){
@@ -798,18 +844,42 @@ window.nbAddQuestionInit = function(){
         if(txt) payloadAnswers.items.push({text:txt,img});
       }
     });
+
+    /* ── Nén ảnh câu hỏi nếu là base64 ── */
+    let qImg=document.getElementById('qData').value||document.getElementById('qUrl').value||'';
+    if(qImg.startsWith('data:image')){
+      try{ qImg=await _compressImg(qImg,800,600,0.78); }catch(e){}
+    }
+
+    const testTime   = document.getElementById('testTime').value;
+    const scoreMode  = document.getElementById('scoreMode').value;
+    const totalScore = document.getElementById('totalScore').value;
+    const answerJson = JSON.stringify(payloadAnswers);
+
+    /* ── Kiểm tra kích thước payload ── */
+    const payloadSize=new Blob([answerJson+qImg]).size;
+    if(payloadSize>180*1024){
+      btn.disabled=false;
+      btn.innerHTML=`<svg viewBox="0 0 24 24" fill="currentColor" style="width:18px;height:18px"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg> ĐỒNG BỘ LÊN CLOUD`;
+      return nbAlert('warning','Ảnh quá nặng',
+        `Tổng dữ liệu ảnh ~${Math.round(payloadSize/1024)}KB, vượt giới hạn 180KB.\nHãy dùng link ảnh (URL) thay vì tải ảnh trực tiếp cho đáp án có nhiều ảnh.`);
+    }
+
     const finalData={
       action:'saveQuestion', testId:testData.id,
-      testTime:document.getElementById('testTime').value,
-      scoreMode:document.getElementById('scoreMode').value,
-      totalScore:document.getElementById('totalScore').value,
+      testTime, scoreMode, totalScore,
       points:document.getElementById('qPoint').value,
-      type, question, oldQuestion:window._aqEditMode?window._aqOriginalQ:'',
-      image:document.getElementById('qData').value||document.getElementById('qUrl').value,
-      answer:JSON.stringify(payloadAnswers), correct
+      type, question,
+      oldQuestion:window._aqEditMode?window._aqOriginalQ:'',
+      image:qImg,
+      answer:answerJson,
+      correct,
+      updateAllSettings:true
     };
+
     try{
-      await nbPostSilent(finalData);
+      /* Dùng nbPostForm (URLSearchParams) — reliable hơn no-cors cho payload có ảnh */
+      await nbPostForm(finalData);
       nbToast('success','Đã đồng bộ lên Cloud!');
       nb.del('editQuestionData');
       setTimeout(()=>location.href='question-list.html',1800);

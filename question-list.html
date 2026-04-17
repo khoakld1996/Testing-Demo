@@ -2,52 +2,56 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Nebula - Quản Lý Câu Hỏi</title>
-  
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+  <title>Nebula — Quản Lý Câu Hỏi</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    /* Chỉ giữ lại CSS đặc thù không có trong style.css */
-    .q-thumb { width: 70px; height: 70px; border-radius: 12px; object-fit: cover; border: 1px solid var(--glass-border); cursor: pointer; }
-    .no-thumb { width: 70px; height: 70px; border-radius: 12px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.1); border: 1px dashed var(--glass-border); }
-    .badge-mcq { background: rgba(68, 138, 255, 0.1); color: var(--primary); border: 1px solid var(--primary); }
-    .badge-tf { background: rgba(0, 229, 255, 0.1); color: var(--secondary); border: 1px solid var(--secondary); }
-    .badge-other { background: rgba(124, 77, 255, 0.1); color: var(--accent); border: 1px solid var(--accent); }
-    .btn-edit { background: rgba(255, 177, 66, 0.15); color: var(--warning); }
-    .btn-edit:hover { background: var(--warning); color: #000; }
-    .btn-delete { background: rgba(255, 82, 82, 0.15); color: var(--danger); }
-    .btn-delete:hover { background: var(--danger); color: #fff; }
-  </style>
 </head>
-<body style="background: var(--bg); padding: 16px; display: flex; justify-content: center;">
+<body class="ql-body">
 
-<div class="container animate__animated animate__fadeIn" style="width:100%; max-width:1000px;">
+<div class="container animate__animated animate__fadeIn" style="width:100%;max-width:1000px">
   <div class="glass-panel">
-    
-    <div class="header" style="display:flex; justify-content:space-between; margin-bottom:20px;">
-      <h2 id="testNameDisplay"><i class="fas fa-database"></i> TỔNG KHO CÂU HỎI</h2>
-      <div class="search-box" style="position:relative; max-width:300px;">
-        <i class="fas fa-search" style="position:absolute; left:15px; top:50%; transform:translateY(-50%); color:var(--muted);"></i>
-        <input type="text" id="searchInput" placeholder="Tìm kiếm câu hỏi..." oninput="filterQuestions()" style="width:100%; padding:12px 20px 12px 45px; border-radius:30px; background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); color:#fff;">
+
+    <!-- HEADER -->
+    <div class="ql-header">
+      <h2 class="ql-title" id="testNameDisplay">
+        <svg style="width:20px;height:20px;fill:var(--primary);flex-shrink:0" viewBox="0 0 24 24">
+          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+        </svg>
+        TỔNG KHO CÂU HỎI
+      </h2>
+      <div class="ql-search">
+        <i class="fas fa-search ql-search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Tìm kiếm câu hỏi..." oninput="filterQuestions()">
       </div>
     </div>
 
-    <div id="questionList" style="max-height:60vh; overflow-y:auto; padding-right:5px;">
-      <div style="text-align:center; padding:50px; opacity:0.5;">
-        <i class="fas fa-circle-notch fa-spin fa-2x"></i>
-        <p style="margin-top:15px;">Đang quét dữ liệu...</p>
+    <!-- COUNT -->
+    <div class="ql-count" id="qCount" style="margin-bottom:14px"></div>
+
+    <!-- LIST -->
+    <div class="ql-list" id="questionList">
+      <div class="ql-empty">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <p>Đang quét dữ liệu...</p>
       </div>
     </div>
 
-    <div class="footer" style="display:flex; justify-content:space-between; margin-top:20px;">
+    <!-- FOOTER -->
+    <div class="ql-footer">
       <button class="btn btn-outline" onclick="location.href='dashboard.html'">
-        <i class="fas fa-chevron-left"></i> Trang quản trị
+        <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24">
+          <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+        </svg>
+        Trang quản trị
       </button>
       <button class="btn btn-glow" onclick="goToAdd()">
-        <i class="fas fa-plus-circle"></i> Thêm câu hỏi mới
+        <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        Thêm câu hỏi mới
       </button>
     </div>
 
@@ -56,118 +60,114 @@
 
 <script src="script.js"></script>
 <script>
-  const API = window.API;
-  const currentTest = JSON.parse(localStorage.getItem("currentTest") || "{}");
-  let allQuestions = [];
+const currentTest = JSON.parse(localStorage.getItem('currentTest') || '{}');
+let allQuestions  = [];
 
-  window.onload = () => {
-    if (!currentTest.id) return location.href = 'dashboard.html';
-    document.getElementById("testNameDisplay").innerHTML = `<i class="fas fa-microchip"></i> ${currentTest.name.toUpperCase()}`;
-    loadQuestions();
+window.onload = function(){
+  if(!currentTest.id) return location.href = 'dashboard.html';
+  document.getElementById('testNameDisplay').innerHTML =
+    '<svg style="width:20px;height:20px;fill:var(--primary);flex-shrink:0" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg> '
+    + currentTest.name.toUpperCase();
+  loadQuestions();
+};
+
+async function loadQuestions(){
+  const listEl = document.getElementById('questionList');
+  try{
+    const resp = await fetch(window.API + '?action=getQuestions&testId=' + currentTest.id);
+    allQuestions = await resp.json();
+    renderList(allQuestions);
+  }catch(err){
+    listEl.innerHTML = '<div class="ql-empty" style="color:var(--danger)"><i class="fas fa-exclamation-triangle"></i><p>Không thể kết nối Cloud.</p></div>';
+  }
+}
+
+function renderList(data){
+  const listEl  = document.getElementById('questionList');
+  const countEl = document.getElementById('qCount');
+  if(!data || data.length === 0){
+    if(countEl) countEl.textContent = '';
+    listEl.innerHTML = '<div class="ql-empty"><i class="fas fa-folder-open"></i><p>Chưa có câu hỏi nào.</p></div>';
+    return;
+  }
+  if(countEl) countEl.textContent = data.length + ' câu hỏi';
+
+  listEl.innerHTML = data.map(function(q, i){
+    var badge   = getBadge(q.type);
+    var imgHtml = (q.image && q.image.length > 20)
+      ? '<img src="' + escHtml(q.image) + '" class="q-thumb" onclick="previewImg(this.src)" title="Xem ảnh">'
+      : '<div class="no-thumb"><i class="fas fa-image"></i></div>';
+    return '<div class="q-card animate__animated animate__fadeInUp" style="animation-delay:' + Math.min(i*0.04,0.4) + 's">'
+      + imgHtml
+      + '<div style="flex:1;min-width:0">'
+      + '<span style="display:block;font-weight:600;margin-bottom:8px;line-height:1.4">' + (i+1) + '. ' + escHtml(q.question) + '</span>'
+      + '<span class="badge ' + badge.cls + '"><i class="fas ' + badge.icon + '"></i> ' + badge.label + '</span>'
+      + '</div>'
+      + '<div style="display:flex;gap:6px;flex-shrink:0">'
+      + '<button class="btn-action" style="background:rgba(245,158,11,.12);color:var(--warning)" title="Chỉnh sửa" onclick="editQuestion(' + i + ')"><i class="fas fa-pen"></i></button>'
+      + '<button class="btn-action" style="background:rgba(239,68,68,.12);color:var(--danger)" title="Xóa" onclick="deleteQuestion(' + i + ', this)"><i class="fas fa-trash-alt"></i></button>'
+      + '</div></div>';
+  }).join('');
+}
+
+function getBadge(type){
+  var map = {
+    tf:       { label:'Đúng/Sai',    cls:'badge-tf',    icon:'fa-check-circle' },
+    matching: { label:'Ghép cặp',    cls:'badge-other', icon:'fa-clone' },
+    ordering: { label:'Sắp xếp',     cls:'badge-other', icon:'fa-sort-numeric-down' },
+    fill:     { label:'Điền khuyết', cls:'badge-fill',  icon:'fa-keyboard' },
   };
+  return map[type] || { label:'Trắc nghiệm', cls:'badge-mcq', icon:'fa-list-ul' };
+}
 
-  async function loadQuestions() {
-    const listEl = document.getElementById("questionList");
-    try {
-      const resp = await fetch(`${API}?action=getQuestions&testId=${currentTest.id}`);
-      allQuestions = await resp.json();
-      renderList(allQuestions);
-    } catch (err) {
-      listEl.innerHTML = `<div style="text-align:center; color:var(--danger); padding:40px;">⚠️ Không thể kết nối Cloud.</div>`;
-    }
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function filterQuestions(){
+  var term = document.getElementById('searchInput').value.toLowerCase();
+  renderList(allQuestions.filter(function(q){ return q.question.toLowerCase().includes(term); }));
+}
+
+async function deleteQuestion(index, btn){
+  var q = allQuestions[index];
+  var result = await Swal.fire({
+    title:'Xác nhận xóa?', text:'Dữ liệu sẽ bị xóa vĩnh viễn!', icon:'warning',
+    showCancelButton:true, confirmButtonColor:'#ef4444',
+    background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
+    confirmButtonText:'Xóa', cancelButtonText:'Hủy'
+  });
+  if(!result.isConfirmed) return;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  btn.disabled  = true;
+  try{
+    var fd = new URLSearchParams();
+    fd.append('action','deleteQuestion');
+    fd.append('testId', currentTest.id);
+    fd.append('question', q.question);
+    await fetch(window.API, { method:'POST', mode:'no-cors', body:fd });
+    Swal.fire({ icon:'success', title:'Đã xóa', timer:1500, showConfirmButton:false,
+      background:'rgba(10,15,30,0.97)', color:'#f1f5f9' });
+    setTimeout(loadQuestions, 1800);
+  }catch(e){
+    Swal.fire('Lỗi','Không thể xóa!','error');
+    btn.innerHTML = '<i class="fas fa-trash-alt"></i>';
+    btn.disabled  = false;
   }
+}
 
-  function renderList(data) {
-    const listEl = document.getElementById("questionList");
-    if (!data || data.length === 0) {
-      listEl.innerHTML = `<div style="text-align:center; padding:60px; opacity:0.5;"><i class="fas fa-folder-open fa-3x"></i><p>Chưa có câu hỏi nào.</p></div>`;
-      return;
-    }
+function editQuestion(index){
+  localStorage.setItem('editQuestionData', JSON.stringify(allQuestions[index]));
+  location.href = 'add-question.html';
+}
 
-    listEl.innerHTML = data.map((q, i) => {
-      const type = getBadge(q.type);
-      return `
-        <div class="q-card animate__animated animate__fadeInUp" style="animation-delay:${i * 0.03}s; display:flex; gap:15px; padding:15px; background:rgba(255,255,255,0.03); border-radius:16px; margin-bottom:12px; border:1px solid var(--glass-border);">
-          ${q.image && q.image.length > 20 ? 
-            `<img src="${q.image}" class="q-thumb" onclick="previewImg('${q.image}')">` : 
-            `<div class="no-thumb"><i class="fas fa-image"></i></div>`}
-          
-          <div style="flex:1;">
-            <span style="display:block; font-weight:600; margin-bottom:8px;">${i+1}. ${q.question}</span>
-            <span class="badge ${type.class}"><i class="fas ${type.icon}"></i> ${type.label}</span>
-          </div>
+function goToAdd(){
+  localStorage.removeItem('editQuestionData');
+  location.href = 'add-question.html';
+}
 
-          <div style="display:flex; gap:8px;">
-            <button class="btn-action btn-edit" onclick="editQuestion(${i})"><i class="fas fa-pen"></i></button>
-            <button class="btn-action btn-delete" onclick="deleteQuestion('${q.question}', this)"><i class="fas fa-trash-alt"></i></button>
-          </div>
-        </div>
-      `;
-    }).join('');
-  }
-
-  function getBadge(type) {
-    switch(type) {
-      case 'tf': return { label: "Đúng/Sai", class: "badge-tf", icon: "fa-check-circle" };
-      case 'matching': return { label: "Ghép cặp", class: "badge-other", icon: "fa-clone" };
-      case 'ordering': return { label: "Sắp xếp", class: "badge-other", icon: "fa-sort-numeric-down" };
-      case 'fill': return { label: "Điền khuyết", class: "badge-other", icon: "fa-keyboard" };
-      default: return { label: "Trắc nghiệm", class: "badge-mcq", icon: "fa-list-ul" };
-    }
-  }
-
-  function filterQuestions() {
-    const term = document.getElementById("searchInput").value.toLowerCase();
-    const filtered = allQuestions.filter(q => q.question.toLowerCase().includes(term));
-    renderList(filtered);
-  }
-
-  async function deleteQuestion(qText, btn) {
-    const confirm = await Swal.fire({
-      title: 'Xác nhận xóa?',
-      text: "Dữ liệu sẽ bị xóa vĩnh viễn!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#ff5252',
-      background: '#0a0f1c', color: '#fff',
-      confirmButtonText: 'Xóa', cancelButtonText: 'Hủy'
-    });
-
-    if (!confirm.isConfirmed) return;
-
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.disabled = true;
-
-    try {
-      const fd = new URLSearchParams();
-      fd.append("action", "deleteQuestion");
-      fd.append("testId", currentTest.id);
-      fd.append("question", qText);
-
-      await fetch(API, { method: "POST", mode: "no-cors", body: fd });
-      
-      Swal.fire({ icon: 'success', title: 'Đã xóa', timer: 1500, showConfirmButton: false, background: '#0a0f1c', color: '#fff' });
-      setTimeout(loadQuestions, 2000);
-    } catch (e) {
-      Swal.fire("Lỗi", "Không thể xóa!", "error");
-      btn.innerHTML = '<i class="fas fa-trash-alt"></i>';
-      btn.disabled = false;
-    }
-  }
-
-  function editQuestion(index) {
-    localStorage.setItem("editQuestionData", JSON.stringify(allQuestions[index]));
-    location.href = "add-question.html";
-  }
-
-  function goToAdd() {
-    localStorage.removeItem("editQuestionData");
-    location.href = "add-question.html";
-  }
-
-  function previewImg(src) {
-    Swal.fire({ imageUrl: src, background: '#000', showConfirmButton: false, showCloseButton: true });
-  }
+function previewImg(src){
+  Swal.fire({ imageUrl:src, imageAlt:'Ảnh câu hỏi',
+    background:'rgba(0,0,0,.95)', showConfirmButton:false, showCloseButton:true });
+}
 </script>
 </body>
 </html>
