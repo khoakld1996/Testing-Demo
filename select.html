@@ -37,7 +37,7 @@
 
       <!-- Tiêu đề -->
       <h2 class="sel-title">
-        <svg viewBox="0 0 24 24" style="width:22px;height:22px;fill:var(--primary);flex-shrink:0">
+        <svg class="sel-title-icon" viewBox="0 0 24 24">
           <path d="M19.07 4.93a1 1 0 0 0-1.41 0L4.93 17.66a1 1 0 1 0 1.41 1.41L19.07 6.34a1 1 0 0 0 0-1.41zM6.5 8C5.12 8 4 9.12 4 10.5S5.12 13 6.5 13 9 11.88 9 10.5 7.88 8 6.5 8zm11 5c-1.38 0-2.5 1.12-2.5 2.5S16.12 18 17.5 18 20 16.88 20 15.5 18.88 13 17.5 13z"/>
         </svg>
         HỆ THỐNG THI
@@ -139,9 +139,9 @@
         }
         
         const modeHtml = `
-        <div style="margin: 15px 0; text-align: left;">
-            <label style="display: block; margin-bottom: 8px; color: #a0aec0; font-size: 0.9rem;">Chọn chế độ làm bài:</label>
-            <select id="swal-mode-select" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.3); color: white; border: 1px solid #4a5568; border-radius: 8px;">
+        <div class="swal-mode-wrap">
+            <label class="swal-mode-label">Chọn chế độ làm bài:</label>
+            <select id="swal-mode-select">
                 <option value="train" selected>🎓 LUYỆN TẬP (Không giới hạn, xem đáp án ngay)</option>
                 <option value="test">⏱️ KIỂM TRA (Tính giờ, chấm điểm cuối bài)</option>
             </select>
@@ -151,14 +151,14 @@
         Swal.fire({
             title: 'Bắt đầu bài thi?',
             html: `
-                <div style="text-align:left;font-size:.9rem;line-height:2;color:rgba(255,255,255,.8)">
-                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
-                        <span>📝 Bài thi: <b style="color:var(--primary)">${test.name}</b></span>
+                <div class="swal-launch-body">
+                    <div class="swal-launch-row">
+                        <span>📝 Bài thi: <b class="swal-highlight">${test.name}</b></span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)">
+                    <div class="swal-launch-row">
                         <span>⏳ Thời gian: <b>${test.duration} phút</b></span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:10px;padding:10px 0">
+                    <div class="swal-launch-row swal-launch-row--last">
                         <span>❓ Số câu: <b>${test.qCount} câu hỏi</b></span>
                     </div>
                     ${modeHtml}

@@ -6,215 +6,180 @@
   <title>Lịch Sử Bài Làm | Nebula</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="style.css">
-  <style>
-    /* Style riêng cho history page */
-    .hist-item {
-      background: var(--card-bg); border: 1px solid var(--glass-border);
-      border-radius: 16px; margin-bottom: 12px; padding: 16px;
-      display: flex; align-items: center; gap: 15px;
-      cursor: pointer; transition: all 0.2s;
-      backdrop-filter: blur(10px);
-    }
-    .hist-item:hover { background: rgba(79, 172, 254, 0.1); border-color: var(--primary); }
-    .hist-score { font-size: 1.8rem; font-weight: 800; min-width: 70px; text-align: center; }
-    .hist-badge { font-size: 0.7rem; padding: 4px 8px; border-radius: 20px; font-weight: 700; }
-    .badge-isp { background: rgba(249, 115, 22, 0.2); color: var(--ispring); border: 1px solid var(--ispring); }
-    .badge-sys { background: rgba(79, 172, 254, 0.2); color: var(--primary); border: 1px solid var(--primary); }
-    .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-    .tab-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; background: rgba(255,255,255,0.05); color: #fff; font-weight: 700; cursor: pointer; }
-    .tab-btn.active { background: var(--primary); color: #000; }
-    .tab-btn.isp.active { background: var(--ispring); }
-  </style>
 </head>
-<body style="background: var(--bg); padding: 16px; min-height: 100vh;">
+<body class="hist-pg-body">
+<div class="hist-pg-wrap">
 
-<div style="max-width: 900px; margin: 0 auto;">
   <!-- Header -->
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-    <h2 style="color: #fff;"><i class="fas fa-history" style="color: var(--primary);"></i> Lịch Sử Bài Làm</h2>
+  <div class="hist-pg-header">
+    <h2><i class="fas fa-history"></i> Lịch Sử Bài Làm</h2>
     <a href="select.html" class="btn btn-glow"><i class="fas fa-play"></i> Thi tiếp</a>
   </div>
 
   <!-- Tabs -->
-  <div class="tabs">
-    <button class="tab-btn active" id="tabAll" onclick="switchTab('all')">Tất cả <span id="cntAll"></span></button>
-    <button class="tab-btn" id="tabSys" onclick="switchTab('sys')">Hệ thống <span id="cntSys"></span></button>
-    <button class="tab-btn isp" id="tabIsp" onclick="switchTab('isp')">iSpring <span id="cntIsp"></span></button>
+  <div class="hist-tabs">
+    <button class="hist-tab-btn active" id="tabAll" onclick="switchTab('all')">
+      <i class="fas fa-list"></i> Tất cả <span class="hist-tab-count" id="cntAll"></span>
+    </button>
+    <button class="hist-tab-btn" id="tabSys" onclick="switchTab('sys')">
+      <i class="fas fa-database"></i> Hệ thống <span class="hist-tab-count" id="cntSys"></span>
+    </button>
+    <button class="hist-tab-btn isp-tab" id="tabIsp" onclick="switchTab('isp')">
+      <i class="fas fa-rocket"></i> iSpring <span class="hist-tab-count" id="cntIsp"></span>
+    </button>
   </div>
 
   <!-- Stats -->
-  <div style="display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 20px;">
-    <div class="glass-card" style="text-align: center;"><h2 id="stTotal" style="color: var(--primary);">0</h2><p style="opacity:0.7;">Bài làm</p></div>
-    <div class="glass-card" style="text-align: center;"><h2 id="stAvg" style="color: var(--accent);">0</h2><p style="opacity:0.7;">Điểm TB</p></div>
-    <div class="glass-card" style="text-align: center;"><h2 id="stBest" style="color: var(--ispring);">0</h2><p style="opacity:0.7;">Cao nhất</p></div>
+  <div class="hist-stats-grid">
+    <div class="hist-stat-card">
+      <h2 id="stTotal" style="color:var(--primary)">0</h2>
+      <p><i class="fas fa-book-open" style="margin-right:4px;opacity:.5"></i>Bài làm</p>
+    </div>
+    <div class="hist-stat-card">
+      <h2 id="stAvg" style="color:var(--accent)">—</h2>
+      <p><i class="fas fa-chart-line" style="margin-right:4px;opacity:.5"></i>Điểm TB</p>
+    </div>
+    <div class="hist-stat-card">
+      <h2 id="stBest" style="color:var(--ispring)">—</h2>
+      <p><i class="fas fa-star" style="margin-right:4px;opacity:.5"></i>Cao nhất</p>
+    </div>
   </div>
 
   <!-- List View -->
   <div id="viewList">
     <div id="histList">
-      <div style="text-align: center; padding: 40px; opacity: 0.5;"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>
+      <div class="hist-loading"><i class="fas fa-spinner fa-spin"></i><span>Đang tải lịch sử...</span></div>
     </div>
   </div>
 
   <!-- Detail View -->
-  <div id="viewDetail" style="display: none;">
-    <button class="btn btn-outline" onclick="backToList()" style="margin-bottom: 15px;"><i class="fas fa-arrow-left"></i> Quay lại</button>
-    <div id="detSum" class="glass-card" style="margin-bottom: 15px;"></div>
+  <div id="viewDetail" style="display:none">
+    <button class="hist-back-btn" onclick="backToList()">
+      <i class="fas fa-arrow-left"></i> Quay lại
+    </button>
+    <div id="detSum" class="hist-det-summary"></div>
     <div id="detQs"></div>
   </div>
-</div>
 
+</div>
 <script src="script.js"></script>
 <script>
-  const API = window.API;
-  let allRecs = [];
-  let curTab = "all";
-  const studentName = localStorage.getItem("studentName") || "Học sinh";
+const API = window.API;
+let allRecs = [], curTab = "all";
+const studentName = localStorage.getItem("studentName") || "Học sinh";
 
-  window.onload = async () => {
-    await loadHistory();
-  };
+window.onload = async () => { await loadHistory(); };
 
-  async function loadHistory() {
-    try {
-      const [sysRes, ispRes] = await Promise.all([
-        fetch(API + "?action=getResults&student=" + encodeURIComponent(studentName)).then(r=>r.json()),
-        fetch(API + "?action=getIspringResults&student=" + encodeURIComponent(studentName)).then(r=>r.json())
-      ]);
-
-      const sysRecs = (Array.isArray(sysRes) ? sysRes : [])
-        .filter(r => String(r.student).trim().toLowerCase() === studentName.toLowerCase())
-        .map(r => ({ ...r, _type: "sys" }));
-
-      const ispRecs = (Array.isArray(ispRes) ? ispRes : [])
-        .filter(r => String(r.student).trim().toLowerCase() === studentName.toLowerCase())
-        .map(r => ({ ...r, _type: "isp" }));
-
-      allRecs = [...sysRecs, ...ispRecs].sort((a,b) => nbParseDate(b.time) - nbParseDate(a.time));
-      
-      updateStats();
-      updateCounts();
-      renderList(curTab);
-    } catch(e) {
-      document.getElementById("histList").innerHTML = '<div class="nodata">Lỗi kết nối</div>';
-    }
+async function loadHistory() {
+  try {
+    const [sysRes, ispRes] = await Promise.all([
+      fetch(API + "?action=getResults&student=" + encodeURIComponent(studentName)).then(r => r.json()),
+      fetch(API + "?action=getIspringResults&student=" + encodeURIComponent(studentName)).then(r => r.json())
+    ]);
+    const sys = (Array.isArray(sysRes) ? sysRes : [])
+      .filter(r => String(r.student).trim().toLowerCase() === studentName.toLowerCase())
+      .map(r => ({ ...r, _type: "sys" }));
+    const isp = (Array.isArray(ispRes) ? ispRes : [])
+      .filter(r => String(r.student).trim().toLowerCase() === studentName.toLowerCase())
+      .map(r => ({ ...r, _type: "isp" }));
+    allRecs = [...sys, ...isp].sort((a,b) => nbParseDate(b.time) - nbParseDate(a.time));
+    updateStats(); updateCounts(); renderList(curTab);
+  } catch(e) {
+    document.getElementById("histList").innerHTML = '<div class="nodata"><i class="fas fa-wifi" style="font-size:2rem;display:block;margin-bottom:10px"></i>Lỗi kết nối</div>';
   }
+}
 
-  function updateStats() {
-    const scores = allRecs.map(r=>parseFloat(r.score)||0);
-    const avg = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : "—";
-    const best = scores.length ? Math.max(...scores).toFixed(1) : "—";
-    document.getElementById("stTotal").innerText = allRecs.length;
-    document.getElementById("stAvg").innerText = avg;
-    document.getElementById("stBest").innerText = best;
+function updateStats() {
+  const sc = allRecs.map(r => parseFloat(r.score)||0);
+  document.getElementById("stTotal").textContent = allRecs.length;
+  document.getElementById("stAvg").textContent   = sc.length ? (sc.reduce((a,b)=>a+b,0)/sc.length).toFixed(1) : "—";
+  document.getElementById("stBest").textContent  = sc.length ? Math.max(...sc).toFixed(1) : "—";
+}
+
+function updateCounts() {
+  const s = allRecs.filter(r=>r._type==="sys").length;
+  const i = allRecs.filter(r=>r._type==="isp").length;
+  document.getElementById("cntAll").textContent = `(${allRecs.length})`;
+  document.getElementById("cntSys").textContent = `(${s})`;
+  document.getElementById("cntIsp").textContent = `(${i})`;
+}
+
+function switchTab(tab) {
+  curTab = tab;
+  document.querySelectorAll(".hist-tab-btn").forEach(b => b.classList.remove("active"));
+  ({ all:"tabAll",sys:"tabSys",isp:"tabIsp" })[tab] && document.getElementById(({ all:"tabAll",sys:"tabSys",isp:"tabIsp" })[tab]).classList.add("active");
+  renderList(tab);
+}
+
+function renderList(tab) {
+  const el = document.getElementById("histList");
+  const recs = allRecs.filter(r => tab==="sys"?r._type==="sys":tab==="isp"?r._type==="isp":true);
+  if (!recs.length) { el.innerHTML='<div class="nodata"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:10px"></i>Chưa có lịch sử</div>'; return; }
+  el.innerHTML = recs.map(r => {
+    const isp   = r._type==="isp";
+    const name  = (r.testName||"").replace(/\[iSpring\]/ig,"").trim();
+    const score = parseFloat(r.score||0).toFixed(1).replace(/\.0$/,"");
+    const col   = score>=8?"var(--accent)":score>=5?"var(--primary)":"var(--danger)";
+    const badge = isp
+      ? `<span class="hist-badge badge-isp"><i class="fas fa-rocket"></i> iSpring</span>`
+      : `<span class="hist-badge badge-sys"><i class="fas fa-database"></i> Hệ thống</span>`;
+    return `<div class="hist-item" onclick="openDetail(${allRecs.indexOf(r)})">
+      <div class="hist-item-info">
+        <div class="hist-item-name">${name}</div>
+        <div class="hist-item-meta"><span><i class="far fa-clock"></i> ${nbFmtTime(r.time)}</span>${badge}</div>
+      </div>
+      <div class="hist-score" style="color:${col}">${score}</div>
+      <i class="fas fa-chevron-right hist-arrow"></i>
+    </div>`;
+  }).join("");
+}
+
+async function openDetail(idx) {
+  const rec = allRecs[idx];
+  document.getElementById("viewList").style.display   = "none";
+  document.getElementById("viewDetail").style.display = "block";
+  window.scrollTo(0,0);
+  const name  = (rec.testName||"").replace(/\[iSpring\]/ig,"").trim();
+  const score = parseFloat(rec.score||0).toFixed(1);
+  const isIsp = rec._type==="isp";
+  const ispBadge = isIsp ? `<span class="hist-det-badge" style="background:rgba(249,115,22,.12);color:var(--ispring);border-color:rgba(249,115,22,.25)"><i class="fas fa-rocket"></i> iSpring</span>` : "";
+  document.getElementById("detSum").innerHTML = `
+    <h3>${name}</h3>
+    <div class="hist-det-badges">
+      <span class="hist-det-badge score"><i class="fas fa-star"></i> ${score} điểm</span>
+      <span class="hist-det-badge"><i class="fas fa-check-double"></i> ${rec.total||"—"}</span>
+      <span class="hist-det-badge"><i class="far fa-clock"></i> ${nbFmtTime(rec.time)}</span>
+      ${ispBadge}
+    </div>`;
+  const qEl = document.getElementById("detQs");
+  if (isIsp) {
+    qEl.innerHTML = `<div class="hist-stat-card" style="text-align:center;padding:36px 20px"><i class="fas fa-rocket fa-3x" style="color:var(--ispring);display:block;margin-bottom:14px"></i><p style="opacity:.65">Bài thi iSpring không lưu chi tiết câu hỏi.</p></div>`;
+    return;
   }
+  qEl.innerHTML = '<div class="hist-loading"><i class="fas fa-spinner fa-spin"></i><span>Đang tải câu hỏi...</span></div>';
+  try {
+    const tests = await fetch(API+"?action=getTests").then(r=>r.json());
+    const found = tests.find(t=>(t.name||"").trim().toLowerCase()===name.toLowerCase());
+    if (!found) { qEl.innerHTML='<div class="nodata">Không tìm thấy đề thi</div>'; return; }
+    const qlist = await fetch(API+"?action=getQuestions&testId="+found.id).then(r=>r.json());
+    let ans = {};
+    try { ans = typeof rec.answers==="string"?JSON.parse(rec.answers):(rec.answers||{}); } catch(e){}
+    if (!qlist.length) { qEl.innerHTML='<div class="nodata">Chưa có câu hỏi</div>'; return; }
+    const icons  = { c:"check-circle",  w:"times-circle", u:"minus-circle" };
+    const colors = { c:"var(--accent)", w:"var(--danger)", u:"var(--muted)" };
+    qEl.innerHTML = qlist.map((q,i) => {
+      const sa = ans[q.question]||"", ca = String(q.correct||"").trim();
+      const ok = typeof nbCheckAns==="function"?nbCheckAns(q.type,sa,ca):false;
+      const st = !sa?"u":ok?"c":"w";
+      return `<div class="hist-q-card"><i class="fas fa-${icons[st]}" style="color:${colors[st]}"></i><span>${i+1}. ${q.question}</span></div>`;
+    }).join("");
+  } catch(e) { qEl.innerHTML='<div class="nodata">Lỗi tải câu hỏi</div>'; }
+}
 
-  function updateCounts() {
-    const sys = allRecs.filter(r=>r._type==="sys").length;
-    const isp = allRecs.filter(r=>r._type==="isp").length;
-    document.getElementById("cntAll").innerText = `(${allRecs.length})`;
-    document.getElementById("cntSys").innerText = `(${sys})`;
-    document.getElementById("cntIsp").innerText = `(${isp})`;
-  }
-
-  function switchTab(tab) {
-    curTab = tab;
-    ["all","sys","isp"].forEach(t => {
-      const btn = document.getElementById("tab"+t.charAt(0).toUpperCase()+t.slice(1));
-      btn.classList.toggle("active", t===tab);
-    });
-    renderList(tab);
-  }
-
-  function renderList(tab) {
-    const el = document.getElementById("histList");
-    const recs = allRecs.filter(r => {
-      if (tab === "sys") return r._type === "sys";
-      if (tab === "isp") return r._type === "isp";
-      return true;
-    });
-
-    if (!recs.length) {
-      el.innerHTML = '<div class="nodata" style="text-align:center; padding:40px; opacity:0.5;">Chưa có lịch sử</div>';
-      return;
-    }
-
-    el.innerHTML = recs.map((r, i) => {
-      const isIsp = r._type === "isp";
-      const name = (r.testName || "").replace(/\[iSpring\]/ig, "").trim();
-      const score = parseFloat(r.score || 0).toFixed(1).replace(/\.0$/, '');
-      const scoreClass = score >= 8 ? 'var(--accent)' : (score >= 5 ? 'var(--primary)' : 'var(--danger)');
-      
-      return `
-        <div class="hist-item" onclick="openDetail(${allRecs.indexOf(r)})">
-          <div style="flex:1;">
-            <div style="font-weight:700; margin-bottom:5px;">${name}</div>
-            <div style="display:flex; gap:10px; align-items:center;">
-              <span style="font-size:0.8rem; opacity:0.7;"><i class="far fa-clock"></i> ${nbFmtTime(r.time)}</span>
-              ${isIsp ? '<span class="hist-badge badge-isp"><i class="fas fa-rocket"></i> iSpring</span>' : '<span class="hist-badge badge-sys"><i class="fas fa-database"></i> Hệ thống</span>'}
-            </div>
-          </div>
-          <div class="hist-score" style="color: ${scoreClass};">${score}</div>
-          <i class="fas fa-chevron-right" style="opacity:0.5;"></i>
-        </div>
-      `;
-    }).join('');
-  }
-
-  async function openDetail(idx) {
-    const rec = allRecs[idx];
-    document.getElementById("viewList").style.display = "none";
-    document.getElementById("viewDetail").style.display = "block";
-    window.scrollTo(0,0);
-
-    const name = (rec.testName || "").replace(/\[iSpring\]/ig, "").trim();
-    const score = parseFloat(rec.score || 0).toFixed(1);
-    const isIsp = rec._type === "isp";
-
-    let sumHtml = `<h3>${name}</h3><div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">`;
-    sumHtml += `<span class="badge" style="background:var(--primary);">${score} điểm</span>`;
-    sumHtml += `<span class="badge">${rec.total || '—'}</span>`;
-    sumHtml += `<span class="badge">${nbFmtTime(rec.time)}</span>`;
-    if (isIsp) sumHtml += `<span class="badge badge-isp">iSpring</span>`;
-    sumHtml += `</div>`;
-    document.getElementById("detSum").innerHTML = sumHtml;
-
-    const qEl = document.getElementById("detQs");
-    if (isIsp) {
-      qEl.innerHTML = `<div class="glass-card" style="text-align:center; padding:30px;"><i class="fas fa-rocket fa-3x" style="color:var(--ispring); margin-bottom:15px;"></i><p>Bài thi iSpring không lưu chi tiết câu hỏi.</p></div>`;
-    } else {
-      qEl.innerHTML = '<div style="text-align:center; padding:20px;">Đang tải chi tiết...</div>';
-      try {
-        const testsRes = await fetch(API + "?action=getTests");
-        const tests = await testsRes.json();
-        const found = tests.find(t => (t.name||"").trim().toLowerCase() === name.toLowerCase());
-        if (!found) { qEl.innerHTML = '<div class="nodata">Không tìm thấy đề thi</div>'; return; }
-        
-        const qRes = await fetch(API + "?action=getQuestions&testId=" + found.id);
-        const qlist = await qRes.json();
-        let ansSrc = {};
-        try { ansSrc = typeof rec.answers === "string" ? JSON.parse(rec.answers) : rec.answers; } catch(e) {}
-        
-        qEl.innerHTML = qlist.map((q, i) => {
-          const sa = ansSrc[q.question] || "";
-          const ca = String(q.correct||"").trim();
-          const isCorrect = nbCheckAns(q.type, sa, ca);
-          const status = !sa ? "u" : (isCorrect ? "c" : "w");
-          return `<div class="glass-card" style="margin-bottom:10px; padding:15px;">
-            <div style="display:flex; gap:10px; align-items:center;">
-              <span style="color:${status==='c'?'var(--accent)':(status==='w'?'var(--danger)':'var(--muted)')};"><i class="fas fa-${status==='c'?'check':(status==='w'?'times':'minus')}-circle"></i></span>
-              <span>${i+1}. ${q.question}</span>
-            </div>
-          </div>`;
-        }).join('');
-      } catch(e) { qEl.innerHTML = '<div class="nodata">Lỗi tải câu hỏi</div>'; }
-    }
-  }
-
-  function backToList() {
-    document.getElementById("viewDetail").style.display = "none";
-    document.getElementById("viewList").style.display = "block";
-  }
+function backToList() {
+  document.getElementById("viewDetail").style.display = "none";
+  document.getElementById("viewList").style.display   = "block";
+}
 </script>
 </body>
 </html>
