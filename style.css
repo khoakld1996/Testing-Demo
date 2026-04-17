@@ -3171,3 +3171,193 @@ a:focus-visible {
   transform: translateY(-2px) !important;
   box-shadow: 0 10px 28px rgba(16,185,129,.4) !important;
 }
+
+/* ════════════════════════════════════════════════════════
+   NEBULA POLISH PATCH v2026.3 — Targeted UI improvements
+   ════════════════════════════════════════════════════════ */
+
+/* ── INDEX: "Học sinh đăng nhập" & "Khu vực quản trị" → xanh dương ── */
+.idx-btn-student {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  color: #0b0f1a !important;
+  box-shadow: 0 10px 28px -5px rgba(79,172,254,.45) !important;
+}
+.idx-btn-student:hover {
+  transform: translateY(-3px) !important;
+  filter: brightness(1.1) !important;
+  box-shadow: 0 18px 36px -5px rgba(79,172,254,.6) !important;
+}
+/* Admin button nhẹ xanh dương */
+.idx-btn-admin {
+  background: rgba(79,172,254,.07) !important;
+  border: 1px solid rgba(79,172,254,.25) !important;
+  color: var(--primary) !important;
+}
+.idx-btn-admin:hover {
+  background: rgba(79,172,254,.14) !important;
+  border-color: rgba(79,172,254,.5) !important;
+}
+
+/* ── INDEX: Status badge → xanh dương ── */
+.idx-status-badge {
+  color: var(--primary) !important;
+  background: rgba(79,172,254,.1) !important;
+  border-color: rgba(79,172,254,.3) !important;
+  box-shadow: 0 0 12px rgba(79,172,254,.12) !important;
+}
+.idx-status-dot {
+  background: var(--primary) !important;
+  box-shadow: 0 0 6px var(--primary) !important;
+  animation: pulse 2s infinite;
+}
+
+/* ── LOGIN: popup box accent → xanh dương ── */
+.lgn-btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  color: #0b0f1a !important;
+  box-shadow: 0 8px 24px rgba(79,172,254,.35) !important;
+}
+.lgn-btn-primary:hover {
+  filter: brightness(1.1) !important;
+  transform: translateY(-2px) !important;
+}
+.lgn-btn-register {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  color: #0b0f1a !important;
+  box-shadow: 0 8px 24px rgba(79,172,254,.35) !important;
+}
+.lgn-btn-register:hover {
+  filter: brightness(1.1) !important;
+  transform: translateY(-2px) !important;
+}
+/* Header icon xanh dương */
+#headerIcon path { fill: var(--primary) !important; }
+.lgn-header { color: var(--primary) !important; }
+
+/* ── SELECT: tên user xanh dương ── */
+.sel-user-name {
+  color: var(--primary) !important;
+}
+/* "Xem lịch sử bài làm" → xanh dương */
+.sel-history-btn {
+  color: var(--primary) !important;
+}
+.sel-history-btn:hover {
+  color: var(--secondary) !important;
+}
+/* Nebula brand icon xanh dương */
+.sel-brand { color: var(--primary) !important; }
+.sel-brand svg { fill: var(--primary) !important; }
+
+/* ── HISTORY: câu đúng xanh dương, câu sai đỏ, bỏ qua xám ── */
+.hist-q-card i.fa-check-circle {
+  color: var(--primary) !important;
+}
+.hist-q-card i.fa-times-circle {
+  color: var(--danger) !important;
+}
+.hist-q-card i.fa-minus-circle {
+  color: rgba(255,255,255,.35) !important;
+}
+
+/* ── QUIZ: khoảng cách giữa các option ── */
+.qz-answers {
+  gap: 12px !important;
+}
+.qz-option {
+  padding: 15px 18px !important;
+}
+/* Nút "Nộp bài" → xanh dương thay xanh lá */
+.qz-submit-btn {
+  background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+  color: #0b0f1a !important;
+  box-shadow: 0 6px 22px rgba(79,172,254,.3) !important;
+}
+.qz-submit-btn:hover {
+  filter: brightness(1.1) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 12px 30px rgba(79,172,254,.45) !important;
+}
+
+
+/* ════════════════════════════════════════════════════════
+   NEBULA PATCH v2026.4 — UI Polish & Color Fixes
+   ════════════════════════════════════════════════════════ */
+
+/* ── INDEX: Status dot → xanh lá (online indicator) ── */
+.idx-status-dot {
+  background: #22c55e !important;
+  box-shadow: 0 0 0 3px rgba(34,197,94,.25), 0 0 8px rgba(34,197,94,.5) !important;
+  animation: pulse 1.8s ease-in-out infinite !important;
+}
+.idx-status-badge {
+  color: #22c55e !important;
+  background: rgba(34,197,94,.08) !important;
+  border-color: rgba(34,197,94,.28) !important;
+}
+
+/* ── SELECT: tên học sinh (sel-user-name) → xanh dương ── */
+.sel-user-name {
+  color: var(--primary) !important;
+  font-weight: 700 !important;
+}
+/* Welcome text tên → xanh dương */
+.sel-welcome b,
+.sel-welcome strong {
+  color: var(--primary) !important;
+}
+
+/* ── NAME PAGE: icon đầu trang → xanh dương ── */
+.nm-icon {
+  background: rgba(79,172,254,.14) !important;
+  border-color: rgba(79,172,254,.32) !important;
+  box-shadow: 0 0 32px rgba(79,172,254,.18) !important;
+}
+.nm-icon svg {
+  fill: var(--primary) !important;
+}
+
+/* ── HISTORY: màu câu đúng/sai/bỏ qua ── */
+/* SVG icon check (correct) */
+.hist-q-card .fa-check-circle,
+.hist-q-card [data-status="correct"] svg,
+.hist-q-card .q-status-ok svg,
+.hist-q-card .q-status-ok,
+[class*="hist-q"] .correct svg,
+[class*="hist-q"] .correct { color: var(--primary) !important; fill: var(--primary) !important; }
+
+/* SVG icon times (wrong) */
+.hist-q-card .fa-times-circle,
+.hist-q-card [data-status="wrong"] svg,
+.hist-q-card .q-status-err svg,
+.hist-q-card .q-status-err,
+[class*="hist-q"] .wrong svg,
+[class*="hist-q"] .wrong { color: var(--danger) !important; fill: var(--danger) !important; }
+
+/* SVG icon minus (skipped) */
+.hist-q-card .fa-minus-circle,
+.hist-q-card [data-status="skip"] svg,
+.hist-q-card .q-status-skip svg,
+.hist-q-card .q-status-skip,
+[class*="hist-q"] .skip svg,
+[class*="hist-q"] .skip { color: rgba(255,255,255,.32) !important; fill: rgba(255,255,255,.32) !important; }
+
+/* Dot/chip indicators trên review card */
+.res-q-item-dot.dot-ok   { background: var(--primary) !important; }
+.res-q-item-dot.dot-err  { background: var(--danger)  !important; }
+.res-q-item-dot.dot-skip { background: rgba(255,255,255,.25) !important; }
+
+/* Chip thống kê trong res-modal */
+.res-chip-ok   { background: rgba(79,172,254,.12) !important; color: var(--primary) !important; border: 1px solid rgba(79,172,254,.28) !important; }
+.res-chip-err  { background: rgba(239,68,68,.1)   !important; color: var(--danger)  !important; border: 1px solid rgba(239,68,68,.28)  !important; }
+.res-chip-skip { background: rgba(255,255,255,.05) !important; color: rgba(255,255,255,.4) !important; border: 1px solid rgba(255,255,255,.12) !important; }
+
+/* ── QUIZ: khoảng cách giữa các đáp án ── */
+.qz-answers {
+  gap: 14px !important;
+}
+.qz-option {
+  padding: 16px 20px !important;
+  border-radius: 16px !important;
+  transition: all .2s ease !important;
+}
