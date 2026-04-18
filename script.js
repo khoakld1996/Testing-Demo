@@ -125,45 +125,82 @@ window.nbPostSilent = nbPostSilent;
 /* ─── SWAL WRAPPERS ─── */
 function nbToast(icon, title, timer=2800){
   if(typeof Swal==='undefined') return;
-  const iconColors = {
-    success:'var(--success)', error:'var(--danger)',
-    warning:'var(--warning)', info:'var(--primary)',
+  const cfg = {
+    success: { bg:'rgba(6,78,59,.92)',  border:'rgba(16,185,129,.35)', color:'#6ee7b7', icon:'✓' },
+    error:   { bg:'rgba(69,10,10,.92)', border:'rgba(239,68,68,.35)',  color:'#fca5a5', icon:'✕' },
+    warning: { bg:'rgba(69,39,0,.92)',  border:'rgba(245,158,11,.35)', color:'#fcd34d', icon:'⚠' },
+    info:    { bg:'rgba(7,30,60,.92)',  border:'rgba(79,172,254,.35)', color:'#93c5fd', icon:'ℹ' },
   };
+  const c=cfg[icon]||cfg.info;
   Swal.fire({
-    icon, title, timer,
-    showConfirmButton:false, toast:true, position:'top-end',
-    background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
-    iconColor: iconColors[icon]||'var(--primary)',
-    customClass:{ popup:'swal2-toast' },
+    html:`<div style="display:flex;align-items:center;gap:10px;font-size:.88rem;font-weight:600">
+      <span style="font-size:1.1rem;line-height:1">${c.icon}</span>
+      <span>${title}</span></div>`,
+    timer, showConfirmButton:false, toast:true, position:'top-end',
+    background:c.bg, color:c.color,
+    customClass:{popup:'nb-toast-popup'},
+    showClass:{popup:'nb-toast-in'},
+    hideClass:{popup:'nb-toast-out'},
+    backdrop:false,
+    width:'auto',
   });
 }
 function nbAlert(icon, title, text=''){
   if(typeof Swal==='undefined') return Promise.resolve();
+  const iconMap={
+    success:'<div class="nb-swal-icon nb-icon-ok"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>',
+    error:  '<div class="nb-swal-icon nb-icon-err"><svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>',
+    warning:'<div class="nb-swal-icon nb-icon-warn"><svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div>',
+    info:   '<div class="nb-swal-icon nb-icon-info"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>',
+    question:'<div class="nb-swal-icon nb-icon-info"><svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg></div>',
+  };
   return Swal.fire({
-    icon, title, text,
-    background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
+    html:`${iconMap[icon]||iconMap.info}<h3 class="nb-swal-title">${title}</h3>${text?`<p class="nb-swal-text">${text}</p>`:''}`,
+    background:'rgba(8,14,30,0.97)',color:'#f1f5f9',
     confirmButtonText:'OK',
+    customClass:{popup:'nb-swal-popup',confirmButton:'nb-swal-btn'},
+    buttonsStyling:false,
+    showClass:{popup:'animate__animated animate__zoomIn'},
+    hideClass:{popup:'animate__animated animate__zoomOut'},
   });
 }
 function nbConfirm(opts={}){
   if(typeof Swal==='undefined')
     return Promise.resolve({ isConfirmed: confirm(opts.text||'?') });
+  const icon=opts.icon||'question';
+  const iconMap={
+    question:'<div class="nb-swal-icon nb-icon-info"><svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg></div>',
+    warning: '<div class="nb-swal-icon nb-icon-warn"><svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div>',
+    error:   '<div class="nb-swal-icon nb-icon-err"><svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>',
+    success: '<div class="nb-swal-icon nb-icon-ok"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>',
+  };
+  const {title='',text='',html='',confirmButtonText='Xác nhận',cancelButtonText='Hủy',confirmButtonColor,...rest}=opts;
   return Swal.fire(Object.assign({
-    showCancelButton:true, cancelButtonText:'Hủy',
-    background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
-  }, opts));
+    html:`${iconMap[icon]||iconMap.question}<h3 class="nb-swal-title">${title}</h3>${html||text?`<p class="nb-swal-text">${html||text}</p>`:''}`,
+    showCancelButton:true,
+    cancelButtonText,
+    confirmButtonText,
+    background:'rgba(8,14,30,0.97)',color:'#f1f5f9',
+    customClass:{
+      popup:'nb-swal-popup',
+      confirmButton:'nb-swal-btn nb-swal-btn-confirm'+(confirmButtonColor===undefined||confirmButtonColor?.includes('46')||confirmButtonColor?.includes('primary')?'':' nb-swal-btn-danger'),
+      cancelButton:'nb-swal-btn nb-swal-btn-cancel',
+    },
+    buttonsStyling:false,
+    showClass:{popup:'animate__animated animate__zoomIn'},
+    hideClass:{popup:'animate__animated animate__zoomOut'},
+  },rest));
 }
 function nbLoading(title='Đang xử lý...'){
   if(typeof Swal==='undefined') return;
   Swal.fire({
-    title,
-    html:`<div style="display:flex;align-items:center;justify-content:center;padding:10px 0">
-      <svg style="animation:spin .8s linear infinite;display:inline-block" width="32" height="32" viewBox="0 0 24 24" fill="var(--primary)">
-        <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
-      </svg>
-    </div>`,
-    background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
+    html:`<div class="nb-swal-loading">
+      <svg class="nb-spin" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+      <span>${title}</span></div>`,
+    background:'rgba(8,14,30,0.97)', color:'#f1f5f9',
     allowOutsideClick:false, showConfirmButton:false,
+    customClass:{popup:'nb-swal-popup'},
+    showClass:{popup:'animate__animated animate__zoomIn'},
   });
 }
 function nbClose(){ if(typeof Swal!=='undefined') Swal.close(); }
@@ -1054,42 +1091,80 @@ window.nbLgnHandle = async function(action){
           className:   (result.class||'').replace(/^'+/,''),
           studentClass:(result.class||'').replace(/^'+/,''),
         });
-        /* Clear iSpring + quiz state khi đăng nhập mới */
         ['currentIspringName','currentTestId','currentTestName','currentTestDuration',
          'currentTest','quizAnswers','quizQuestions','lastScore','correctCount','quizMode'].forEach(k=>nb.del(k));
         if(typeof Swal!=='undefined'){
+          const isAdmin=result.role==='admin';
           Swal.fire({
-            icon:'success', title:`Chào mừng, ${result.name}!`,
-            html:`<span style="color:var(--primary);font-weight:700">${result.role==='admin'?'Quản trị viên':'Học sinh'}</span> đã đăng nhập thành công.`,
-            timer:2000, showConfirmButton:false,
-            background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
+            html:`<div class="nb-login-success">
+              <div class="nb-login-avatar">${result.name.charAt(0).toUpperCase()}</div>
+              <div class="nb-login-welcome">Chào mừng trở lại!</div>
+              <div class="nb-login-name">${result.name}</div>
+              <div class="nb-login-role">${isAdmin?'👑 Quản trị viên':'🎓 Học sinh'}</div>
+            </div>`,
+            timer:2200, showConfirmButton:false,
+            background:'rgba(8,14,30,0.97)', color:'#f1f5f9',
+            customClass:{popup:'nb-swal-popup nb-login-popup'},
+            showClass:{popup:'animate__animated animate__zoomIn'},
           });
         }
         setTimeout(()=>{
           window.location.href = result.role==='admin' ? 'dashboard.html' : 'name.html';
-        },2000);
+        },2200);
       } else {
         if(typeof Swal!=='undefined'){
           Swal.fire({
-            icon:'success', title:'Gửi thành công!',
-            text:'Yêu cầu đã được gửi. Hãy chờ quản trị viên phê duyệt.',
-            background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
+            html:`<div class="nb-swal-icon nb-icon-ok"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg></div>
+              <h3 class="nb-swal-title">Gửi thành công!</h3>
+              <p class="nb-swal-text">Yêu cầu đã được gửi. Hãy chờ quản trị viên phê duyệt.</p>`,
+            background:'rgba(8,14,30,0.97)',color:'#f1f5f9',
+            confirmButtonText:'Đã hiểu',
+            customClass:{popup:'nb-swal-popup',confirmButton:'nb-swal-btn nb-swal-btn-confirm'},
+            buttonsStyling:false,
+            showClass:{popup:'animate__animated animate__zoomIn'},
           }).then(()=>{ if(typeof window.nbLgnToggleForm==='function') window.nbLgnToggleForm(false); });
         }
       }
     } else if(result.status==='pending'){
       if(typeof Swal!=='undefined')
-        Swal.fire({icon:'info',title:'Tài khoản chờ duyệt',text:'Tài khoản của bạn đang chờ quản trị viên phê duyệt. Vui lòng kiên nhẫn!',background:'rgba(10,15,30,0.97)',color:'#f1f5f9'});
+        Swal.fire({
+          html:`<div class="nb-swal-icon nb-icon-warn"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+            <h3 class="nb-swal-title">Tài khoản đang chờ duyệt</h3>
+            <p class="nb-swal-text">Quản trị viên sẽ phê duyệt tài khoản của bạn sớm nhất có thể.</p>`,
+          background:'rgba(8,14,30,0.97)',color:'#f1f5f9',
+          confirmButtonText:'Đã hiểu',
+          customClass:{popup:'nb-swal-popup',confirmButton:'nb-swal-btn nb-swal-btn-confirm'},
+          buttonsStyling:false,
+          showClass:{popup:'animate__animated animate__zoomIn'},
+        });
     } else {
       if(typeof Swal!=='undefined')
-        Swal.fire({icon:'error',title:'Thất bại',text:result.message||'Sai tên đăng nhập hoặc mật khẩu!',background:'rgba(10,15,30,0.97)',color:'#f1f5f9'});
+        Swal.fire({
+          html:`<div class="nb-swal-icon nb-icon-err"><svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg></div>
+            <h3 class="nb-swal-title">Đăng nhập thất bại</h3>
+            <p class="nb-swal-text">${result.message||'Sai tên đăng nhập hoặc mật khẩu!'}</p>`,
+          background:'rgba(8,14,30,0.97)',color:'#f1f5f9',
+          confirmButtonText:'Thử lại',
+          customClass:{popup:'nb-swal-popup',confirmButton:'nb-swal-btn nb-swal-btn-danger'},
+          buttonsStyling:false,
+          showClass:{popup:'animate__animated animate__zoomIn'},
+        });
       const box=document.getElementById('mainBox');
       if(box){ box.classList.add('shake'); setTimeout(()=>box.classList.remove('shake'),400); }
     }
   }catch(error){
     console.error('Login error:', error);
     if(typeof Swal!=='undefined')
-      Swal.fire({icon:'error',title:'Lỗi kết nối',text:'Không thể liên lạc với máy chủ. Vui lòng kiểm tra lại đường dẫn Apps Script và thử lại!',background:'rgba(10,15,30,0.97)',color:'#f1f5f9'});
+      Swal.fire({
+        html:`<div class="nb-swal-icon nb-icon-err"><svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div>
+          <h3 class="nb-swal-title">Lỗi kết nối</h3>
+          <p class="nb-swal-text">Không thể liên lạc với máy chủ. Kiểm tra kết nối mạng và thử lại.</p>`,
+        background:'rgba(8,14,30,0.97)',color:'#f1f5f9',
+        confirmButtonText:'Thử lại',
+        customClass:{popup:'nb-swal-popup',confirmButton:'nb-swal-btn nb-swal-btn-confirm'},
+        buttonsStyling:false,
+        showClass:{popup:'animate__animated animate__zoomIn'},
+      });
   }finally{
     currentBtn.disabled=false;
     currentBtn.innerHTML=originalHtml;
@@ -2076,8 +2151,16 @@ window.nbPlayerInit = function(){
     };
   }
 
-  window.API         = mkScorm12();
-  window.API_1484_11 = mkScorm2004();
+  /* SCORM: expose on window AND try window.parent so nested iSpring iframes find it.
+     NOTE: We keep NB_API const available; window.API here is the SCORM object
+     for this player page only — does NOT affect other pages. */
+  const _scorm12  = mkScorm12();
+  const _scorm2004= mkScorm2004();
+  window.API         = _scorm12;
+  window.API_1484_11 = _scorm2004;
+  try{ if(window.parent&&window.parent!==window){ window.parent.API=_scorm12; window.parent.API_1484_11=_scorm2004; } }catch(e){}
+  /* Preserve GAS URL for saveResult */
+  const _GAS_URL = NB_API;
 
   window.close=function(){
     if(state==='doing'||state==='idle'){ onDone(); }
@@ -2113,46 +2196,153 @@ window.nbPlayerInit = function(){
     }catch(e){}
   },false);
 
+  /* ── SCORE SCRAPER: reads actual score text from iSpring DOM ── */
+  function scrapeScoreFromDom(){
+    const fr=$('pl-frame'); if(!fr) return 0;
+    try{
+      const iDoc=fr.contentDocument||fr.contentWindow&&fr.contentWindow.document;
+      if(!iDoc||!iDoc.body) return 0;
+      const body=iDoc.body;
+
+      /* iSpring-specific selectors (v9 / v10 / v11) */
+      const ispringSelectors=[
+        /* iSpring 10 HTML5 */
+        '.qp-result-score-value','.qp-score-item-value','.qp-overall-score',
+        '.result-score-value','.score-percent',
+        /* iSpring 9 */
+        '.slide-score','.quiz-result-score','.js-score',
+        /* Generic score display */
+        '[class*="score"][class*="value"]','[class*="score"][class*="percent"]',
+        '[class*="result"][class*="score"]',
+        /* Data attributes */
+        '[data-score]',
+      ];
+
+      for(const sel of ispringSelectors){
+        const el=iDoc.querySelector(sel);
+        if(!el) continue;
+        const txt=(el.getAttribute('data-score')||el.textContent||'').trim();
+        const n=_parseScoreText(txt);
+        if(n>0&&n<=100) return n;
+      }
+
+      /* Fallback: scan ALL text nodes in result/score divs for score patterns */
+      const allText=body.innerText||body.textContent||'';
+      return _parseScoreText(allText);
+    }catch(e){ return 0; }
+  }
+
+  function _parseScoreText(text){
+    if(!text) return 0;
+    /* "80%" or "80 %" */
+    const pctM=text.match(/\b(\d{1,3})\s*%/);
+    if(pctM){ const n=parseInt(pctM[1]); if(n>=0&&n<=100) return n; }
+    /* "80/100" or "80 / 100" */
+    const fracM=text.match(/\b(\d{1,3})\s*\/\s*100\b/);
+    if(fracM){ const n=parseInt(fracM[1]); if(n>=0&&n<=100) return n; }
+    /* "Score: 80" or "Points: 80" */
+    const lblM=text.match(/(?:score|điểm|points?)[:\s]+(\d{1,3})/i);
+    if(lblM){ const n=parseInt(lblM[1]); if(n>=0&&n<=100) return n; }
+    return 0;
+  }
+
+  /* ── DOM OBSERVER: watch for iSpring completion + auto-scrape score ── */
   let _mutObs=null;
   function watchIframeDom(){
     const fr=$('pl-frame'); if(!fr) return;
     clearMutObs();
+    let _attached=false, _scrapeInterval=null;
+
+    function _startScrapeLoop(){
+      if(_scrapeInterval) return;
+      _scrapeInterval=setInterval(()=>{
+        if(state!=='doing'){ clearInterval(_scrapeInterval); return; }
+        const s=scrapeScoreFromDom();
+        if(s>0){ score=s; }
+        /* Check if iSpring result screen is visible */
+        try{
+          const fr2=$('pl-frame');
+          const iDoc=fr2&&(fr2.contentDocument||fr2.contentWindow&&fr2.contentWindow.document);
+          if(!iDoc) return;
+          const body=iDoc.body;
+          const resultSelectors=[
+            '.qp-result-slide','.result-slide','.quiz-results',
+            '.slide-result','.quiz-result','[class*="result-slide"]',
+            '[class*="quiz-complete"]','[class*="finish"]',
+          ];
+          for(const sel of resultSelectors){
+            if(iDoc.querySelector(sel)){
+              clearInterval(_scrapeInterval);
+              const finalScore=scrapeScoreFromDom();
+              if(finalScore>0) score=finalScore;
+              /* small delay to let iSpring fully render score */
+              setTimeout(()=>onDone(),600);
+              return;
+            }
+          }
+          /* Also check page title */
+          const title=(iDoc.title||iDoc.documentElement?.getAttribute('data-title')||'').toLowerCase();
+          if(/result|summary|finish|complet|pass|fail|score|kết\s*quả/i.test(title)){
+            clearInterval(_scrapeInterval);
+            setTimeout(()=>{ const fs=scrapeScoreFromDom(); if(fs>0) score=fs; onDone(); },600);
+          }
+        }catch(e){}
+      },1500);
+    }
+
     function tryAttach(){
       try{
         const iDoc=fr.contentDocument||fr.contentWindow&&fr.contentWindow.document;
         if(!iDoc||!iDoc.body) return false;
+
+        /* Override close() on the iframe window */
         try{
-          fr.contentWindow.close=function(){ onDone(); };
-          if(fr.contentWindow.top&&fr.contentWindow.top!==window){
+          fr.contentWindow.close=function(){ const s=scrapeScoreFromDom(); if(s>0) score=s; onDone(); };
+          if(fr.contentWindow.top&&fr.contentWindow.top!==window)
             fr.contentWindow.top.close=function(){ onDone(); };
-          }
         }catch(e){}
+
+        /* Intercept button clicks — "Close", "Thoát", "Finish" etc. */
         iDoc.addEventListener('click',function(e){
           if(state!=='doing') return;
-          const t=e.target&&e.target.closest('button,a,[role="button"]');
+          const t=e.target&&e.target.closest('button,a,[role="button"],[class*="btn"],[class*="close"],[class*="exit"]');
           if(!t) return;
-          const txt=(t.textContent||t.title||t.getAttribute('aria-label')||'').toLowerCase();
-          if(/^(close|exit|quit|đóng|thoát|finish|done|завершить|закрыть)$/i.test(txt.trim())||
-             /close|exit|finish/i.test(t.className)||
+          const txt=(t.textContent||t.title||t.getAttribute('aria-label')||'').toLowerCase().trim();
+          const cls=(t.className||'').toLowerCase();
+          if(/^(close|exit|quit|đóng|thoát|finish|done|завершить|закрыть|hoàn\s*thành|kết\s*thúc)$/i.test(txt)||
+             /close|exit|finish|done|quit/i.test(cls)||
              /close|exit|finish/i.test(t.id)){
-            e.preventDefault&&e.preventDefault();
-            setTimeout(()=>onDone(),50);
+            e.stopPropagation&&e.stopPropagation();
+            setTimeout(()=>{ const s=scrapeScoreFromDom(); if(s>0) score=s; onDone(); },100);
           }
         },true);
+
+        /* MutationObserver for DOM changes */
         _mutObs=new MutationObserver(function(){
           try{
             const title=(iDoc.title||'').toLowerCase();
-            if(/result|summary|finish|complete|pass|fail|score/i.test(title)) onDone();
+            if(/result|summary|finish|complet|pass|fail|score|kết\s*quả/i.test(title)){
+              const s=scrapeScoreFromDom(); if(s>0) score=s;
+              onDone();
+            }
           }catch(e){}
         });
-        _mutObs.observe(iDoc,{subtree:true,childList:true,attributes:false});
+        _mutObs.observe(iDoc.documentElement||iDoc,{subtree:false,childList:true,attributes:true,attributeFilter:['class','id']});
+        if(iDoc.body) _mutObs.observe(iDoc.body,{subtree:true,childList:true});
+
+        _attached=true;
+        _startScrapeLoop();
         return true;
       }catch(e){ return false; }
     }
+
     if(!tryAttach()){
-      const t=setInterval(()=>{ if(tryAttach()) clearInterval(t); },500);
-      setTimeout(()=>clearInterval(t),10000);
+      const retryT=setInterval(()=>{ if(tryAttach()) clearInterval(retryT); },600);
+      setTimeout(()=>clearInterval(retryT),12000);
     }
+
+    /* Cleanup on window unload */
+    window.addEventListener('pagehide',()=>{ clearInterval(_scrapeInterval); clearMutObs(); },{once:true});
   }
   function clearMutObs(){ if(_mutObs){ _mutObs.disconnect(); _mutObs=null; } }
 
@@ -2194,6 +2384,12 @@ window.nbPlayerInit = function(){
     fr.addEventListener('load',function onLoad(){
       const ld=$('pl-loading'); if(ld) ld.style.display='none';
       state='doing'; setExit('ready'); pg(30);
+      const sb=$('pl-submit-btn'); if(sb) sb.style.display='flex';
+      /* Inject SCORM API vào iframe window (quan trọng cho localhost same-origin) */
+      try{
+        const fw=fr.contentWindow;
+        if(fw){ fw.API=_scorm12; fw.API_1484_11=_scorm2004; }
+      }catch(e){}
       startAutoCheck(); watchUrl(); watchIframeDom();
     });
     fr.addEventListener('error',function(){
@@ -2207,9 +2403,87 @@ window.nbPlayerInit = function(){
     clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs();
     setExit('done'); pg(100);
     if(score>0&&score<=1) score=Math.round(score*100);
-    showResult(score,status||'completed');
-    saveResult(score,status||'completed');
+    /* Try one final DOM scrape in case SCORM missed the score */
+    const domScore=scrapeScoreFromDom();
+    if(domScore>0&&score===0) score=domScore;
+    showScoreConfirm(score);
   }
+
+  /* ── SCORE CONFIRM DIALOG ──
+     Chỉ hiển thị điểm capture tự động — KHÔNG cho nhập tay để tránh gian lận.
+     Sau khi xác nhận: lưu localStorage + POST GAS → chuyển result.html.           */
+  function showScoreConfirm(capturedScore){
+    const st=status||'completed';
+    const finalScore=Math.min(100,Math.max(0,Math.round(capturedScore||0)));
+    const autoOk=capturedScore>0;
+
+    /* Nếu SweetAlert2 chưa load → tự lưu và chuyển trang luôn, không cho nhập tay */
+    if(typeof Swal==='undefined'){
+      showResult(finalScore,st);
+      saveResult(finalScore,st).then(()=>setTimeout(()=>location.href='result.html',1800));
+      return;
+    }
+
+    const scoreColor=finalScore>=80?'#10b981':finalScore>=50?'#3b82f6':'#ef4444';
+    const statusLine=autoOk
+      ?`<div style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:#10b981;margin-top:8px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+          Điểm nhận tự động từ iSpring SCORM
+        </div>`
+      :`<div style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:#f59e0b;margin-top:8px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+          SCORM không trả điểm — ghi nhận 0 điểm
+        </div>`;
+
+    Swal.fire({
+      html:`<div style="text-align:center;padding:6px 0">
+        <div style="font-size:2.2rem;margin-bottom:4px">${finalScore>=80?'🏆':finalScore>=50?'🚀':'🎯'}</div>
+        <h3 style="font-size:.95rem;font-weight:700;color:#f1f5f9;margin:0 0 3px">Kết quả bài thi iSpring</h3>
+        <p style="font-size:.75rem;color:rgba(241,245,249,.45);margin:0 0 14px">${iName||'Bài thi'}</p>
+        <div style="font-size:2.8rem;font-weight:900;color:${scoreColor};line-height:1">
+          ${finalScore}<span style="font-size:1rem;opacity:.55;font-weight:600">&nbsp;/100</span>
+        </div>
+        ${statusLine}
+        <p style="font-size:.68rem;color:rgba(241,245,249,.3);margin-top:14px;
+           border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
+          Điểm được xác định bởi hệ thống, không thể thay đổi
+        </p>
+      </div>`,
+      background:'rgba(8,14,30,0.97)', color:'#f1f5f9',
+      confirmButtonText:'✓ Lưu & Xem kết quả',
+      showCancelButton:true, cancelButtonText:'↺ Làm lại',
+      customClass:{popup:'nb-swal-popup nb-score-popup',
+        confirmButton:'nb-swal-btn nb-swal-btn-confirm',
+        cancelButton:'nb-swal-btn nb-swal-btn-cancel'},
+      buttonsStyling:false,
+      allowOutsideClick:false,
+      showClass:{popup:'animate__animated animate__zoomIn'},
+    }).then(res=>{
+      if(res.isConfirmed){
+        /* Lưu kết quả → chuyển sang result.html sau 1.8s */
+        showResult(finalScore,st);
+        saveResult(finalScore,st).then(()=>setTimeout(()=>location.href='result.html',1800));
+      } else {
+        /* Học sinh chọn "Làm lại" — reset và load lại iSpring từ đầu */
+        _doRetry();
+      }
+    });
+  }
+
+  /* Manual trigger — called from header button */
+  window._plManualScore=function(){
+    if(state==='doing'||state==='idle'){
+      state='done'; doneF=true;
+      clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs();
+      setExit('done'); pg(100);
+      const s=scrapeScoreFromDom();
+      if(s>0) score=s;
+      showScoreConfirm(score);
+    } else if(state==='done'){
+      /* Already on result — just go to result.html */
+      location.href='result.html';
+    }
+  };
 
   function showResult(sc,st){
     const panel=$('pl-result');
@@ -2243,16 +2517,27 @@ window.nbPlayerInit = function(){
     const tn='[iSpring] '+(iName||path.split('/').slice(-2,-1)[0]||'Bài tập');
     function syncUI(cls,html){ if(syncEl){ syncEl.className=cls; syncEl.innerHTML=html; } }
     syncUI('saving','<svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Đang lưu kết quả...');
+    /* ── Lưu vào localStorage để result.html đọc được ── */
+    localStorage.setItem('lastScore',      sc);
+    localStorage.setItem('quizMode',       'ispring');
+    localStorage.setItem('quizTotalScore', '100');
+    localStorage.setItem('currentTestName', tn.replace(/^\[iSpring\]\s*/,''));
+    localStorage.setItem('ispringStatus',   st||'completed');
+    localStorage.setItem('correctCount',    sc+'/100');
+    localStorage.setItem('studentName',     sName);
+    localStorage.setItem('schoolName',      sSchool);
+    localStorage.setItem('className',       sCls);
     try{
-      /* Dùng no-cors POST cho write-only operations */
-      await nbPostSilent({
-        action:'submitResult', student:sName, school:sSchool,
-        testName:tn, score:sc, total:sc+'/100',
-        answers:JSON.stringify({status:st,source:'iSpring SCORM',score:sc,
-          student:sName,school:sSchool,class:sCls,timestamp:new Date().toISOString()})
+      await fetch(_GAS_URL,{ method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({
+          action:'submitResult', student:sName, school:sSchool,
+          testName:tn, score:sc, total:sc+'/100',
+          answers:JSON.stringify({status:st,source:'iSpring SCORM',score:sc,
+            student:sName,school:sSchool,class:sCls,timestamp:new Date().toISOString()})
+        })
       });
       syncUI('ok','<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!');
-      /* Load distribution chart after save — dùng GET để đọc lịch sử */
       _loadDistribution(sc, tn);
     }catch(e){
       saveF=false;
@@ -2309,6 +2594,7 @@ window.nbPlayerInit = function(){
   }
 
   window._plRetrySave=()=>{ saveF=false; saveResult(score,status||'completed'); };
+  window._plGoResult =()=>{ location.href='result.html'; };
   window._plExit=function(){
     if(state==='done'){ location.href='select.html'; return; }
     if(state==='doing'){ const d=$('pl-dlg'); if(d) d.classList.add('open'); }
@@ -2318,26 +2604,97 @@ window.nbPlayerInit = function(){
   window._plGoSel    =()=>{ location.href='select.html'; };
   window._plGoHist   =()=>{ location.href='history.html'; };
 
-  window._plRetry=function(){
+  /* ── Nộp kết quả thủ công (header button) ── */
+  window._plManualScore=function(){
+    if(state==='doing'||state==='idle'){
+      state='done'; doneF=true;
+      clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs();
+      setExit('done'); pg(100);
+      const domScore=scrapeScoreFromDom();
+      if(domScore>0) score=domScore;
+      if(score>0&&score<=1) score=Math.round(score*100);
+      showScoreConfirm(score);
+    } else if(state==='done'){
+      location.href='result.html';
+    }
+  };
+
+  /* ── _doRetry: reset hoàn toàn iSpring (internal, gọi từ nhiều nơi) ──
+     iSpring là mã nguồn đóng — lưu state vào sessionStorage/localStorage.
+     Chỉ đổi iframe.src KHÔNG đủ. Phải:
+       1. Xóa storage của iSpring (giữ lại data Nebula)
+       2. Destroy iframe cũ → tạo iframe mới (= JS context mới)
+       3. Thêm ?_t=timestamp để bust browser cache
+       4. Re-inject SCORM API vào window mới                              */
+  function _doRetry(){
+    /* Reset player state */
     state='idle'; doneF=false; saveF=false; score=0; status='';
-    clearMutObs();
+    clearMutObs(); clearInterval(_urlTimer); clearInterval(_pgTimer);
+
+    /* Ẩn result panel, hiện loading */
     const rp=$('pl-result'); if(rp) rp.classList.remove('open');
     const ld=$('pl-loading'); if(ld) ld.style.display='';
     setExit('locked'); pg(0);
-    window.API         =mkScorm12();
-    window.API_1484_11 =mkScorm2004();
-    const fr=$('pl-frame');
-    fr.src='';
-    setTimeout(()=>{
-      fr.src=path;
+
+    /* Xóa storage của iSpring — chỉ xóa key KHÔNG phải của Nebula.
+       Nebula keys: studentName, username, schoolName, className, userRole,
+                   lastScore, quizMode, quizTotalScore, currentTestName,
+                   ispringStatus, correctCount, quizAnswers, quizQuestions,
+                   currentTestId, nb_session_start                          */
+    const NEBULA_KEYS=/^(studentName|username|schoolName|className|userRole|lastScore|quizMode|quizTotalScore|currentTestName|ispringStatus|correctCount|quizAnswers|quizQuestions|currentTestId|nb_session_start)$/;
+    [window.localStorage, window.sessionStorage].forEach(function(store){
+      try{
+        const keys=[];
+        for(let i=0;i<store.length;i++) keys.push(store.key(i));
+        keys.forEach(function(k){
+          if(k && !NEBULA_KEYS.test(k)) store.removeItem(k);
+        });
+      }catch(e){}
+    });
+
+    /* Tạo SCORM instance mới (reset state bên trong) */
+    const s12=mkScorm12(), s04=mkScorm2004();
+    window.API=s12; window.API_1484_11=s04;
+    try{
+      if(window.parent&&window.parent!==window){
+        window.parent.API=s12; window.parent.API_1484_11=s04;
+      }
+    }catch(e){}
+
+    /* Destroy iframe cũ → tạo mới (JS context hoàn toàn mới) */
+    const wrap=$('pl-wrap');
+    const oldFr=$('pl-frame');
+    if(oldFr) oldFr.remove();
+
+    const fr=document.createElement('iframe');
+    fr.id='pl-frame';
+    fr.setAttribute('allow','fullscreen');
+    fr.setAttribute('allowfullscreen','');
+    if(wrap) wrap.appendChild(fr);
+
+    /* Cache-bust URL để iSpring không load từ browser cache */
+    const sep=path.includes('?')?'&':'?';
+    const freshUrl=path.replace(/[?&]_t=\d+/,'')+sep+'_t='+Date.now();
+
+    setTimeout(function(){
+      fr.src=freshUrl;
       fr.addEventListener('load',function once(){
         fr.removeEventListener('load',once);
-        const ld=$('pl-loading'); if(ld) ld.style.display='none';
+        const ld2=$('pl-loading'); if(ld2) ld2.style.display='none';
+        /* Re-inject SCORM vào window mới của iframe */
+        try{
+          const fw=fr.contentWindow;
+          if(fw){ fw.API=s12; fw.API_1484_11=s04; }
+        }catch(e){}
         state='doing'; setExit('ready'); pg(30);
+        const sb=$('pl-submit-btn'); if(sb) sb.style.display='flex';
         startAutoCheck(); watchUrl(); watchIframeDom();
       });
-    },200);
-  };
+    },300);
+  }
+
+  /* Public alias — gọi từ nút "LÀM LẠI BÀI NÀY" trong result panel */
+  window._plRetry=_doRetry;
 
   history.pushState(null,'',location.href);
   window.addEventListener('popstate',function(){
