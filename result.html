@@ -115,23 +115,27 @@
 </div>
 
 <script>
-  /* Đóng modal khi click nền */
   document.getElementById('resModal').addEventListener('click', function(e){
     if(e.target === this) nbCloseReview();
   });
 
   document.addEventListener('DOMContentLoaded', function(){
     if(typeof nbResultInit === 'function') nbResultInit();
-    
-    // --- BỔ SUNG: Hiển thị trạng thái Train/Test ---
-    const quizMode = localStorage.getItem('quizMode') || 'train';
-    if (quizMode === 'train') {
-      const syncEl = document.getElementById('resSyncStatus');
-      const syncText = document.getElementById('syncText');
-      if (syncEl) {
-        syncEl.style.color = 'var(--warning)';
-        syncEl.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> <span>Chế độ luyện tập (Không lưu)</span>`;
-      }
+
+    /* Show mode status + score context */
+    const quizMode   = localStorage.getItem('quizMode') || 'train';
+    const totalScore = parseFloat(localStorage.getItem('quizTotalScore') || 10) || 10;
+    const rawScore   = parseFloat(localStorage.getItem('lastScore') || 0);
+    const syncEl     = document.getElementById('resSyncStatus');
+
+    /* Add totalScore context to score ring label */
+    const lblEl = document.querySelector('.res-score-lbl');
+    if(lblEl) lblEl.textContent = `/ ${totalScore.toFixed(0)} ĐIỂM`;
+
+    if(quizMode === 'train') {
+      if(syncEl) syncEl.innerHTML = `<svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg> <span style="color:var(--warning)">Chế độ Luyện tập — Không lưu kết quả</span>`;
+    } else {
+      if(syncEl) syncEl.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> <span id="syncText">Đã lưu kết quả</span>`;
     }
   });
 </script>

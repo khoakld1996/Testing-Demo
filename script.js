@@ -469,7 +469,9 @@ window.nbDashboardInit = function(){
     const s=[0,0,0];
     (results||[]).forEach(r=>{
       const v=parseFloat(r.score||0);
-      if(v>=8)s[0]++; else if(v>=5)s[1]++; else s[2]++;
+      const isIsp=(r.testName||'').toLowerCase().includes('ispring');
+      if(isIsp){ if(v>=80)s[0]++; else if(v>=50)s[1]++; else s[2]++; }
+      else     { if(v>=8) s[0]++; else if(v>=5) s[1]++; else s[2]++; }
     });
     if(window._nbChart) window._nbChart.destroy();
     window._nbChart=new Chart(canvas,{
@@ -494,7 +496,7 @@ window.nbDashboardInit = function(){
   };
 
   /* Smart Auto-Refresh */
-  const REFRESH_INTERVAL = 30;
+  const REFRESH_INTERVAL = 20;
   let _countdownVal=REFRESH_INTERVAL, _countdownTimer=null, _refreshPaused=false, _failStreak=0;
 
   function _updateCountdownUI(){
@@ -532,12 +534,10 @@ window.nbDashboardInit = function(){
         const el=document.getElementById('cResults'); if(el) el.innerText=rLen;
         if(added>0) nbToast('info',`+${added} kết quả mới!`);
         if(window.nbRenderDashChart) window.nbRenderDashChart(rData);
-        const syncBadge=document.getElementById('lastSyncBadge');
-        if(syncBadge){
-          const now=new Date();
-          syncBadge.textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-        }
       }
+      const now=new Date();
+      const syncBadge=document.getElementById('lastSyncBadge');
+      if(syncBadge) syncBadge.textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
       const pLen=(pData||[]).length;
       const oldPLen=(window._nbPending||[]).length;
       if(pLen!==oldPLen){
@@ -556,10 +556,11 @@ window.nbDashboardInit = function(){
   }
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden){ _refreshPaused=true; }
-    else{ _refreshPaused=false; if(_countdownVal<REFRESH_INTERVAL-15) _silentRefresh(); }
+    else{ _refreshPaused=false; _countdownVal=3; /* refresh quickly when tab becomes visible */ }
   });
   _startCountdown();
   window._nbResetCountdown=_startCountdown;
+  window._nbSilentRefresh=_silentRefresh;
 };
 
 /* ══════════════════════════════════════════════
@@ -1357,8 +1358,10 @@ window.nbResultInit = function(){
 
   const titleEl =document.getElementById('resTitle');
   const trophyEl=document.getElementById('resTrophy');
-  if(score>=8)      {if(titleEl)titleEl.textContent='XUẤT SẮC!';    if(trophyEl)trophyEl.textContent='👑';}
-  else if(score>=5) {if(titleEl)titleEl.textContent='TỐT LẮM!';     if(trophyEl)trophyEl.textContent='🚀';}
+  const totalScoreBase=parseFloat(nb.get('quizTotalScore')||10)||10;
+  const pct=totalScoreBase>0?(score/totalScoreBase):0;
+  if(pct>=0.8)      {if(titleEl)titleEl.textContent='XUẤT SẮC!';    if(trophyEl)trophyEl.textContent='👑';}
+  else if(pct>=0.5) {if(titleEl)titleEl.textContent='TỐT LẮM!';     if(trophyEl)trophyEl.textContent='🚀';}
   else              {if(titleEl)titleEl.textContent='CỐ GẮNG LÊN!'; if(trophyEl)trophyEl.textContent='🎯';}
 
   _animateScore(score);
@@ -1511,7 +1514,444 @@ window.nbResultInit = function(){
 document.addEventListener('DOMContentLoaded', function(){
   const path=window.location.pathname;
   if(path.includes('result.html')) nbResultInit();
+  if(path.includes('quiz.html'))   nbQuizInit();
 });
+
+/* ══════════════════════════════════════════════
+   PAGE: quiz.html — Quiz engine (Train + Test)
+   ══════════════════════════════════════════════ */
+window.nbQuizInit = function(){
+  /* ── State ── */
+  let questions=[], currentIdx=0, timeLeft=0, timerInterval=null;
+  let isSubmitting=false, quizMode='train';
+  let userAnswers={}, trainFeedback={};
+
+  const API=window.API;
+
+  /* ── INIT ── */
+  (async function init(){
+    localStorage.removeItem('quizAnswers');
+    localStorage.removeItem('quizQuestions');
+    localStorage.removeItem('quiz_submitted');
+    const testId=localStorage.getItem('currentTestId');
+    if(!testId){ location.href='select.html'; return; }
+    quizMode=localStorage.getItem('quizMode')||'train';
+    const studentName=nb.get('studentName')||'Thí sinh';
+    const schoolName =(nb.get('schoolName')||'').replace(/^'+/,'');
+    const infoEl=document.getElementById('studentInfo');
+    if(infoEl) infoEl.textContent=schoolName?`${studentName} · ${schoolName}`:studentName;
+    const badge=document.getElementById('qzModeBadge');
+    if(badge){
+      if(quizMode==='train'){
+        badge.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg> LUYỆN TẬP`;
+        badge.className='qz-mode-badge badge-train';
+        document.body.classList.add('mode-train');
+      } else {
+        badge.innerHTML=`<svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> KIỂM TRA`;
+        badge.className='qz-mode-badge badge-test';
+        document.body.classList.add('mode-test');
+      }
+    }
+    document.body.setAttribute('data-mode', quizMode); /* CSS train/test tint */
+    await loadQuestions(testId);
+  })();
+
+  /* ── LOAD QUESTIONS ── */
+  async function loadQuestions(testId){
+    const card=document.getElementById('qzCard');
+    try{
+      const res=await fetch(`${API}?action=getQuestions&testId=${encodeURIComponent(testId)}`);
+      const data=await res.json();
+      if(!Array.isArray(data)||!data.length){
+        if(card) card.innerHTML=`<div class="qz-empty">
+          <svg viewBox="0 0 24 24"><path d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+          <p>Đề thi chưa có câu hỏi</p>
+          <button onclick="location.href='select.html'" class="qz-btn-back">Quay lại</button></div>`;
+        const timerEl=document.getElementById('timer');
+        if(timerEl) timerEl.textContent=quizMode==='train'?'∞':'0:00';
+        return;
+      }
+      let rawQ=data.map(q=>{
+        let details={items:[]};
+        try{ details=typeof q.answer==='string'?JSON.parse(q.answer):(q.answer||{items:[]}); }catch(e){}
+        const correct=(q.correct||q.correctAnswer||q.correctanswer||'').toString().trim();
+        return{...q,details,correct,points:parseFloat(q.points)||0};
+      });
+      if(quizMode==='test') rawQ=_shuffle(rawQ);
+      questions=rawQ.map(q=>{ if(q.details?.items) q.details.items=_shuffle(q.details.items); return q; });
+      const durStorage=parseInt(localStorage.getItem('currentTestDuration')||'0');
+      const durData   =parseInt(data[0]?.testTime||'0');
+      const minutes   =durStorage>0?durStorage:(durData>0?durData:20);
+      timeLeft=minutes*60;
+      const titleEl=document.getElementById('qzTitle');
+      if(titleEl) titleEl.textContent=localStorage.getItem('currentTestName')||'Bài thi Nebula';
+      /* Store totalScore for result page normalization */
+      const totalScore=parseFloat(data[0]?.totalScore||10);
+      localStorage.setItem('quizTotalScore',totalScore);
+      renderGrid();
+      showQuestion(0);
+      if(quizMode==='test') startTimer();
+      else{ const t=document.getElementById('timer'); if(t) t.textContent='∞'; }
+    }catch(e){
+      if(typeof Swal!=='undefined')
+        Swal.fire({title:'Lỗi kết nối',text:'Không tải được câu hỏi.',icon:'error',confirmButtonText:'Quay lại',
+          background:'rgba(10,15,30,0.97)',color:'#f1f5f9'}).then(()=>location.href='select.html');
+    }
+  }
+
+  /* ── SHOW QUESTION ── */
+  function showQuestion(idx){
+    if(idx<0||idx>=questions.length) return;
+    currentIdx=idx;
+    window.__qzCurrentIdx=idx; /* expose for nav buttons */
+    const q=questions[idx];
+    const type=(q.type||'single').toLowerCase();
+    const counter=document.getElementById('qzCounter');
+    if(counter) counter.textContent=`Câu ${idx+1} / ${questions.length}`;
+    const qText=document.getElementById('qzQuestion');
+    if(qText) qText.textContent=q.question;
+    const imgWrap=document.getElementById('qzImageWrap');
+    const imgEl=document.getElementById('qzImage');
+    if(imgWrap&&imgEl){
+      if(q.image&&q.image.length>10){ imgEl.src=q.image; imgWrap.style.display='block'; }
+      else imgWrap.style.display='none';
+    }
+    const prog=document.getElementById('qzProgress');
+    if(prog) prog.style.width=`${(idx+1)/questions.length*100}%`;
+    const fbEl=document.getElementById('qzFeedback');
+    if(fbEl){ fbEl.style.display='none'; fbEl.innerHTML=''; fbEl.className='qz-feedback'; }
+    renderAnswers(q,idx,type);
+    const prevBtn=document.getElementById('qzPrev');
+    if(prevBtn) prevBtn.style.visibility=idx===0?'hidden':'visible';
+    const nextBtn=document.getElementById('qzNext');
+    const isLast=idx===questions.length-1;
+    if(nextBtn){
+      nextBtn.innerHTML=isLast
+        ?`Hoàn thành <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`
+        :`Tiếp theo <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>`;
+      nextBtn.className=`qz-btn qz-btn-next${isLast?' qz-btn-finish':''}`;
+    }
+    document.querySelectorAll('.qz-grid-num').forEach((el,i)=>el.classList.toggle('current',i===idx));
+    updateStat();
+    if(quizMode==='train'&&trainFeedback[idx]) showTrainFeedback(idx);
+    const card=document.getElementById('qzCard');
+    if(card) card.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  /* ── RENDER ANSWERS ── */
+  function renderAnswers(q,idx,type){
+    const box=document.getElementById('qzAnswers');
+    const items=q.details?.items||[];
+    const saved=userAnswers[idx];
+    box.innerHTML='';
+
+    if(['single','mcq','tf'].includes(type)){
+      const opts=type==='tf'?['Đúng','Sai']:items.map(o=>typeof o==='object'?o.text:o);
+      opts.forEach(txt=>{
+        const lbl=document.createElement('label');
+        lbl.className='qz-option'+(saved===txt?' selected':'');
+        lbl.innerHTML=`<input type="radio" name="ans${idx}" value="${_esc(txt)}" ${saved===txt?'checked':''}><span class="qz-opt-dot"></span><span class="qz-opt-text">${txt}</span>`;
+        lbl.querySelector('input').addEventListener('change',()=>{
+          saveAnswer(idx,txt);
+          box.querySelectorAll('.qz-option').forEach(l=>l.classList.remove('selected'));
+          lbl.classList.add('selected');
+          if(quizMode==='train') showTrainFeedback(idx);
+        });
+        box.appendChild(lbl);
+      });
+    } else if(type==='multiple'){
+      const savedArr=saved?saved.split('|'):[];
+      items.forEach(opt=>{
+        const txt=typeof opt==='object'?opt.text:opt;
+        const lbl=document.createElement('label');
+        const chk=savedArr.includes(txt);
+        lbl.className='qz-option qz-option-check'+(chk?' selected':'');
+        lbl.innerHTML=`<input type="checkbox" name="chk${idx}" value="${_esc(txt)}" ${chk?'checked':''}><span class="qz-opt-box"></span><span class="qz-opt-text">${txt}</span>`;
+        lbl.querySelector('input').addEventListener('change',()=>{
+          const checked=Array.from(box.querySelectorAll(`input[name="chk${idx}"]:checked`)).map(el=>el.value);
+          saveAnswer(idx,checked.sort().join('|'));
+          lbl.classList.toggle('selected',lbl.querySelector('input').checked);
+          if(quizMode==='train') showTrainFeedback(idx);
+        });
+        box.appendChild(lbl);
+      });
+    } else if(type==='fill'){
+      const wrap=document.createElement('div');
+      wrap.className='qz-fill-wrap';
+      const inp=document.createElement('input');
+      inp.type='text'; inp.className='qz-fill-input';
+      inp.placeholder='Nhập đáp án của bạn...';
+      inp.value=saved||'';
+      inp.setAttribute('autocomplete','off');
+      inp.setAttribute('autocorrect','off');
+      inp.setAttribute('spellcheck','false');
+      /* FIX: only trigger feedback on Enter or blur, not every keystroke */
+      inp.addEventListener('input',()=>{ saveAnswer(idx,inp.value.trim()); });
+      inp.addEventListener('keydown',(e)=>{
+        if(e.key==='Enter'){ e.preventDefault(); inp.blur(); }
+      });
+      inp.addEventListener('blur',()=>{
+        saveAnswer(idx,inp.value.trim());
+        if(quizMode==='train'&&inp.value.trim()) showTrainFeedback(idx);
+      });
+      wrap.appendChild(inp);
+      /* Show a hint about multiple accepted answers in train mode */
+      if(quizMode==='train'&&q.correct){
+        const hint=document.createElement('div');
+        hint.className='qz-fill-hint';
+        const acceptCount=(q.correct.match(/\|/g)||[]).length+1;
+        hint.textContent=acceptCount>1?`Có ${acceptCount} đáp án được chấp nhận. Nhập và nhấn Enter để kiểm tra.`:'Nhập đáp án và nhấn Enter để kiểm tra.';
+        wrap.appendChild(hint);
+      }
+      box.appendChild(wrap);
+    } else if(type==='ordering'){
+      const list=document.createElement('div');
+      list.className='qz-drag-list'; list.id=`sortList${idx}`;
+      const savedItems=saved?saved.split('|'):_shuffle(items.map(it=>typeof it==='object'?it.text:it));
+      savedItems.forEach(item=>{
+        const div=document.createElement('div'); div.className='qz-drag-item';
+        div.innerHTML=`<svg class="qz-drag-handle" viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg><span>${item}</span>`;
+        list.appendChild(div);
+      });
+      box.appendChild(list);
+      if(typeof Sortable!=='undefined'){
+        Sortable.create(list,{
+          animation:150,handle:'.qz-drag-handle',
+          onEnd:()=>{
+            const order=Array.from(list.querySelectorAll('span')).map(s=>s.textContent.trim()).join('|');
+            saveAnswer(idx,order);
+            if(quizMode==='train') showTrainFeedback(idx);
+          }
+        });
+      }
+    } else if(type==='matching'){
+      const container=document.createElement('div'); container.className='qz-match-wrap';
+      items.forEach((item,i)=>{
+        const row=document.createElement('div'); row.className='qz-match-row';
+        row.innerHTML=`<div class="qz-match-left">${item.left||''}</div><div class="qz-match-arrow">→</div><div class="qz-match-zone" id="zone_${idx}_${i}"></div>`;
+        container.appendChild(row);
+      });
+      const pool=document.createElement('div'); pool.className='qz-match-pool'; pool.id=`pool${idx}`;
+      _shuffle(items.map(it=>it.right)).forEach(text=>{
+        const div=document.createElement('div'); div.className='qz-drag-item'; div.textContent=text;
+        pool.appendChild(div);
+      });
+      container.appendChild(pool);
+      box.appendChild(container);
+      if(typeof Sortable!=='undefined'){
+        Sortable.create(pool,{group:`match${idx}`,animation:150});
+        items.forEach((_,i)=>{
+          const zone=document.getElementById(`zone_${idx}_${i}`);
+          if(zone) Sortable.create(zone,{
+            group:`match${idx}`,animation:150,
+            onAdd:(evt)=>{
+              if(zone.children.length>1) pool.appendChild(zone.children[1]===evt.item?zone.children[0]:zone.children[1]);
+              const pairs=[];
+              document.querySelectorAll(`[id^="zone_${idx}_"]`).forEach(z=>{
+                const left=z.closest('.qz-match-row').querySelector('.qz-match-left').textContent.trim();
+                const right=z.firstElementChild?.textContent?.trim()||'';
+                if(right) pairs.push(`${left}-${right}`);
+              });
+              saveAnswer(idx,pairs.sort().join('|'));
+              if(quizMode==='train') showTrainFeedback(idx);
+            }
+          });
+        });
+      }
+    }
+  }
+
+  /* ── TRAIN FEEDBACK ── */
+  function showTrainFeedback(idx){
+    const q=questions[idx];
+    const type=(q.type||'single').toLowerCase();
+    const ans=userAnswers[idx]||'';
+    const correct=q.correct||'';
+    const fbEl=document.getElementById('qzFeedback');
+    if(!fbEl) return;
+    if(!ans){ fbEl.style.display='none'; return; }
+    const isOk=nbCheckAns(type,ans,correct);
+    trainFeedback[idx]=true;
+    updateGrid(idx);
+    fbEl.style.display='flex';
+    fbEl.className='qz-feedback '+(isOk?'fb-correct':'fb-wrong');
+    const correctDisplay=type==='fill'?String(correct).replace(/\|/g,' / '):String(correct).replace(/\|/g,' · ');
+    fbEl.innerHTML=isOk
+      ?`<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><span><b>Chính xác!</b> Tuyệt vời!</span>`
+      :`<svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg><span><b>Chưa đúng.</b> Đáp án: <em>${_escHtml(correctDisplay)}</em></span>`;
+    /* Highlight options */
+    if(['single','mcq','tf','multiple'].includes(type)){
+      const cArr=correct.split('|').map(s=>s.trim().toLowerCase());
+      document.getElementById('qzAnswers')?.querySelectorAll('.qz-option').forEach(lbl=>{
+        const val=(lbl.querySelector('input')?.value||'').trim().toLowerCase();
+        const isCorrectOpt=cArr.includes(val);
+        const userPicked=lbl.classList.contains('selected');
+        lbl.classList.remove('opt-correct','opt-wrong');
+        if(isCorrectOpt) lbl.classList.add('opt-correct');
+        else if(userPicked&&!isCorrectOpt) lbl.classList.add('opt-wrong');
+      });
+    }
+    /* For fill: color the input */
+    if(type==='fill'){
+      const fillInp=document.getElementById('qzAnswers')?.querySelector('.qz-fill-input');
+      if(fillInp){
+        fillInp.style.borderColor=isOk?'var(--accent)':'var(--danger)';
+        fillInp.style.background=isOk?'rgba(0,255,204,.07)':'rgba(255,71,87,.07)';
+      }
+    }
+  }
+
+  /* ── SAVE ANSWER ── */
+  function saveAnswer(idx,val){
+    userAnswers[idx]=val;
+    updateGrid(idx);
+    updateStat();
+  }
+
+  /* ── RENDER GRID ── */
+  function renderGrid(){
+    const grid=document.getElementById('qzGrid');
+    if(!grid) return;
+    grid.innerHTML='';
+    questions.forEach((_,i)=>{
+      const btn=document.createElement('button');
+      btn.className='qz-grid-num'; btn.textContent=i+1;
+      btn.setAttribute('data-idx',i);
+      btn.onclick=()=>showQuestion(i);
+      grid.appendChild(btn);
+    });
+  }
+
+  function updateGrid(idx){
+    const btn=document.querySelector(`.qz-grid-num[data-idx="${idx}"]`);
+    if(!btn) return;
+    const val=userAnswers[idx];
+    const answered=val!==undefined&&val!=='';
+    btn.classList.toggle('answered',answered);
+    if(quizMode==='train'&&trainFeedback[idx]&&answered){
+      const q=questions[idx];
+      const ok=nbCheckAns((q.type||'single').toLowerCase(),val,q.correct||'');
+      btn.classList.toggle('correct',ok);
+      btn.classList.toggle('wrong',!ok);
+    }
+  }
+
+  function updateStat(){
+    const done=Object.values(userAnswers).filter(v=>v!==undefined&&v!=='').length;
+    const el=document.getElementById('qzStat');
+    if(el) el.textContent=`${done}/${questions.length} câu`;
+  }
+
+  /* ── NAVIGATION ── */
+  window.qzChangeTo=function(idx){ if(idx>=0&&idx<questions.length) showQuestion(idx); };
+  window.qzHandleNext=function(){
+    if(currentIdx===questions.length-1) window.qzCheckBeforeSubmit();
+    else showQuestion(currentIdx+1);
+  };
+
+  /* ── TIMER ── */
+  function startTimer(){
+    updateTimerDisplay();
+    timerInterval=setInterval(()=>{
+      timeLeft--;
+      updateTimerDisplay();
+      if(timeLeft<=0){ clearInterval(timerInterval); submitQuiz(); }
+    },1000);
+  }
+  function updateTimerDisplay(){
+    const m=Math.floor(timeLeft/60),s=timeLeft%60;
+    const el=document.getElementById('timer');
+    if(el){
+      el.textContent=`${m}:${s<10?'0':''}${s}`;
+      el.classList.toggle('timer-warning',timeLeft<=60&&timeLeft>0);
+    }
+  }
+
+  /* ── SUBMIT ── */
+  window.qzCheckBeforeSubmit=function(){
+    const done=Object.values(userAnswers).filter(v=>v!==undefined&&v!=='').length;
+    const skipped=questions.length-done;
+    const statusHtml=skipped>0
+      ?`<div style="color:#ff4757;font-weight:700;margin-top:10px;padding:10px 14px;background:rgba(255,71,87,.08);border-radius:10px;border:1px solid rgba(255,71,87,.2)">⚠️ Còn <b>${skipped}</b> câu chưa trả lời</div>`
+      :`<div style="color:#00e676;font-weight:700;margin-top:10px;padding:10px 14px;background:rgba(0,230,118,.08);border-radius:10px;border:1px solid rgba(0,230,118,.2)">✅ Đã hoàn thành tất cả ${questions.length} câu</div>`;
+    if(typeof Swal==='undefined'){ submitQuiz(); return; }
+    Swal.fire({
+      title:quizMode==='train'?'Kết thúc luyện tập?':'Nộp bài thi?',
+      html:`<div style="font-size:.9rem;line-height:1.8;color:rgba(255,255,255,.8)">
+        <div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:4px">Đã làm: <b style="color:#fff">${done}/${questions.length}</b> câu</div>${statusHtml}</div>`,
+      icon:'question',showCancelButton:true,
+      confirmButtonText:quizMode==='train'?'✓ Kết thúc':'✓ Nộp bài',
+      cancelButtonText:'← Làm tiếp',
+      background:'rgba(10,15,30,0.97)',color:'#f1f5f9'
+    }).then(r=>{ if(r.isConfirmed) submitQuiz(); });
+  };
+
+  async function submitQuiz(){
+    if(isSubmitting) return;
+    isSubmitting=true;
+    clearInterval(timerInterval);
+    if(typeof Swal!=='undefined')
+      Swal.fire({title:'Đang chấm điểm...',allowOutsideClick:false,background:'rgba(10,15,30,0.97)',color:'#f1f5f9',didOpen:()=>Swal.showLoading()});
+    let scoreCount=0, totalScoreAchieved=0;
+    const quizAnswersMap={};
+    const totalScoreBase=parseFloat(questions[0]?.totalScore)||10;
+    questions.forEach((q,i)=>{
+      const type=(q.type||'single').toLowerCase();
+      const correctAns=q.correct||'';
+      const pts=q.points>0?q.points:(totalScoreBase/questions.length);
+      let studentAns='';
+      if(type==='fill'){
+        studentAns=userAnswers[i]||'';
+      } else if(['single','mcq','tf'].includes(type)){
+        studentAns=document.querySelector(`input[name="ans${i}"]:checked`)?.value.trim()||userAnswers[i]||'';
+      } else {
+        studentAns=userAnswers[i]||'';
+      }
+      const isOk=nbCheckAns(type,studentAns,correctAns);
+      quizAnswersMap[q.question]=studentAns;
+      if(isOk){ scoreCount++; totalScoreAchieved+=pts; }
+    });
+    const hasValidPoints=questions.some(q=>q.points>0);
+    const rawScore=hasValidPoints?totalScoreAchieved:(scoreCount/questions.length)*totalScoreBase;
+    const finalScore=parseFloat(rawScore.toFixed(2));
+    localStorage.setItem('lastScore',finalScore);
+    localStorage.setItem('correctCount',`${scoreCount}/${questions.length}`);
+    localStorage.setItem('quizAnswers',JSON.stringify(quizAnswersMap));
+    localStorage.setItem('quizQuestions',JSON.stringify(questions));
+    localStorage.setItem('quizTotalScore',totalScoreBase);
+    localStorage.setItem('quiz_submitted','true');
+    if(quizMode==='train'){ window.location.replace('result.html'); return; }
+    try{
+      await fetch(API,{
+        method:'POST',mode:'no-cors',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({
+          action:'submitResult',
+          student:nb.get('studentName')||'Thí sinh',
+          school:(nb.get('schoolName')||'').replace(/^'+/,''),
+          testName:localStorage.getItem('currentTestName')||'Bài thi',
+          score:finalScore, total:`${scoreCount}/${questions.length}`,
+          answers:quizAnswersMap
+        })
+      });
+      await new Promise(r=>setTimeout(r,500));
+    }catch(e){ console.warn('Submit:',e.message); }
+    window.location.replace('result.html');
+  }
+
+  /* ── HELPERS ── */
+  function _shuffle(arr){
+    const a=[...arr];
+    for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+    return a;
+  }
+  function _esc(s){ return String(s||'').replace(/"/g,'&quot;'); }
+  function _escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  /* expose for HTML inline calls */
+  window.saveAnswer=saveAnswer;
+  Object.defineProperty(window,'_qzIdx',{get:()=>currentIdx,configurable:true});
+};
 
 /* ══════════════════════════════════════════════
    PAGE: player.html — iSpring SCORM player

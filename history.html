@@ -10,13 +10,11 @@
 <body class="hist-pg-body">
 <div class="hist-pg-wrap">
 
-  <!-- Header -->
   <div class="hist-pg-header">
     <h2><i class="fas fa-history"></i> Lịch Sử Bài Làm</h2>
     <a href="select.html" class="btn btn-glow"><i class="fas fa-play"></i> Thi tiếp</a>
   </div>
 
-  <!-- Tabs -->
   <div class="hist-tabs">
     <button class="hist-tab-btn active" id="tabAll" onclick="switchTab('all')">
       <i class="fas fa-list"></i> Tất cả <span class="hist-tab-count" id="cntAll"></span>
@@ -29,7 +27,6 @@
     </button>
   </div>
 
-  <!-- Stats -->
   <div class="hist-stats-grid">
     <div class="hist-stat-card">
       <h2 id="stTotal" style="color:var(--primary)">0</h2>
@@ -45,14 +42,12 @@
     </div>
   </div>
 
-  <!-- List View -->
   <div id="viewList">
     <div id="histList">
       <div class="hist-loading"><i class="fas fa-spinner fa-spin"></i><span>Đang tải lịch sử...</span></div>
     </div>
   </div>
 
-  <!-- Detail View -->
   <div id="viewDetail" style="display:none">
     <button class="hist-back-btn" onclick="backToList()">
       <i class="fas fa-arrow-left"></i> Quay lại
@@ -90,11 +85,7 @@ async function loadHistory() {
 }
 
 function updateStats() {
-  // Tính riêng cho từng loại để tránh trộn thang điểm 0-10 vs 0-100
-  const sysRecs = allRecs.filter(r=>r._type==="sys");
-  const ispRecs = allRecs.filter(r=>r._type==="isp");
-  const allSc   = allRecs.map(r => parseFloat(r.score||0));
-  // Dùng điểm chuẩn hóa: sys /10*100, isp giữ nguyên để so sánh tổng thể
+  const allSc = allRecs.map(r => parseFloat(r.score||0));
   document.getElementById("stTotal").textContent = allRecs.length;
   if(allSc.length){
     const avg = allSc.reduce((a,b)=>a+b,0) / allSc.length;
@@ -118,7 +109,8 @@ function updateCounts() {
 function switchTab(tab) {
   curTab = tab;
   document.querySelectorAll(".hist-tab-btn").forEach(b => b.classList.remove("active"));
-  ({ all:"tabAll",sys:"tabSys",isp:"tabIsp" })[tab] && document.getElementById(({ all:"tabAll",sys:"tabSys",isp:"tabIsp" })[tab]).classList.add("active");
+  const idMap = { all:"tabAll", sys:"tabSys", isp:"tabIsp" };
+  if(idMap[tab]) document.getElementById(idMap[tab]).classList.add("active");
   renderList(tab);
 }
 
@@ -131,16 +123,16 @@ function renderList(tab) {
     const name  = (r.testName||"").replace(/\[iSpring\]/ig,"").trim();
     const score = parseFloat(r.score||0);
     const dispScore = score.toFixed(1).replace(/\.0$/,"");
-    // iSpring: thang 0-100. System: thang 0-10 (hoặc theo totalScore)
-    const threshold  = isp ? [80, 50] : [8, 5];
+    const threshold = isp ? [80, 50] : [8, 5];
     const col   = score >= threshold[0] ? "var(--accent)" : score >= threshold[1] ? "var(--primary)" : "var(--danger)";
     const badge = isp
       ? `<span class="hist-badge badge-isp"><i class="fas fa-rocket"></i> iSpring</span>`
       : `<span class="hist-badge badge-sys"><i class="fas fa-database"></i> Hệ thống</span>`;
+    const totalStr = r.total ? `<span><i class="fas fa-check"></i> ${r.total}</span>` : '';
     return `<div class="hist-item" onclick="openDetail(${allRecs.indexOf(r)})">
       <div class="hist-item-info">
         <div class="hist-item-name">${name}</div>
-        <div class="hist-item-meta"><span><i class="far fa-clock"></i> ${nbFmtTime(r.time)}</span>${badge}</div>
+        <div class="hist-item-meta"><span><i class="far fa-clock"></i> ${nbFmtTime(r.time)}</span>${totalStr}${badge}</div>
       </div>
       <div class="hist-score" style="color:${col}">${dispScore}</div>
       <i class="fas fa-chevron-right hist-arrow"></i>
@@ -156,39 +148,111 @@ async function openDetail(idx) {
   const name  = (rec.testName||"").replace(/\[iSpring\]/ig,"").trim();
   const score = parseFloat(rec.score||0).toFixed(1);
   const isIsp = rec._type==="isp";
+  const scoreCol = isIsp
+    ? (parseFloat(score)>=80?'var(--accent)':parseFloat(score)>=50?'var(--primary)':'var(--danger)')
+    : (parseFloat(score)>=8?'var(--accent)':parseFloat(score)>=5?'var(--primary)':'var(--danger)');
   const ispBadge = isIsp ? `<span class="hist-det-badge" style="background:rgba(249,115,22,.12);color:var(--ispring);border-color:rgba(249,115,22,.25)"><i class="fas fa-rocket"></i> iSpring</span>` : "";
   document.getElementById("detSum").innerHTML = `
     <h3>${name}</h3>
     <div class="hist-det-badges">
-      <span class="hist-det-badge score"><i class="fas fa-star"></i> ${score} điểm</span>
+      <span class="hist-det-badge score" style="color:${scoreCol}"><i class="fas fa-star"></i> ${score} điểm</span>
       <span class="hist-det-badge"><i class="fas fa-check-double"></i> ${rec.total||"—"}</span>
       <span class="hist-det-badge"><i class="far fa-clock"></i> ${nbFmtTime(rec.time)}</span>
       ${ispBadge}
     </div>`;
+
   const qEl = document.getElementById("detQs");
   if (isIsp) {
     qEl.innerHTML = `<div class="hist-stat-card" style="text-align:center;padding:36px 20px"><i class="fas fa-rocket fa-3x" style="color:var(--ispring);display:block;margin-bottom:14px"></i><p style="opacity:.65">Bài thi iSpring không lưu chi tiết câu hỏi.</p></div>`;
     return;
   }
+
   qEl.innerHTML = '<div class="hist-loading"><i class="fas fa-spinner fa-spin"></i><span>Đang tải câu hỏi...</span></div>';
+
+  // Parse saved answers
+  let ans = {};
+  try { ans = typeof rec.answers==="string" ? JSON.parse(rec.answers) : (rec.answers||{}); } catch(e){}
+
   try {
     const tests = await fetch(API+"?action=getTests").then(r=>r.json());
     const found = tests.find(t=>(t.name||"").trim().toLowerCase()===name.toLowerCase());
     if (!found) { qEl.innerHTML='<div class="nodata">Không tìm thấy đề thi</div>'; return; }
     const qlist = await fetch(API+"?action=getQuestions&testId="+found.id).then(r=>r.json());
-    let ans = {};
-    try { ans = typeof rec.answers==="string"?JSON.parse(rec.answers):(rec.answers||{}); } catch(e){}
     if (!qlist.length) { qEl.innerHTML='<div class="nodata">Chưa có câu hỏi</div>'; return; }
-    const icons  = { c:"check-circle",  w:"times-circle", u:"minus-circle" };
-    const colors = { c:"var(--accent)", w:"var(--danger)", u:"var(--muted)" };
-    qEl.innerHTML = qlist.map((q,i) => {
-      const sa = ans[q.question]||"", ca = String(q.correct||"").trim();
-      const ok = typeof nbCheckAns==="function"?nbCheckAns(q.type,sa,ca):false;
-      const st = !sa?"u":ok?"c":"w";
-      return `<div class="hist-q-card"><i class="fas fa-${icons[st]}" style="color:${colors[st]}"></i><span>${i+1}. ${q.question}</span></div>`;
-    }).join("");
-  } catch(e) { qEl.innerHTML='<div class="nodata">Lỗi tải câu hỏi</div>'; }
+
+    let cOk=0, cErr=0, cSkip=0;
+
+    const cards = qlist.map((q,i) => {
+      const sa   = String(ans[q.question]||"").trim();
+      const ca   = String(q.correct||q.correctAnswer||"").trim();
+      const type = String(q.type||"single").toLowerCase();
+      const ok   = typeof nbCheckAns==="function" ? nbCheckAns(type, sa, ca) : false;
+      const st   = !sa ? "u" : (ok ? "c" : "w");
+      if(st==="c") cOk++; else if(st==="w") cErr++; else cSkip++;
+
+      const stIcon  = st==="c"?'check-circle':st==="w"?'times-circle':'minus-circle';
+      const stColor = st==="c"?'var(--accent)':st==="w"?'var(--danger)':'var(--muted)';
+      const stLabel = st==="c"?'Đúng':st==="w"?'Sai':'Chưa làm';
+
+      // Build answer detail
+      let detailHtml = '';
+      if (st !== "u") {
+        // User answer row
+        detailHtml += `<div class="hq-ans-row hq-ans-user" style="${st==='c'?'border-color:rgba(0,255,204,.3)':'border-color:rgba(255,71,87,.3)'}">
+          <span class="hq-ans-label"><i class="fas fa-pen" style="margin-right:4px"></i>Bài làm:</span>
+          <span class="hq-ans-val ${st==='c'?'hq-val-ok':'hq-val-err'}">${_escHtml(sa||'—')}</span>
+        </div>`;
+      }
+      if (st === "w" || st === "u") {
+        // Correct answer row (show when wrong or skipped)
+        const caDisplay = ca.replace(/\|/g, ' / ');
+        detailHtml += `<div class="hq-ans-row hq-ans-correct">
+          <span class="hq-ans-label"><i class="fas fa-check" style="margin-right:4px;color:var(--accent)"></i>Đáp án đúng:</span>
+          <span class="hq-ans-val hq-val-ok">${_escHtml(caDisplay||'—')}</span>
+        </div>`;
+      }
+
+      // Image
+      const imgHtml = (q.image && q.image.length > 10)
+        ? `<img src="${q.image}" class="hq-img" onerror="this.style.display='none'" loading="lazy">`
+        : '';
+
+      // Type badge
+      const typeBadgeMap = { tf:'Đúng/Sai', multiple:'Nhiều đáp án', fill:'Điền khuyết', matching:'Ghép cặp', ordering:'Sắp xếp', single:'Trắc nghiệm' };
+      const typeBadge = `<span class="hq-type-badge">${typeBadgeMap[type]||'Trắc nghiệm'}</span>`;
+
+      return `<div class="hq-card hq-${st}">
+        <div class="hq-card-head" onclick="this.closest('.hq-card').classList.toggle('hq-open')">
+          <i class="fas fa-${stIcon}" style="color:${stColor};font-size:1.1rem;flex-shrink:0"></i>
+          <div class="hq-q-text">${i+1}. ${_escHtml(q.question)}</div>
+          <div class="hq-head-right">
+            ${typeBadge}
+            <span class="hq-status-tag" style="color:${stColor}">${stLabel}</span>
+            <i class="fas fa-chevron-down hq-chevron"></i>
+          </div>
+        </div>
+        <div class="hq-card-body">
+          ${imgHtml}
+          ${detailHtml || `<div style="font-size:.78rem;opacity:.45;padding:4px 0">Không có dữ liệu đáp án</div>`}
+        </div>
+      </div>`;
+    });
+
+    // Summary chips
+    const chipBar = `<div class="hq-chips">
+      <div class="hq-chip hq-chip-ok"><i class="fas fa-check-circle"></i> ${cOk} Đúng</div>
+      <div class="hq-chip hq-chip-err"><i class="fas fa-times-circle"></i> ${cErr} Sai</div>
+      <div class="hq-chip hq-chip-skip"><i class="fas fa-minus-circle"></i> ${cSkip} Bỏ qua</div>
+    </div>`;
+
+    qEl.innerHTML = chipBar + cards.join("");
+
+  } catch(e) {
+    qEl.innerHTML='<div class="nodata">Lỗi tải câu hỏi</div>';
+  }
 }
+
+function _escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function backToList() {
   document.getElementById("viewDetail").style.display = "none";

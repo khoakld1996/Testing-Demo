@@ -646,11 +646,15 @@ function renderResults(){
   if(!results.length){el.innerHTML='<div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><p>Chưa có dữ liệu</p></div>'; return;}
   el.innerHTML=[...results].reverse().slice(0,60).map(r=>{
     const score=parseFloat(r.score||0);
-    const color=score>=8?'var(--success)':(score>=5?'var(--primary)':'var(--danger)');
+    const isIsp=(r.testName||'').toLowerCase().includes('ispring');
+    const color=isIsp
+      ?(score>=80?'var(--success)':score>=50?'var(--primary)':'var(--danger)')
+      :(score>=8 ?'var(--success)':score>=5 ?'var(--primary)':'var(--danger)');
+    const dispScore=isIsp?score.toFixed(0)+'đ/100':score.toFixed(1).replace(/\.0$/,'')+'đ';
     return`<div class="result-row">
       <div><div style="font-weight:600">${nbEsc(r.student||'Ẩn danh')}</div><div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div></div>
       <div style="opacity:.7">${nbEsc(r.testName||'Đề thi')}</div>
-      <div style="font-weight:800;color:${color}">${score}đ</div>
+      <div style="font-weight:800;color:${color}">${dispScore}</div>
     </div>`;
   }).join('');
 }
