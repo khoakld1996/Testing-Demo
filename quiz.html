@@ -167,7 +167,7 @@ async function loadQuestions(testId) {
     Swal.fire({
       title: 'Lỗi kết nối', text: 'Không tải được câu hỏi. Vui lòng thử lại.',
       icon: 'error', confirmButtonText: 'Quay lại',
-      background: 'rgba(10,15,30,0.97)', color: '#fff'
+      background: 'rgba(10,15,30,0.97)', color: '#f1f5f9'
     }).then(() => location.href = 'select.html');
   }
 }
@@ -350,11 +350,11 @@ function renderAnswers(q, idx, type) {
 
 /* ── TRAIN MODE FEEDBACK ── */
 function showTrainFeedback(idx) {
-  const q     = questions[idx];
-  const type  = (q.type || 'single').toLowerCase();
-  const ans   = userAnswers[idx] || '';
-  const correct = q.correct || '';
-  const fbEl  = document.getElementById('qzFeedback');
+  const q      = questions[idx];
+  const type   = (q.type || 'single').toLowerCase();
+  const ans    = userAnswers[idx] || '';
+  const correct= q.correct || '';
+  const fbEl   = document.getElementById('qzFeedback');
 
   if (!ans) { fbEl.style.display = 'none'; return; }
 
@@ -371,16 +371,17 @@ function showTrainFeedback(idx) {
     : `<svg viewBox="0 0 24 24"><path d="M12 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
        <span><b>Chưa đúng!</b> Đáp án: <em>${escHtml(String(correct).replace(/\|/g,' · '))}</em></span>`;
 
-  // Highlight options
-  const box = document.getElementById('qzAnswers');
+  // Highlight options — dùng exact match thay vì substring check
+  const cArr = correct.split('|').map(s => s.trim().toLowerCase());
+  const box  = document.getElementById('qzAnswers');
   box.querySelectorAll('.qz-option').forEach(lbl => {
-    const val = lbl.querySelector('input')?.value || '';
-    lbl.classList.remove('opt-correct', 'opt-wrong');
-    const normVal = val.trim().toLowerCase();
-    const normCorrect = correct.trim().toLowerCase();
-    const userSelected = lbl.classList.contains('selected');
-    if (normCorrect.includes(normVal) && val) lbl.classList.add('opt-correct');
-    if (userSelected && normVal !== normCorrect) lbl.classList.add('opt-wrong');
+    const val        = (lbl.querySelector('input')?.value || '').trim();
+    const normVal    = val.toLowerCase();
+    const isCorrectOpt = cArr.includes(normVal);
+    const userPicked   = lbl.classList.contains('selected');
+    lbl.classList.remove('opt-correct','opt-wrong');
+    if (isCorrectOpt) lbl.classList.add('opt-correct');
+    else if (userPicked) lbl.classList.add('opt-wrong');
   });
 }
 
@@ -454,19 +455,20 @@ function updateTimerDisplay() {
 function qzCheckBeforeSubmit() {
   const done    = Object.values(userAnswers).filter(v => v !== undefined && v !== '').length;
   const skipped = questions.length - done;
+  const statusHtml = skipped > 0
+    ? `<div style="color:#ff4757;font-weight:700;margin-top:10px;padding:10px 14px;background:rgba(255,71,87,.08);border-radius:10px;border:1px solid rgba(255,71,87,.2)">⚠️ Còn <b>${skipped}</b> câu chưa trả lời</div>`
+    : `<div style="color:#00e676;font-weight:700;margin-top:10px;padding:10px 14px;background:rgba(0,230,118,.08);border-radius:10px;border:1px solid rgba(0,230,118,.2)">✅ Đã hoàn thành tất cả ${questions.length} câu</div>`;
   Swal.fire({
     title: quizMode === 'train' ? 'Kết thúc luyện tập?' : 'Nộp bài thi?',
-    html: `<div style="font-size:.92rem;line-height:1.9;color:rgba(255,255,255,.8)">
-      ${quizMode === 'train' ? 'Bạn có muốn kết thúc phần luyện tập?' : `Đã làm <b>${done}/${questions.length}</b> câu.`}
-      ${skipped > 0 ? `<div style="color:#ff4757;margin-top:8px">⚠️ Còn <b>${skipped}</b> câu chưa làm!</div>` :
-        `<div style="color:#00ffcc;margin-top:8px">✅ Đã hoàn thành tất cả!</div>`}
+    html: `<div style="font-size:.9rem;line-height:1.8;color:rgba(255,255,255,.8)">
+      <div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.07);margin-bottom:4px">
+        Đã làm: <b style="color:#fff">${done}/${questions.length}</b> câu
+      </div>${statusHtml}
     </div>`,
     icon: 'question', showCancelButton: true,
-    confirmButtonText: quizMode === 'train' ? 'Kết thúc' : 'Nộp bài',
-    cancelButtonText: 'Làm tiếp',
-    confirmButtonColor: quizMode === 'train' ? '#10b981' : '#4facfe',
-    cancelButtonColor: '#475569',
-    background: 'rgba(10,15,30,0.97)', color: '#fff'
+    confirmButtonText: quizMode === 'train' ? '✓ Kết thúc' : '✓ Nộp bài',
+    cancelButtonText: '← Làm tiếp',
+    background: 'rgba(10,15,30,0.97)', color: '#f1f5f9'
   }).then(r => { if (r.isConfirmed) submitQuiz(); });
 }
 
@@ -474,21 +476,27 @@ async function submitQuiz() {
   if (isSubmitting) return;
   isSubmitting = true;
   clearInterval(timerInterval);
-  Swal.fire({ title: 'Đang chấm điểm...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+  Swal.fire({ title: 'Đang chấm điểm...', allowOutsideClick: false, background:'rgba(10,15,30,0.97)', color:'#f1f5f9', didOpen: () => Swal.showLoading() });
 
   let scoreCount = 0, totalScoreAchieved = 0;
   const quizAnswersMap = {};
 
-  questions.forEach((q, i) => {
-    const type      = (q.type || 'single').toLowerCase();
-    const correctAns= q.correct || '';
-    const pts       = q.points > 0 ? q.points : (10 / questions.length);
-    let studentAns  = '';
+  // Xác định totalScore chuẩn từ dữ liệu câu hỏi
+  const totalScoreBase = parseFloat(questions[0]?.totalScore) || 10;
+  const scoreMode      = (questions[0]?.scoreMode || 'equal').toLowerCase();
 
-    if (['single','mcq','tf'].includes(type)) {
+  questions.forEach((q, i) => {
+    const type       = (q.type || 'single').toLowerCase();
+    const correctAns = q.correct || '';
+    // Điểm mỗi câu: ưu tiên q.points nếu > 0, fallback chia đều
+    const pts        = q.points > 0 ? q.points : (totalScoreBase / questions.length);
+    let studentAns   = '';
+
+    // Fill: luôn đọc từ userAnswers (input không có id riêng)
+    if (type === 'fill') {
+      studentAns = userAnswers[i] || '';
+    } else if (['single','mcq','tf'].includes(type)) {
       studentAns = document.querySelector(`input[name="ans${i}"]:checked`)?.value.trim() || userAnswers[i] || '';
-    } else if (type === 'fill') {
-      studentAns = document.getElementById(`fill${i}`)?.value.trim() || userAnswers[i] || '';
     } else {
       studentAns = userAnswers[i] || '';
     }
@@ -498,9 +506,11 @@ async function submitQuiz() {
     if (isOk) { scoreCount++; totalScoreAchieved += pts; }
   });
 
-  const hasCustomPoints = questions.some(q => q.points > 0);
-  const rawScore  = hasCustomPoints ? totalScoreAchieved : (scoreCount / questions.length) * 10;
-  const finalScore= parseFloat(rawScore.toFixed(1));
+  // Tính điểm cuối: nếu có points hợp lệ thì dùng tổng điểm đạt được,
+  // ngược lại tính theo tỉ lệ câu đúng
+  const hasValidPoints = questions.some(q => q.points > 0);
+  const rawScore   = hasValidPoints ? totalScoreAchieved : (scoreCount / questions.length) * totalScoreBase;
+  const finalScore = parseFloat(rawScore.toFixed(1));
 
   localStorage.setItem('lastScore',      finalScore);
   localStorage.setItem('correctCount',   `${scoreCount}/${questions.length}`);

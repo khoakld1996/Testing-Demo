@@ -11,7 +11,7 @@
 'use strict';
 
 /* ─── CONFIG ─── */
-const NB_API = "https://script.google.com/macros/s/AKfycbwtnSXXeuj7mzZMbTmHZODB2y1di4BplnFFEYgivt74Ntp-wkR8yBS5hUHpl6383qkd/exec";
+const NB_API = "https://script.google.com/macros/s/AKfycbwO0a19WfLbY9lhhFkQsyaCKHPlXudji-CyAjTLtfbnUMaiFXXlwMJk38XLcGv7qzL5/exec";
 
 window.API        = NB_API;
 window.API_URL    = NB_API;
@@ -235,6 +235,25 @@ function nbCheckAns(type, userAns, correctAns){
 window.nbCheckAns = nbCheckAns;
 
 /* ─── SHUFFLE ─── */
+/* ─── DURATION SANITIZER ─── */
+/* GAS có thể trả Date object khi cột duration bị format thành Date type */
+function sanitizeDur(v){
+  if(!v) return 45;
+  // Nếu là Date string dạng "1900-02-13T..." — lấy số ngày từ base GAS 1899-12-30
+  if(typeof v==='string' && /^\d{4}-\d{2}-\d{2}T/.test(v)){
+    const d=new Date(v);
+    if(!isNaN(d)){
+      const base=new Date(Date.UTC(1899,11,30));
+      const days=Math.round((d.getTime()-base.getTime())/86400000);
+      if(days>0 && days<1440) return days;
+    }
+    return 45;
+  }
+  const n=parseInt(v,10);
+  return (!isNaN(n) && n>0 && n<1440) ? n : 45;
+}
+window.sanitizeDur = sanitizeDur;
+
 function nbShuffle(arr){
   const a=[...arr];
   for(let i=a.length-1;i>0;i--){
@@ -1199,7 +1218,7 @@ window.nbSelectInit = function(){
             ...t,
             name:    t.name    ||t.nameIPS    ||'',
             path:    String(t.path||t.pathIPS||'').trim(),
-            duration:t.duration||t.durationIPS||'',
+            duration:sanitizeDur(t.duration||t.durationIPS||''),
             subject: t.subject ||t.typeIPS    ||'',
             desc:    t.desc    ||t.descriptionIPS||'',
           }));
@@ -1225,9 +1244,10 @@ window.nbSelectInit = function(){
         <div style="min-width:0;flex:1">
           <span class="sel-card-name">${nbEsc(t.name)}</span>
           <div class="sel-card-meta">
-            <span><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>${t.duration||'?'}p</span>
+            <span><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>${sanitizeDur(t.duration)}p</span>
             <span><svg viewBox="0 0 24 24"><path d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>${t.qCount||'?'} câu</span>
             ${t.maxScore?`<span><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>${t.maxScore}đ</span>`:''}
+            ${t.desc?`<span class="sel-card-desc"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM14 6l-1-2H5v17h2v-7h5l1 2h7V6h-6zm4 8h-4l-1-2H7V6h5l1 2h5v6z"/></svg>${nbEsc(t.desc)}</span>`:''}
           </div>
         </div>
         <div class="sel-play-btn"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
@@ -1254,7 +1274,7 @@ window.nbSelectInit = function(){
             <span class="sel-isp-badge">iSpring</span>
           </span>
           <div class="sel-card-meta">
-            ${t.duration?`<span><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>${t.duration}p</span>`:''}
+            ${sanitizeDur(t.duration)?`<span><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>${sanitizeDur(t.duration)}p</span>`:''}
             ${t.subject?`<span>${nbEsc(t.subject)}</span>`:''}
             ${t.desc?`<span>${nbEsc(t.desc)}</span>`:''}
           </div>
@@ -1282,7 +1302,7 @@ window.nbSelectInit = function(){
           <svg width="16" height="16" fill="var(--ispring)" viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
           <span>Bài thi: <b style="color:var(--ispring)">${nbEsc(test.name)}</b></span>
         </div>
-        ${test.duration?`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)">⏱ Thời gian: <b>${test.duration} phút</b></div>`:''}
+        ${test.duration?`<div style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)">⏱ Thời gian: <b>${sanitizeDur(test.duration)} phút</b></div>`:''}
         ${test.subject?`<div style="padding:8px 0">📚 Môn học: <b>${nbEsc(test.subject)}</b></div>`:''}
         </div>`,
       icon:'question', showCancelButton:true,
@@ -1792,10 +1812,60 @@ window.nbPlayerInit = function(){
           student:sName,school:sSchool,class:sCls,timestamp:new Date().toISOString()})
       });
       syncUI('ok','<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!');
+      /* Load distribution chart after save — dùng GET để đọc lịch sử */
+      _loadDistribution(sc, tn);
     }catch(e){
       saveF=false;
       syncUI('err','<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Lưu thất bại. <u style="cursor:pointer" onclick="window._plRetrySave()">Thử lại</u>');
     }
+  }
+
+  async function _loadDistribution(myScore, testName){
+    const wrap=$('pl-dist-wrap');
+    const barsEl=$('pl-dist-bars');
+    const legendEl=$('pl-dist-legend');
+    if(!wrap) return;
+    try{
+      /* Chờ 2s để GAS ghi xong rồi đọc lại */
+      await new Promise(r=>setTimeout(r,2200));
+      const allResults = await nbGet('getIspringResults');
+      if(!Array.isArray(allResults)||!allResults.length){ wrap.style.display='block'; if(legendEl) legendEl.textContent='Chưa đủ dữ liệu phân bố.'; return; }
+      /* Lọc cùng bài thi */
+      const norm = s=>String(s||'').replace(/\[iSpring\]\s*/i,'').trim().toLowerCase();
+      const tNorm = norm(testName);
+      const forThis = allResults.filter(r=>norm(r.testName)===tNorm);
+      const pool = forThis.length>=2 ? forThis : allResults;
+      /* Tính phân bố 4 nhóm: 0-49, 50-69, 70-84, 85-100 */
+      const buckets=[0,0,0,0];
+      pool.forEach(r=>{
+        const s=parseFloat(r.score||0);
+        if(s<50) buckets[0]++;
+        else if(s<70) buckets[1]++;
+        else if(s<85) buckets[2]++;
+        else buckets[3]++;
+      });
+      const total=pool.reduce((a,b)=>a+1,0)||1;
+      const maxB=Math.max(...buckets,1);
+      const colors=['pl-dist-bar-fail','pl-dist-bar-below','pl-dist-bar-good','pl-dist-bar-great'];
+      const labels=['0–49','50–69','70–84','85–100'];
+      /* Xác định bucket của mình */
+      const myBucket = myScore<50?0:myScore<70?1:myScore<85?2:3;
+      if(barsEl){
+        barsEl.innerHTML=buckets.map((cnt,i)=>{
+          const h=Math.round((cnt/maxB)*50)+4;
+          const isMine=i===myBucket;
+          const pct=Math.round((cnt/total)*100);
+          return `<div class="pl-dist-bar ${colors[i]}${isMine?' pl-dist-bar-mine':''}"
+            style="height:${h}px" data-count="${cnt} người (${pct}%)" title="${labels[i]}: ${cnt} người"></div>`;
+        }).join('');
+      }
+      if(legendEl){
+        const myBucketCount=buckets[myBucket];
+        const myPct=Math.round((myBucketCount/total)*100);
+        legendEl.innerHTML=`Tổng ${total} lượt thi · Nhóm điểm của bạn (${labels[myBucket]}): ${myBucketCount} người (${myPct}%)`;
+      }
+      wrap.style.display='block';
+    }catch(e){ /* Silent fail — distribution là thông tin thêm, không critical */ }
   }
 
   window._plRetrySave=()=>{ saveF=false; saveResult(score,status||'completed'); };

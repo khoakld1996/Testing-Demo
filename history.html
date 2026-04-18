@@ -90,10 +90,21 @@ async function loadHistory() {
 }
 
 function updateStats() {
-  const sc = allRecs.map(r => parseFloat(r.score)||0);
+  // Tính riêng cho từng loại để tránh trộn thang điểm 0-10 vs 0-100
+  const sysRecs = allRecs.filter(r=>r._type==="sys");
+  const ispRecs = allRecs.filter(r=>r._type==="isp");
+  const allSc   = allRecs.map(r => parseFloat(r.score||0));
+  // Dùng điểm chuẩn hóa: sys /10*100, isp giữ nguyên để so sánh tổng thể
   document.getElementById("stTotal").textContent = allRecs.length;
-  document.getElementById("stAvg").textContent   = sc.length ? (sc.reduce((a,b)=>a+b,0)/sc.length).toFixed(1) : "—";
-  document.getElementById("stBest").textContent  = sc.length ? Math.max(...sc).toFixed(1) : "—";
+  if(allSc.length){
+    const avg = allSc.reduce((a,b)=>a+b,0) / allSc.length;
+    const best= Math.max(...allSc);
+    document.getElementById("stAvg").textContent  = avg.toFixed(1);
+    document.getElementById("stBest").textContent = best.toFixed(1).replace(/\.0$/,"");
+  } else {
+    document.getElementById("stAvg").textContent  = "—";
+    document.getElementById("stBest").textContent = "—";
+  }
 }
 
 function updateCounts() {
@@ -118,8 +129,11 @@ function renderList(tab) {
   el.innerHTML = recs.map(r => {
     const isp   = r._type==="isp";
     const name  = (r.testName||"").replace(/\[iSpring\]/ig,"").trim();
-    const score = parseFloat(r.score||0).toFixed(1).replace(/\.0$/,"");
-    const col   = score>=8?"var(--accent)":score>=5?"var(--primary)":"var(--danger)";
+    const score = parseFloat(r.score||0);
+    const dispScore = score.toFixed(1).replace(/\.0$/,"");
+    // iSpring: thang 0-100. System: thang 0-10 (hoặc theo totalScore)
+    const threshold  = isp ? [80, 50] : [8, 5];
+    const col   = score >= threshold[0] ? "var(--accent)" : score >= threshold[1] ? "var(--primary)" : "var(--danger)";
     const badge = isp
       ? `<span class="hist-badge badge-isp"><i class="fas fa-rocket"></i> iSpring</span>`
       : `<span class="hist-badge badge-sys"><i class="fas fa-database"></i> Hệ thống</span>`;
@@ -128,7 +142,7 @@ function renderList(tab) {
         <div class="hist-item-name">${name}</div>
         <div class="hist-item-meta"><span><i class="far fa-clock"></i> ${nbFmtTime(r.time)}</span>${badge}</div>
       </div>
-      <div class="hist-score" style="color:${col}">${score}</div>
+      <div class="hist-score" style="color:${col}">${dispScore}</div>
       <i class="fas fa-chevron-right hist-arrow"></i>
     </div>`;
   }).join("");

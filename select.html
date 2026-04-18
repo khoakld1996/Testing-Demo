@@ -134,19 +134,13 @@
     window._nbConfirmLaunch = function(testJson){
         const test = JSON.parse(testJson);
         if(!test.qCount || test.qCount === 0){
-            if(typeof Swal !== 'undefined') Swal.fire({ icon: 'info', title: 'Đề thi đang cập nhật', text: 'Đề thi này chưa có câu hỏi. Vui lòng thử lại sau!', background: '#131c2f', color: '#fff' });
+            if(typeof Swal !== 'undefined') Swal.fire({ icon: 'info', title: 'Đề thi đang cập nhật', text: 'Đề thi này chưa có câu hỏi. Vui lòng thử lại sau!', background: 'rgba(10,15,30,0.97)', color: '#f1f5f9', confirmButtonText:'Đã hiểu' });
             return;
         }
-        
-        const modeHtml = `
-        <div class="swal-mode-wrap">
-            <label class="swal-mode-label">Chọn chế độ làm bài:</label>
-            <select id="swal-mode-select">
-                <option value="train" selected>🎓 LUYỆN TẬP (Không giới hạn, xem đáp án ngay)</option>
-                <option value="test">⏱️ KIỂM TRA (Tính giờ, chấm điểm cuối bài)</option>
-            </select>
-        </div>
-        `;
+        const dur = (typeof sanitizeDur !== 'undefined') ? sanitizeDur(test.duration) : (parseInt(test.duration) || 45);
+        const descRow = test.desc
+          ? `<div class="swal-launch-row swal-launch-row--last"><span>📝 Mô tả: <b>${test.desc}</b></span></div>`
+          : '';
 
         Swal.fire({
             title: 'Bắt đầu bài thi?',
@@ -156,12 +150,19 @@
                         <span>📝 Bài thi: <b class="swal-highlight">${test.name}</b></span>
                     </div>
                     <div class="swal-launch-row">
-                        <span>⏳ Thời gian: <b>${test.duration} phút</b></span>
+                        <span>⏳ Thời gian: <b>${dur} phút</b></span>
                     </div>
-                    <div class="swal-launch-row swal-launch-row--last">
+                    <div class="swal-launch-row${descRow?'':' swal-launch-row--last'}">
                         <span>❓ Số câu: <b>${test.qCount} câu hỏi</b></span>
                     </div>
-                    ${modeHtml}
+                    ${descRow}
+                    <div class="swal-mode-wrap">
+                        <label class="swal-mode-label">Chọn chế độ làm bài:</label>
+                        <select id="swal-mode-select">
+                            <option value="train" selected>🎓 LUYỆN TẬP (Không giới hạn, xem đáp án ngay)</option>
+                            <option value="test">⏱️ KIỂM TRA (Tính giờ, chấm điểm cuối bài)</option>
+                        </select>
+                    </div>
                 </div>
             `,
             icon: 'question',
@@ -178,8 +179,8 @@
                 const selectedMode = res.value || 'train';
                 localStorage.setItem('currentTestId', test.id);
                 localStorage.setItem('currentTestName', test.name);
-                localStorage.setItem('currentTestDuration', test.duration);
-                localStorage.setItem('currentTest', JSON.stringify(test));
+                localStorage.setItem('currentTestDuration', dur);
+                localStorage.setItem('currentTest', JSON.stringify({...test, duration: dur}));
                 localStorage.setItem('quizMode', selectedMode);
                 location.href = 'quiz.html';
             }
