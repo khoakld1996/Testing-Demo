@@ -231,7 +231,20 @@
           <div class="dash-create-form">
             <input id="iName" class="input-dark orange" placeholder="Tên hiển thị">
             <div>
-              <input id="iPath" class="input-dark orange" placeholder="VD: quizzes/FullIOT1GS6LV1/index.html">
+              <input id="iPath" class="input-dark orange" placeholder="VD: quizzes/FullIOT1GS6LV1/index.html" oninput="updateBridgeScript()">
+              <!-- Bridge script guide -->
+              <div class="nb-bridge-guide" id="bridgeGuide" style="display:none;margin-top:10px">
+                <div class="nb-bridge-title">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                  Bước kết nối điểm tự động
+                </div>
+                <p class="nb-bridge-desc">Thêm vào cuối <b id="bridgeQuizPath"></b>, trước <code>&lt;/body&gt;</code>:</p>
+                <div class="nb-bridge-code-wrap">
+                  <code id="bridgeCodeLine" class="nb-bridge-code"></code>
+                  <button class="nb-bridge-copy" onclick="copyBridgeScript()">📋 Copy</button>
+                </div>
+                <p class="nb-bridge-note">✓ Điểm sẽ tự động trả về Nebula sau khi làm bài.</p>
+              </div>
               <p class="form-hint">Relative path từ gốc web đến <code>index.html</code> của iSpring</p>
             </div>
             <input id="iDesc" class="input-dark orange" placeholder="Mô tả ngắn (tùy chọn)">
@@ -488,6 +501,36 @@ function renderIspringList(){
       </div>
     </div>`;
   }).join('');
+}
+
+function updateBridgeScript(){
+  const path = document.getElementById('iPath').value.trim();
+  const guideEl = document.getElementById('bridgeGuide');
+  const codeEl  = document.getElementById('bridgeCodeLine');
+  const pathEl  = document.getElementById('bridgeQuizPath');
+  if(!path){ if(guideEl) guideEl.style.display='none'; return; }
+  /* Tính depth: quizzes/Name/index.html = depth 2 từ root → ../../nebula-bridge.js */
+  const depth = (path.match(/\//g)||[]).length;
+  let relPath = '';
+  for(let i=0;i<depth;i++) relPath += '../';
+  relPath += 'nebula-bridge.js';
+  const scriptTag = `<script src="${relPath}"><\/script>`;
+  if(codeEl) codeEl.textContent = `<script src="${relPath}"></script>`;
+  if(pathEl) pathEl.textContent = path;
+  if(guideEl) guideEl.style.display='block';
+}
+
+function copyBridgeScript(){
+  const el = document.getElementById('bridgeCodeLine');
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(()=>{
+    nbToast('success','Đã copy! Dán vào quiz index.html trước </body>');
+  }).catch(()=>{
+    const ta = document.createElement('textarea');
+    ta.value = el.textContent; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    nbToast('success','Đã copy!');
+  });
 }
 
 async function addIspring(){

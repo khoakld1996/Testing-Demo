@@ -126,6 +126,52 @@
   });
 
   document.addEventListener('DOMContentLoaded',function(){
+    /* ── Check URL params từ nebula-bridge.js redirect ──
+       nebula-bridge.js trong quiz redirect về:
+       result.html?nb_isp=1&score=80&correct=36&total=45&status=passed
+       Khi có params này → save to GAS + localStorage ngay lập tức.   */
+    (function(){
+      const up = new URLSearchParams(location.search);
+      if(up.get('nb_isp') !== '1') return;
+      const sc  = Math.min(100,Math.max(0,parseInt(up.get('score')  ||'0')||0));
+      const cor = parseInt(up.get('correct')||'0')||0;
+      const tot = parseInt(up.get('total')  ||'0')||0;
+      const st  = up.get('status')||'completed';
+      const tn  = localStorage.getItem('currentTestName')||localStorage.getItem('currentIspringName')||'Bài thi iSpring';
+      const sN  = localStorage.getItem('studentName')||'';
+      const sSc = (localStorage.getItem('schoolName')||'').replace(/^'+/,'');
+      const sCl = (localStorage.getItem('className')||'').replace(/^'+/,'');
+      const totalStr = cor>0&&tot>0 ? cor+'/'+tot : sc+'/100';
+      /* Ghi vào localStorage */
+      localStorage.setItem('lastScore',     sc);
+      localStorage.setItem('quizMode',      'ispring');
+      localStorage.setItem('quizTotalScore','100');
+      localStorage.setItem('ispringStatus', st);
+      localStorage.setItem('correctCount',  totalStr);
+      localStorage.setItem('ispCorrect',    String(cor));
+      localStorage.setItem('ispTotal',      String(tot));
+      /* POST lên GAS (no-cors, fire-and-forget) */
+      const tnFull = '[iSpring] '+tn.replace(/^\[iSpring\]\s*/i,'');
+      try{
+        fetch(window.API_URL||window.API||'', {
+          method:'POST', mode:'no-cors',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body: JSON.stringify({
+            action:'submitResult', student:sN, school:sSc,
+            testName:tnFull, score:sc, total:totalStr,
+            answers: JSON.stringify({
+              status:st, source:'nebula-bridge', score:sc,
+              correct:cor, totalQuestions:tot,
+              student:sN, school:sSc, class:sCl,
+              timestamp:new Date().toISOString()
+            })
+          })
+        });
+      }catch(e){}
+      /* Xoá URL params để tránh re-submit khi reload */
+      history.replaceState(null,'',location.pathname);
+    })();
+
     const quizMode    = localStorage.getItem('quizMode') || 'test';
     const isIspring   = quizMode === 'ispring';
     const totalScore  = parseFloat(localStorage.getItem('quizTotalScore') || (isIspring?'100':'10')) || (isIspring?100:10);
@@ -198,5 +244,6 @@
     if(typeof nbResultInit==='function') nbResultInit();
   });
 </script>
+ <script src="nebula-bridge.js"></script>
 </body>
 </html>

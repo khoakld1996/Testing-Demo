@@ -4161,65 +4161,108 @@ body.qz-body[data-mode="test"] .qz-timer {
 }
 
 /* ═══════════════════════════════════════════════════════
-   ISPING SCORE CONFIRM DIALOG — nb-sc-* classes
+   iSPRING SCORE CONFIRM DIALOG — nb-sc-* (read-only)
+   Hoàn toàn không có input. Dữ liệu từ SCORM / DOM.
    ═══════════════════════════════════════════════════════ */
-.nb-score-popup.swal2-popup { max-width: 400px !important; }
+.nb-score-popup.swal2-popup { max-width: 380px !important; }
 
-.nb-sc-wrap {
-  display: flex; flex-direction: column; gap: 14px; padding: 4px 0;
+.nb-sc-wrap  { display:flex; flex-direction:column; gap:12px; padding:2px 0; }
+.nb-sc-header{ display:flex; flex-direction:column; align-items:center; gap:3px; }
+.nb-sc-emoji { font-size:2.4rem; line-height:1; }
+.nb-sc-title { font-size:1rem; font-weight:800; color:#f1f5f9; margin:0; }
+.nb-sc-quiz  { font-size:.74rem; color:rgba(241,245,249,.38); margin:0;
+               max-width:260px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.nb-sc-src {
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  font-size:.73rem; font-weight:700; padding:8px 12px; border-radius:20px; line-height:1.4;
 }
-.nb-sc-header {
-  display: flex; flex-direction: column; align-items: center; gap: 4px;
+.nb-sc-src-ok   { background:rgba(16,185,129,.1);  color:#34d399; border:1px solid rgba(16,185,129,.22); }
+.nb-sc-src-warn { background:rgba(245,158,11,.1);  color:#fbbf24; border:1px solid rgba(245,158,11,.22); }
+.nb-sc-src-file { background:rgba(239,68,68,.1);   color:#f87171; border:1px solid rgba(239,68,68,.22); }
+
+.nb-sc-score-big {
+  font-size:4rem; font-weight:900; line-height:1;
+  letter-spacing:-3px; text-align:center;
 }
-.nb-sc-emoji { font-size: 2.4rem; line-height: 1; }
-.nb-sc-title {
-  font-size: 1rem; font-weight: 800; color: #f1f5f9;
-  font-family: var(--font); margin: 0;
-}
-.nb-sc-quiz {
-  font-size: .75rem; color: rgba(255,255,255,.4); margin: 0;
+.nb-sc-score-denom {
+  font-size:1.2rem; font-weight:600; letter-spacing:0;
+  color:rgba(241,245,249,.3); margin-left:4px;
 }
 
-/* Auto-detect status rows */
-.nb-sc-auto-ok, .nb-sc-auto-warn {
-  display: flex; align-items: flex-start; gap: 7px;
-  padding: 9px 12px; border-radius: 10px; font-size: .75rem; font-weight: 700;
-  line-height: 1.4;
+.nb-sc-stat-row {
+  display:flex; align-items:center; justify-content:space-between;
+  background:rgba(255,255,255,.05); border-radius:12px;
+  padding:11px 16px; border:1px solid rgba(255,255,255,.08);
 }
-.nb-sc-auto-ok  { background: rgba(16,185,129,.1); color: #34d399; border: 1px solid rgba(16,185,129,.2); }
-.nb-sc-auto-warn{ background: rgba(245,158,11,.1);  color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
-.nb-sc-auto-ok svg, .nb-sc-auto-warn svg { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; margin-top: 1px; }
+.nb-sc-stat-lbl { font-size:.78rem; color:rgba(241,245,249,.45); }
+.nb-sc-stat-val { font-size:.92rem; font-weight:800; color:#f1f5f9; }
 
-/* Input fields */
-.nb-sc-fields { display: flex; flex-direction: column; gap: 10px; }
-.nb-sc-field { display: flex; flex-direction: column; gap: 6px; }
-.nb-sc-lbl {
-  font-size: .68rem; font-weight: 700; color: rgba(255,255,255,.35);
-  text-transform: uppercase; letter-spacing: 1px;
+.nb-sc-lock {
+  font-size:.67rem; color:rgba(241,245,249,.22); text-align:center;
+  border-top:1px solid rgba(255,255,255,.07); padding-top:10px; line-height:1.5;
 }
-.nb-sc-inp-row {
+
+/* file:// blocked guide */
+.nb-sc-file-guide {
+  background:rgba(239,68,68,.07); border:1px solid rgba(239,68,68,.2);
+  border-radius:12px; padding:14px 16px; font-size:.78rem; line-height:1.7;
+  color:rgba(241,245,249,.75); text-align:left;
+}
+.nb-sc-file-guide b { color:#f87171; }
+
+/* Swal validation */
+.swal2-validation-message {
+  background:rgba(239,68,68,.1) !important; color:#f87171 !important;
+  border-radius:10px !important; border:1px solid rgba(239,68,68,.2) !important;
+  font-size:.82rem !important;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD — Bridge Script Guide
+   ═══════════════════════════════════════════════════════ */
+.nb-bridge-guide {
+  background: rgba(16,185,129,.06); border: 1px solid rgba(16,185,129,.2);
+  border-radius: 12px; padding: 12px 14px;
+}
+.nb-bridge-title {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .75rem; font-weight: 800; color: var(--accent);
+  margin-bottom: 6px;
+}
+.nb-bridge-title svg { fill: var(--accent); }
+.nb-bridge-desc {
+  font-size: .73rem; color: rgba(255,255,255,.55); margin: 0 0 8px; line-height: 1.5;
+}
+.nb-bridge-desc code { color: var(--primary); }
+.nb-bridge-code-wrap {
   display: flex; align-items: center; gap: 8px;
+  background: rgba(0,0,0,.35); border-radius: 8px; padding: 8px 12px;
+  margin-bottom: 7px;
 }
-.nb-sc-inp {
-  padding: 11px 14px; border-radius: 11px;
-  background: rgba(255,255,255,.07); border: 1.5px solid rgba(79,172,254,.25);
-  color: #fff; font-family: var(--font); font-weight: 700;
-  outline: none; transition: .2s; -moz-appearance: textfield;
-  text-align: center;
+.nb-bridge-code {
+  flex: 1; font-family: 'Fira Mono','Courier New',monospace; font-size: .71rem;
+  color: #7dd3fc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  user-select: all;
 }
-.nb-sc-inp::-webkit-inner-spin-button,
-.nb-sc-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
-.nb-sc-inp:focus { border-color: var(--primary); background: rgba(79,172,254,.1);
-  box-shadow: 0 0 0 3px rgba(79,172,254,.12); }
-.nb-sc-inp-score { font-size: 1.8rem; flex: 1; }
-.nb-sc-inp-sm    { font-size: 1rem; width: 72px; min-width: 60px; }
-.nb-sc-sep {
-  font-size: .9rem; font-weight: 700; color: rgba(255,255,255,.3); flex-shrink: 0;
+.nb-bridge-copy {
+  border: none; background: rgba(79,172,254,.15); color: var(--primary);
+  border-radius: 7px; padding: 4px 10px; font-size: .7rem; font-weight: 700;
+  cursor: pointer; white-space: nowrap; transition: .15s; flex-shrink: 0;
 }
-.nb-sc-tip {
-  font-size: .7rem; color: rgba(255,255,255,.3); text-align: center;
-  border-top: 1px solid rgba(255,255,255,.07); padding-top: 10px; line-height: 1.5;
+.nb-bridge-copy:hover { background: rgba(79,172,254,.28); }
+.nb-bridge-note {
+  font-size: .7rem; color: rgba(16,185,129,.8); margin: 0;
 }
-@media(max-width:480px){
-  .nb-sc-inp-score { font-size: 1.4rem; }
+
+/* ── Score confirm: no-bridge guidance ── */
+.nb-sc-install-guide {
+  background: rgba(79,172,254,.08); border: 1px solid rgba(79,172,254,.2);
+  border-radius: 12px; padding: 14px 16px; font-size: .8rem; line-height: 1.7;
+  color: rgba(241,245,249,.75); text-align: left;
+}
+.nb-sc-install-guide strong { color: var(--primary); }
+.nb-sc-install-guide code {
+  background: rgba(0,0,0,.35); padding: 2px 6px; border-radius: 5px;
+  font-size: .73rem; color: #7dd3fc;
 }
