@@ -4159,3 +4159,67 @@ body.qz-body[data-mode="test"] .qz-timer {
   border: 1px solid rgba(239,68,68,.2) !important;
   font-size: .82rem !important;
 }
+
+/* ═══════════════════════════════════════════════════════
+   ISPING SCORE CONFIRM DIALOG — nb-sc-* classes
+   ═══════════════════════════════════════════════════════ */
+.nb-score-popup.swal2-popup { max-width: 400px !important; }
+
+.nb-sc-wrap {
+  display: flex; flex-direction: column; gap: 14px; padding: 4px 0;
+}
+.nb-sc-header {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.nb-sc-emoji { font-size: 2.4rem; line-height: 1; }
+.nb-sc-title {
+  font-size: 1rem; font-weight: 800; color: #f1f5f9;
+  font-family: var(--font); margin: 0;
+}
+.nb-sc-quiz {
+  font-size: .75rem; color: rgba(255,255,255,.4); margin: 0;
+}
+
+/* Auto-detect status rows */
+.nb-sc-auto-ok, .nb-sc-auto-warn {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 9px 12px; border-radius: 10px; font-size: .75rem; font-weight: 700;
+  line-height: 1.4;
+}
+.nb-sc-auto-ok  { background: rgba(16,185,129,.1); color: #34d399; border: 1px solid rgba(16,185,129,.2); }
+.nb-sc-auto-warn{ background: rgba(245,158,11,.1);  color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
+.nb-sc-auto-ok svg, .nb-sc-auto-warn svg { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; margin-top: 1px; }
+
+/* Input fields */
+.nb-sc-fields { display: flex; flex-direction: column; gap: 10px; }
+.nb-sc-field { display: flex; flex-direction: column; gap: 6px; }
+.nb-sc-lbl {
+  font-size: .68rem; font-weight: 700; color: rgba(255,255,255,.35);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.nb-sc-inp-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.nb-sc-inp {
+  padding: 11px 14px; border-radius: 11px;
+  background: rgba(255,255,255,.07); border: 1.5px solid rgba(79,172,254,.25);
+  color: #fff; font-family: var(--font); font-weight: 700;
+  outline: none; transition: .2s; -moz-appearance: textfield;
+  text-align: center;
+}
+.nb-sc-inp::-webkit-inner-spin-button,
+.nb-sc-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
+.nb-sc-inp:focus { border-color: var(--primary); background: rgba(79,172,254,.1);
+  box-shadow: 0 0 0 3px rgba(79,172,254,.12); }
+.nb-sc-inp-score { font-size: 1.8rem; flex: 1; }
+.nb-sc-inp-sm    { font-size: 1rem; width: 72px; min-width: 60px; }
+.nb-sc-sep {
+  font-size: .9rem; font-weight: 700; color: rgba(255,255,255,.3); flex-shrink: 0;
+}
+.nb-sc-tip {
+  font-size: .7rem; color: rgba(255,255,255,.3); text-align: center;
+  border-top: 1px solid rgba(255,255,255,.07); padding-top: 10px; line-height: 1.5;
+}
+@media(max-width:480px){
+  .nb-sc-inp-score { font-size: 1.4rem; }
+}

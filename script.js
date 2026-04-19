@@ -2197,167 +2197,224 @@ window.nbPlayerInit = function(){
   },false);
 
   /* ── SCORE SCRAPER: reads actual score text from iSpring DOM ── */
-  function scrapeScoreFromDom(){
-    const fr=$('pl-frame'); if(!fr) return 0;
+  /* ═══════════════════════════════════════════════════════════════
+     iSPRING RESULT READER — Quét DOM liên tục + cho nhập tay điểm
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* Cache kết quả tốt nhất tìm được trong quá trình quét liên tục */
+  let _cached = { score:0, correct:0, total:0, found:false };
+
+  function _getIframeText(){
     try{
-      const iDoc=fr.contentDocument||fr.contentWindow&&fr.contentWindow.document;
-      if(!iDoc||!iDoc.body) return 0;
-      const body=iDoc.body;
+      const fr=$('pl-frame'); if(!fr) return '';
+      const iDoc=fr.contentDocument||(fr.contentWindow&&fr.contentWindow.document);
+      if(!iDoc||!iDoc.body) return '';
+      return (iDoc.body.innerText||iDoc.body.textContent||'').replace(/\s+/g,' ').trim();
+    }catch(e){ return ''; }
+  }
 
-      /* iSpring-specific selectors (v9 / v10 / v11) */
-      const ispringSelectors=[
-        /* iSpring 10 HTML5 */
-        '.qp-result-score-value','.qp-score-item-value','.qp-overall-score',
-        '.result-score-value','.score-percent',
-        /* iSpring 9 */
-        '.slide-score','.quiz-result-score','.js-score',
-        /* Generic score display */
-        '[class*="score"][class*="value"]','[class*="score"][class*="percent"]',
-        '[class*="result"][class*="score"]',
-        /* Data attributes */
-        '[data-score]',
-      ];
+  /* Trích xuất điểm %, số câu đúng, tổng câu từ text bất kỳ */
+  /* ═══════════════════════════════════════════════════════════════
+     _parseIspringText — Trích xuất điểm & số câu đúng từ iSpring text
+     ──────────────────────────────────────────────────────────────
+     iSpring result pattern (từ screenshot thực tế):
+       "You did not pass."
+       "Your Score:    2% (1 points)"
+       "Passing Score: 100% (45 points)"
+     → Chỉ lấy "Your Score" %, KHÔNG lấy "Passing Score" %
+     ═══════════════════════════════════════════════════════════════ */
+  function _parseIspringText(text){
+    if(!text||text.length<2) return null;
+    let score=0, correct=0, total=0;
 
-      for(const sel of ispringSelectors){
-        const el=iDoc.querySelector(sel);
-        if(!el) continue;
-        const txt=(el.getAttribute('data-score')||el.textContent||'').trim();
-        const n=_parseScoreText(txt);
-        if(n>0&&n<=100) return n;
+    /* ── 1. Ưu tiên: tìm "Your Score: X%" hoặc tương tự ── */
+    /* Loại bỏ dòng "Passing Score" khỏi text trước */
+    const cleanText = text.replace(/passing\s+score[^\n]*/gi, '')
+                          .replace(/điểm\s+qua[^\n]*/gi, '')
+                          .replace(/pass[ing]*\s+score[^\n]*/gi, '');
+
+    /* Pattern: "Your Score: 2% (1 points)" */
+    const yourScorePatterns = [
+      /your\s+score\s*[:：]\s*([\d.]+)\s*%/i,
+      /score\s+achieved\s*[:：]\s*([\d.]+)\s*%/i,
+      /điểm\s+của\s+bạn\s*[:：]\s*([\d.]+)\s*%/i,
+      /kết\s+quả\s*[:：]\s*([\d.]+)\s*%/i,
+      /(?:score|điểm)\s*[:：]\s*([\d.]+)\s*%/i,
+      /^([\d.]+)\s*%/m,   /* % đầu tiên trong cleanText */
+    ];
+
+    for(const pat of yourScorePatterns){
+      const m = cleanText.match(pat);
+      if(m){
+        const n = parseFloat(m[1]);
+        if(!isNaN(n) && n>=0 && n<=100){ score=Math.round(n); break; }
       }
+    }
 
-      /* Fallback: scan ALL text nodes in result/score divs for score patterns */
-      const allText=body.innerText||body.textContent||'';
-      return _parseScoreText(allText);
-    }catch(e){ return 0; }
+    /* ── 2. Tìm points: "X points" (score) và "Y points" (passing) ── */
+    /* "Your Score: 2% (1 points)" + "Passing Score: 100% (45 points)" */
+    const yourPtsM  = text.match(/your\s+score[^(]*\(([\d.]+)\s+points?\)/i);
+    const passPtsM  = text.match(/passing\s+score[^(]*\(([\d.]+)\s+points?\)/i);
+    if(yourPtsM && passPtsM){
+      const got = parseFloat(yourPtsM[1]);
+      const max = parseFloat(passPtsM[1]);
+      if(!isNaN(got) && !isNaN(max) && max>0 && got<=max){
+        correct = Math.round(got);
+        total   = Math.round(max);
+        /* Tính lại % từ points nếu chưa có hoặc không khớp */
+        const calcPct = Math.round((got/max)*100);
+        if(score===0) score = calcPct;
+        /* Nếu score từ % text khác nhiều so với tính từ points → dùng points */
+        if(Math.abs(score - calcPct) > 5) score = calcPct;
+      }
+    }
+
+    /* ── 3. Fallback: "X of Y", "X/Y" cho correct/total ── */
+    if((correct===0||total===0) && !yourPtsM){
+      const fracPats=[
+        /(\d+)\s*\/\s*(\d+)/g,
+        /(\d+)\s+(?:of|из|trên|trong)\s+(\d+)/gi,
+        /(?:correct|đúng|right)[^\d]*(\d+)[^\d]*(?:of|\/|из)\s*(\d+)/gi,
+      ];
+      for(const pat of fracPats){
+        const ms=[...text.matchAll(pat)];
+        for(const m of ms){
+          const a=parseInt(m[1]), b=parseInt(m[2]||'0');
+          if(!isNaN(a)&&a>=0&&a<=999&&b>0&&b>=a&&b<=999){ correct=a; total=b; break; }
+        }
+        if(correct>0&&total>0) break;
+      }
+    }
+
+    /* ── 4. Fallback %: nếu vẫn chưa có điểm, lấy % ĐẦU TIÊN trong cleanText ── */
+    if(score===0){
+      const pctM = cleanText.match(/([\d.]+)\s*%/);
+      if(pctM){
+        const n=parseFloat(pctM[1]);
+        if(!isNaN(n)&&n>=0&&n<=100) score=Math.round(n);
+      }
+    }
+
+    /* ── 5. Tính câu đúng từ điểm & total ── */
+    if(correct===0&&score>0&&total>0) correct=Math.round((score/100)*total);
+
+    const found=score>0||correct>0;
+    return found?{score,correct,total,found}:null;
   }
 
-  function _parseScoreText(text){
-    if(!text) return 0;
-    /* "80%" or "80 %" */
-    const pctM=text.match(/\b(\d{1,3})\s*%/);
-    if(pctM){ const n=parseInt(pctM[1]); if(n>=0&&n<=100) return n; }
-    /* "80/100" or "80 / 100" */
-    const fracM=text.match(/\b(\d{1,3})\s*\/\s*100\b/);
-    if(fracM){ const n=parseInt(fracM[1]); if(n>=0&&n<=100) return n; }
-    /* "Score: 80" or "Points: 80" */
-    const lblM=text.match(/(?:score|điểm|points?)[:\s]+(\d{1,3})/i);
-    if(lblM){ const n=parseInt(lblM[1]); if(n>=0&&n<=100) return n; }
-    return 0;
+  /* Quét liên tục mỗi 600ms */
+  let _scanTimer=null;
+  function _startScan(){
+    if(_scanTimer) return;
+    _scanTimer=setInterval(()=>{
+      if(state!=='doing') return;
+      const text=_getIframeText();
+      const r=_parseIspringText(text);
+      if(r&&(r.score>_cached.score||(r.found&&!_cached.found)))
+        _cached={...r};
+      _checkResultScreen();
+    },600);
+  }
+  function _stopScan(){ clearInterval(_scanTimer); _scanTimer=null; }
+
+  /* Phát hiện màn hình kết quả iSpring qua DOM selectors */
+  function _checkResultScreen(){
+    try{
+      const fr=$('pl-frame');
+      const iDoc=fr&&(fr.contentDocument||(fr.contentWindow&&fr.contentWindow.document));
+      if(!iDoc||!iDoc.body) return;
+      const sels=[
+        '.qp-result-slide','.result-slide','.slide-result',
+        '.quiz-result','.quiz-results','.result-screen',
+        '[class*="result-slide"]','[class*="resultSlide"]',
+        '[class*="quiz-complete"]','[class*="finishSlide"]',
+        '[data-slide-type="result"]','[data-slide-type="finish"]',
+      ];
+      let onResult=false;
+      for(const s of sels){ if(iDoc.querySelector(s)){onResult=true;break;} }
+      if(!onResult){
+        const title=(iDoc.title||'').toLowerCase();
+        if(/result|finish|complet|pass|fail|score|kết\s*quả/i.test(title)) onResult=true;
+      }
+      if(onResult&&!doneF){
+        const text=_getIframeText();
+        const r=_parseIspringText(text);
+        if(r) _cached={...r};
+        setTimeout(()=>{ if(!doneF) _triggerDone(); },800);
+      }
+    }catch(e){}
   }
 
-  /* ── DOM OBSERVER: watch for iSpring completion + auto-scrape score ── */
+  function _triggerDone(){
+    if(doneF) return;
+    doneF=true; state='done';
+    clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs(); _stopScan();
+    setExit('done'); pg(100);
+    if(score>0&&score<=1) score=Math.round(score*100);
+    if(score>_cached.score) _cached.score=score;
+    showScoreConfirm(_cached);
+  }
+
+  function onDone(){ _triggerDone(); }
+
+  /* DOM OBSERVER */
   let _mutObs=null;
   function watchIframeDom(){
     const fr=$('pl-frame'); if(!fr) return;
     clearMutObs();
-    let _attached=false, _scrapeInterval=null;
-
-    function _startScrapeLoop(){
-      if(_scrapeInterval) return;
-      _scrapeInterval=setInterval(()=>{
-        if(state!=='doing'){ clearInterval(_scrapeInterval); return; }
-        const s=scrapeScoreFromDom();
-        if(s>0){ score=s; }
-        /* Check if iSpring result screen is visible */
-        try{
-          const fr2=$('pl-frame');
-          const iDoc=fr2&&(fr2.contentDocument||fr2.contentWindow&&fr2.contentWindow.document);
-          if(!iDoc) return;
-          const body=iDoc.body;
-          const resultSelectors=[
-            '.qp-result-slide','.result-slide','.quiz-results',
-            '.slide-result','.quiz-result','[class*="result-slide"]',
-            '[class*="quiz-complete"]','[class*="finish"]',
-          ];
-          for(const sel of resultSelectors){
-            if(iDoc.querySelector(sel)){
-              clearInterval(_scrapeInterval);
-              const finalScore=scrapeScoreFromDom();
-              if(finalScore>0) score=finalScore;
-              /* small delay to let iSpring fully render score */
-              setTimeout(()=>onDone(),600);
-              return;
-            }
-          }
-          /* Also check page title */
-          const title=(iDoc.title||iDoc.documentElement?.getAttribute('data-title')||'').toLowerCase();
-          if(/result|summary|finish|complet|pass|fail|score|kết\s*quả/i.test(title)){
-            clearInterval(_scrapeInterval);
-            setTimeout(()=>{ const fs=scrapeScoreFromDom(); if(fs>0) score=fs; onDone(); },600);
-          }
-        }catch(e){}
-      },1500);
-    }
-
     function tryAttach(){
       try{
-        const iDoc=fr.contentDocument||fr.contentWindow&&fr.contentWindow.document;
+        const iDoc=fr.contentDocument||(fr.contentWindow&&fr.contentWindow.document);
         if(!iDoc||!iDoc.body) return false;
-
-        /* Override close() on the iframe window */
         try{
-          fr.contentWindow.close=function(){ const s=scrapeScoreFromDom(); if(s>0) score=s; onDone(); };
+          fr.contentWindow.close=function(){
+            const r=_parseIspringText(_getIframeText());
+            if(r) _cached={...r};
+            _triggerDone();
+          };
           if(fr.contentWindow.top&&fr.contentWindow.top!==window)
-            fr.contentWindow.top.close=function(){ onDone(); };
+            fr.contentWindow.top.close=function(){_triggerDone();};
         }catch(e){}
-
-        /* Intercept button clicks — "Close", "Thoát", "Finish" etc. */
         iDoc.addEventListener('click',function(e){
           if(state!=='doing') return;
           const t=e.target&&e.target.closest('button,a,[role="button"],[class*="btn"],[class*="close"],[class*="exit"]');
           if(!t) return;
-          const txt=(t.textContent||t.title||t.getAttribute('aria-label')||'').toLowerCase().trim();
+          const txt=(t.textContent||t.title||t.getAttribute('aria-label')||'').trim();
           const cls=(t.className||'').toLowerCase();
           if(/^(close|exit|quit|đóng|thoát|finish|done|завершить|закрыть|hoàn\s*thành|kết\s*thúc)$/i.test(txt)||
              /close|exit|finish|done|quit/i.test(cls)||
              /close|exit|finish/i.test(t.id)){
-            e.stopPropagation&&e.stopPropagation();
-            setTimeout(()=>{ const s=scrapeScoreFromDom(); if(s>0) score=s; onDone(); },100);
+            const r=_parseIspringText(_getIframeText());
+            if(r) _cached={...r};
+            setTimeout(()=>_triggerDone(),80);
           }
         },true);
-
-        /* MutationObserver for DOM changes */
-        _mutObs=new MutationObserver(function(){
-          try{
-            const title=(iDoc.title||'').toLowerCase();
-            if(/result|summary|finish|complet|pass|fail|score|kết\s*quả/i.test(title)){
-              const s=scrapeScoreFromDom(); if(s>0) score=s;
-              onDone();
-            }
-          }catch(e){}
-        });
+        _mutObs=new MutationObserver(()=>_checkResultScreen());
         _mutObs.observe(iDoc.documentElement||iDoc,{subtree:false,childList:true,attributes:true,attributeFilter:['class','id']});
         if(iDoc.body) _mutObs.observe(iDoc.body,{subtree:true,childList:true});
-
-        _attached=true;
-        _startScrapeLoop();
         return true;
-      }catch(e){ return false; }
+      }catch(e){return false;}
     }
-
     if(!tryAttach()){
-      const retryT=setInterval(()=>{ if(tryAttach()) clearInterval(retryT); },600);
-      setTimeout(()=>clearInterval(retryT),12000);
+      const t=setInterval(()=>{if(tryAttach())clearInterval(t);},600);
+      setTimeout(()=>clearInterval(t),12000);
     }
-
-    /* Cleanup on window unload */
-    window.addEventListener('pagehide',()=>{ clearInterval(_scrapeInterval); clearMutObs(); },{once:true});
+    window.addEventListener('pagehide',()=>{_stopScan();clearMutObs();},{once:true});
   }
-  function clearMutObs(){ if(_mutObs){ _mutObs.disconnect(); _mutObs=null; } }
+  function clearMutObs(){if(_mutObs){_mutObs.disconnect();_mutObs=null;}}
 
   let _urlTimer=null;
   function watchUrl(){
     clearInterval(_urlTimer);
     _urlTimer=setInterval(()=>{
-      if(state!=='doing'){ clearInterval(_urlTimer); return; }
+      if(state!=='doing'){clearInterval(_urlTimer);return;}
       try{
         const href=$('pl-frame').contentWindow.location.href;
         if(/result|summary|finish|complete|score/i.test(href)){
           clearInterval(_urlTimer);
           const m=href.match(/[?&]score[=:]([\d.]+)/i);
-          if(m){ const n=parseFloat(m[1]); if(!isNaN(n)) score=n; }
-          onDone();
+          if(m){const n=parseFloat(m[1]);if(!isNaN(n))score=n;}
+          _triggerDone();
         }
       }catch(e){}
     },1500);
@@ -2365,138 +2422,140 @@ window.nbPlayerInit = function(){
 
   let _pgTimer=null,_pgElapsed=0;
   function startAutoCheck(){
-    clearInterval(_pgTimer); _pgElapsed=0;
-    _pgTimer=setInterval(()=>{
-      _pgElapsed+=5;
-      if(state==='doing') pg(Math.min(30+_pgElapsed/3,90));
-    },5000);
+    clearInterval(_pgTimer);_pgElapsed=0;
+    _pgTimer=setInterval(()=>{_pgElapsed+=5;if(state==='doing')pg(Math.min(30+_pgElapsed/3,90));},5000);
   }
 
   (function boot(){
-    const sEl=$('pl-student'); if(sEl) sEl.textContent=sName;
-    const nEl=$('pl-load-name'); if(nEl) nEl.textContent=iName;
-    if(!path){ showError('Không có đường dẫn','Quay lại chọn bài iSpring.'); return; }
+    const sEl=$('pl-student');if(sEl)sEl.textContent=sName;
+    const nEl=$('pl-load-name');if(nEl)nEl.textContent=iName;
+    if(!path){showError('Không có đường dẫn','Quay lại chọn bài iSpring.');return;}
     const nm=iName||path.split('/').slice(-2,-1)[0]||'iSpring';
-    const titleEl=$('pl-name'); if(titleEl) titleEl.textContent=nm;
+    const titleEl=$('pl-name');if(titleEl)titleEl.textContent=nm;
     document.title='Nebula | '+nm;
     const fr=$('pl-frame');
     fr.src=path;
     fr.addEventListener('load',function onLoad(){
-      const ld=$('pl-loading'); if(ld) ld.style.display='none';
-      state='doing'; setExit('ready'); pg(30);
-      const sb=$('pl-submit-btn'); if(sb) sb.style.display='flex';
-      /* Inject SCORM API vào iframe window (quan trọng cho localhost same-origin) */
-      try{
-        const fw=fr.contentWindow;
-        if(fw){ fw.API=_scorm12; fw.API_1484_11=_scorm2004; }
-      }catch(e){}
-      startAutoCheck(); watchUrl(); watchIframeDom();
+      const ld=$('pl-loading');if(ld)ld.style.display='none';
+      state='doing';setExit('ready');pg(30);
+      const sb=$('pl-submit-btn');if(sb)sb.style.display='flex';
+      try{const fw=fr.contentWindow;if(fw){fw.API=_scorm12;fw.API_1484_11=_scorm2004;}}catch(e){}
+      startAutoCheck();watchUrl();watchIframeDom();_startScan();
     });
     fr.addEventListener('error',function(){
       showError('Không tải được bài','Đường dẫn không tồn tại hoặc bị chặn.');
     });
   })();
 
-  function onDone(){
-    if(doneF) return;
-    doneF=true; state='done';
-    clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs();
-    setExit('done'); pg(100);
-    if(score>0&&score<=1) score=Math.round(score*100);
-    /* Try one final DOM scrape in case SCORM missed the score */
-    const domScore=scrapeScoreFromDom();
-    if(domScore>0&&score===0) score=domScore;
-    showScoreConfirm(score);
-  }
-
-  /* ── SCORE CONFIRM DIALOG ──
-     Chỉ hiển thị điểm capture tự động — KHÔNG cho nhập tay để tránh gian lận.
-     Sau khi xác nhận: lưu localStorage + POST GAS → chuyển result.html.           */
-  function showScoreConfirm(capturedScore){
+  /* ═══════════════════════════════════════════════════════════════
+     DIALOG XÁC NHẬN KẾT QUẢ — Hiển thị điểm & số câu đúng
+     Nếu tự động không bắt được → cho nhập tay (học sinh nhìn màn hình)
+     ═══════════════════════════════════════════════════════════════ */
+  function showScoreConfirm(cached){
     const st=status||'completed';
-    const finalScore=Math.min(100,Math.max(0,Math.round(capturedScore||0)));
-    const autoOk=capturedScore>0;
+    const autoScore=Math.min(100,Math.max(0,Math.round(cached.score||0)));
+    const autoCorrect=cached.correct||0;
+    const autoTotal=cached.total||0;
+    const autoFound=cached.found&&autoScore>0;
 
-    /* Nếu SweetAlert2 chưa load → tự lưu và chuyển trang luôn, không cho nhập tay */
     if(typeof Swal==='undefined'){
-      showResult(finalScore,st);
-      saveResult(finalScore,st).then(()=>setTimeout(()=>location.href='result.html',1800));
+      _doSaveAndGo(autoScore,autoCorrect,autoTotal,st);
       return;
     }
 
-    const scoreColor=finalScore>=80?'#10b981':finalScore>=50?'#3b82f6':'#ef4444';
-    const statusLine=autoOk
-      ?`<div style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:#10b981;margin-top:8px">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-          Điểm nhận tự động từ iSpring SCORM
-        </div>`
-      :`<div style="display:flex;align-items:center;gap:6px;font-size:.75rem;color:#f59e0b;margin-top:8px">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
-          SCORM không trả điểm — ghi nhận 0 điểm
-        </div>`;
+    const autoRow=autoFound
+      ?`<div class="nb-sc-auto-ok"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đọc tự động từ màn hình iSpring</div>`
+      :`<div class="nb-sc-auto-warn"><svg viewBox="0 0 24 24"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg> Không đọc được tự động — nhìn màn hình iSpring và nhập vào bên dưới</div>`;
 
     Swal.fire({
-      html:`<div style="text-align:center;padding:6px 0">
-        <div style="font-size:2.2rem;margin-bottom:4px">${finalScore>=80?'🏆':finalScore>=50?'🚀':'🎯'}</div>
-        <h3 style="font-size:.95rem;font-weight:700;color:#f1f5f9;margin:0 0 3px">Kết quả bài thi iSpring</h3>
-        <p style="font-size:.75rem;color:rgba(241,245,249,.45);margin:0 0 14px">${iName||'Bài thi'}</p>
-        <div style="font-size:2.8rem;font-weight:900;color:${scoreColor};line-height:1">
-          ${finalScore}<span style="font-size:1rem;opacity:.55;font-weight:600">&nbsp;/100</span>
+      html:`<div class="nb-sc-wrap">
+        <div class="nb-sc-header">
+          <span class="nb-sc-emoji">${autoScore>=80?'🏆':autoScore>=50?'🚀':'🎯'}</span>
+          <div class="nb-sc-title">Kết quả bài thi iSpring</div>
+          <div class="nb-sc-quiz">${iName||'Bài thi'}</div>
         </div>
-        ${statusLine}
-        <p style="font-size:.68rem;color:rgba(241,245,249,.3);margin-top:14px;
-           border-top:1px solid rgba(255,255,255,.08);padding-top:10px">
-          Điểm được xác định bởi hệ thống, không thể thay đổi
-        </p>
+        ${autoRow}
+        <div class="nb-sc-fields">
+          <div class="nb-sc-field">
+            <label class="nb-sc-lbl">Điểm số (0 – 100)</label>
+            <div class="nb-sc-inp-row">
+              <input id="nb-score-inp" type="number" min="0" max="100" step="1"
+                class="nb-sc-inp nb-sc-inp-score" value="${autoScore}"
+                placeholder="0" inputmode="numeric">
+              <span class="nb-sc-sep">/ 100</span>
+            </div>
+          </div>
+          <div class="nb-sc-field">
+            <label class="nb-sc-lbl">Số câu đúng / Tổng câu (nếu biết)</label>
+            <div class="nb-sc-inp-row">
+              <input id="nb-correct-inp" type="number" min="0" max="999" step="1"
+                class="nb-sc-inp nb-sc-inp-sm" value="${autoCorrect||''}"
+                placeholder="?" inputmode="numeric">
+              <span class="nb-sc-sep">/</span>
+              <input id="nb-total-inp" type="number" min="0" max="999" step="1"
+                class="nb-sc-inp nb-sc-inp-sm" value="${autoTotal||''}"
+                placeholder="?" inputmode="numeric">
+            </div>
+          </div>
+        </div>
+        <div class="nb-sc-tip">💡 Nhìn kết quả trên màn hình iSpring và điền đúng vào đây</div>
       </div>`,
-      background:'rgba(8,14,30,0.97)', color:'#f1f5f9',
+      background:'rgba(8,14,30,0.97)',color:'#f1f5f9',
       confirmButtonText:'✓ Lưu & Xem kết quả',
-      showCancelButton:true, cancelButtonText:'↺ Làm lại',
+      showCancelButton:true,cancelButtonText:'↺ Làm lại',
       customClass:{popup:'nb-swal-popup nb-score-popup',
         confirmButton:'nb-swal-btn nb-swal-btn-confirm',
         cancelButton:'nb-swal-btn nb-swal-btn-cancel'},
-      buttonsStyling:false,
-      allowOutsideClick:false,
+      buttonsStyling:false,allowOutsideClick:false,
       showClass:{popup:'animate__animated animate__zoomIn'},
+      preConfirm:()=>{
+        const sc=parseInt(document.getElementById('nb-score-inp')?.value||'0');
+        const cor=parseInt(document.getElementById('nb-correct-inp')?.value||'0')||0;
+        const tot=parseInt(document.getElementById('nb-total-inp')?.value||'0')||0;
+        if(isNaN(sc)||sc<0||sc>100){Swal.showValidationMessage('Điểm phải từ 0 đến 100');return false;}
+        return{score:sc,correct:cor,total:tot};
+      }
     }).then(res=>{
       if(res.isConfirmed){
-        /* Lưu kết quả → chuyển sang result.html sau 1.8s */
-        showResult(finalScore,st);
-        saveResult(finalScore,st).then(()=>setTimeout(()=>location.href='result.html',1800));
-      } else {
-        /* Học sinh chọn "Làm lại" — reset và load lại iSpring từ đầu */
+        const{score:sc,correct:cor,total:tot}=res.value;
+        showResult(sc,st);
+        _doSaveAndGo(sc,cor,tot,st);
+      }else{
         _doRetry();
       }
     });
   }
 
-  /* Manual trigger — called from header button */
+  function _doSaveAndGo(sc,correct,total,st){
+    saveResult(sc,correct,total,st).then(()=>setTimeout(()=>location.href='result.html',1800));
+  }
+
+  /* "Nộp kết quả" header button */
   window._plManualScore=function(){
     if(state==='doing'||state==='idle'){
-      state='done'; doneF=true;
-      clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs();
-      setExit('done'); pg(100);
-      const s=scrapeScoreFromDom();
-      if(s>0) score=s;
-      showScoreConfirm(score);
-    } else if(state==='done'){
-      /* Already on result — just go to result.html */
+      const r=_parseIspringText(_getIframeText());
+      if(r) _cached={...r};
+      state='done';doneF=true;
+      clearInterval(_urlTimer);clearInterval(_pgTimer);clearMutObs();_stopScan();
+      setExit('done');pg(100);
+      if(score>0&&score<=1)score=Math.round(score*100);
+      if(score>_cached.score)_cached.score=score;
+      showScoreConfirm(_cached);
+    }else if(state==='done'){
       location.href='result.html';
     }
   };
 
   function showResult(sc,st){
     const panel=$('pl-result');
-    if(panel){ panel.classList.add('open'); panel.scrollTop=0; }
+    if(panel){panel.classList.add('open');panel.scrollTop=0;}
     const tr=$('pl-trophy'),ti=$('pl-result-title');
-    if(sc>=80){ if(tr)tr.textContent='👑'; if(ti)ti.textContent='XUẤT SẮC!'; }
-    else if(sc>=50){ if(tr)tr.textContent='🚀'; if(ti)ti.textContent='TỐT LẮM!'; }
-    else{ if(tr)tr.textContent='🎯'; if(ti)ti.textContent='CỐ GẮNG LÊN!'; }
+    if(sc>=80){if(tr)tr.textContent='👑';if(ti)ti.textContent='XUẤT SẮC!';}
+    else if(sc>=50){if(tr)tr.textContent='🚀';if(ti)ti.textContent='TỐT LẮM!';}
+    else{if(tr)tr.textContent='🎯';if(ti)ti.textContent='CỐ GẮNG LÊN!';}
     const cx=sCls?' · '+sCls:'';
-    const sv=(id,v)=>{ const e=$('pl-r-'+id); if(e) e.textContent=v; };
-    sv('name',  sName);
-    sv('school',sSchool+cx);
-    sv('test',  iName||'Bài thi iSpring');
+    const sv=(id,v)=>{const e=$('pl-r-'+id);if(e)e.textContent=v;};
+    sv('name',sName);sv('school',sSchool+cx);sv('test',iName||'Bài thi iSpring');
     const stEl=$('pl-r-status');
     const stMap={passed:'Đạt ✓',completed:'Hoàn thành ✓',failed:'Chưa đạt ✗',incomplete:'Chưa xong'};
     if(stEl){
@@ -2504,46 +2563,50 @@ window.nbPlayerInit = function(){
       stEl.className='pl-info-val '+(['passed','completed'].includes(st)?'ok':st==='failed'?'bad':'warn');
     }
     animNum('pl-score-num',0,sc,1100);
-    setTimeout(()=>{
-      const fg=$('pl-ring-fg'); if(!fg) return;
-      const C=2*Math.PI*56;
-      fg.style.strokeDashoffset=String(C-(sc/100)*C);
-    },80);
+    setTimeout(()=>{const fg=$('pl-ring-fg');if(!fg)return;const C=2*Math.PI*56;fg.style.strokeDashoffset=String(C-(sc/100)*C);},80);
   }
 
-  async function saveResult(sc,st){
-    if(saveF) return; saveF=true;
+  /* saveResult — lưu đủ: score, correct/total → GAS + localStorage */
+  async function saveResult(sc,correct,total,st){
+    if(saveF)return;saveF=true;
     const syncEl=$('pl-sync');
     const tn='[iSpring] '+(iName||path.split('/').slice(-2,-1)[0]||'Bài tập');
-    function syncUI(cls,html){ if(syncEl){ syncEl.className=cls; syncEl.innerHTML=html; } }
+    const totalStr=correct>0&&total>0?`${correct}/${total}`:sc>0?`${sc}/100`:'—';
+    function syncUI(cls,html){if(syncEl){syncEl.className=cls;syncEl.innerHTML=html;}}
     syncUI('saving','<svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Đang lưu kết quả...');
-    /* ── Lưu vào localStorage để result.html đọc được ── */
-    localStorage.setItem('lastScore',      sc);
-    localStorage.setItem('quizMode',       'ispring');
-    localStorage.setItem('quizTotalScore', '100');
-    localStorage.setItem('currentTestName', tn.replace(/^\[iSpring\]\s*/,''));
-    localStorage.setItem('ispringStatus',   st||'completed');
-    localStorage.setItem('correctCount',    sc+'/100');
-    localStorage.setItem('studentName',     sName);
-    localStorage.setItem('schoolName',      sSchool);
-    localStorage.setItem('className',       sCls);
+    localStorage.setItem('lastScore',sc);
+    localStorage.setItem('quizMode','ispring');
+    localStorage.setItem('quizTotalScore','100');
+    localStorage.setItem('currentTestName',tn.replace(/^\[iSpring\]\s*/,''));
+    localStorage.setItem('ispringStatus',st||'completed');
+    localStorage.setItem('correctCount',totalStr);
+    localStorage.setItem('ispCorrect',String(correct||0));
+    localStorage.setItem('ispTotal',String(total||0));
+    localStorage.setItem('studentName',sName);
+    localStorage.setItem('schoolName',sSchool);
+    localStorage.setItem('className',sCls);
     try{
-      await fetch(_GAS_URL,{ method:'POST', mode:'no-cors',
+      await fetch(_GAS_URL,{method:'POST',mode:'no-cors',
         headers:{'Content-Type':'text/plain;charset=utf-8'},
         body:JSON.stringify({
-          action:'submitResult', student:sName, school:sSchool,
-          testName:tn, score:sc, total:sc+'/100',
-          answers:JSON.stringify({status:st,source:'iSpring SCORM',score:sc,
-            student:sName,school:sSchool,class:sCls,timestamp:new Date().toISOString()})
+          action:'submitResult',student:sName,school:sSchool,
+          testName:tn,score:sc,total:totalStr,
+          answers:JSON.stringify({
+            status:st,source:'iSpring',score:sc,
+            correct,totalQuestions:total,
+            student:sName,school:sSchool,class:sCls,
+            timestamp:new Date().toISOString()
+          })
         })
       });
       syncUI('ok','<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!');
-      _loadDistribution(sc, tn);
+      _loadDistribution(sc,tn);
     }catch(e){
       saveF=false;
       syncUI('err','<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg> Lưu thất bại. <u style="cursor:pointer" onclick="window._plRetrySave()">Thử lại</u>');
     }
   }
+
 
   async function _loadDistribution(myScore, testName){
     const wrap=$('pl-dist-wrap');
@@ -2604,20 +2667,7 @@ window.nbPlayerInit = function(){
   window._plGoSel    =()=>{ location.href='select.html'; };
   window._plGoHist   =()=>{ location.href='history.html'; };
 
-  /* ── Nộp kết quả thủ công (header button) ── */
-  window._plManualScore=function(){
-    if(state==='doing'||state==='idle'){
-      state='done'; doneF=true;
-      clearInterval(_urlTimer); clearInterval(_pgTimer); clearMutObs();
-      setExit('done'); pg(100);
-      const domScore=scrapeScoreFromDom();
-      if(domScore>0) score=domScore;
-      if(score>0&&score<=1) score=Math.round(score*100);
-      showScoreConfirm(score);
-    } else if(state==='done'){
-      location.href='result.html';
-    }
-  };
+  /* _plManualScore is defined earlier in the iSpring result reader block */
 
   /* ── _doRetry: reset hoàn toàn iSpring (internal, gọi từ nhiều nơi) ──
      iSpring là mã nguồn đóng — lưu state vào sessionStorage/localStorage.

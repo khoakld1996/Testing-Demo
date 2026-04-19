@@ -152,7 +152,7 @@
     if(isIspring){
       /* Show iSpring badge */
       if(modeBadge) modeBadge.innerHTML = `<span class="res-isp-badge"><svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg> iSpring</span>`;
-      /* Show status row, hide correct row */
+      /* Show status row + correct/total; hide default correct row */
       const corrRow = document.getElementById('resCorrectRow');
       const statRow = document.getElementById('resStatusRow');
       const statEl  = document.getElementById('resStatus');
@@ -161,6 +161,14 @@
       const stMap = {passed:'✓ Đạt',completed:'✓ Hoàn thành',failed:'✗ Chưa đạt',incomplete:'⚠ Chưa xong'};
       const stColor= ['passed','completed'].includes(ispStatus)?'var(--accent)':'var(--danger)';
       if(statEl){ statEl.textContent=stMap[ispStatus]||'Hoàn thành'; statEl.style.color=stColor; }
+      /* Show correct/total count if we have it */
+      const ispCorrect = parseInt(localStorage.getItem('ispCorrect')||'0')||0;
+      const ispTotal   = parseInt(localStorage.getItem('ispTotal')||'0')||0;
+      if(corrRow&&ispCorrect>0&&ispTotal>0){
+        corrRow.style.display='';
+        const corrEl=document.getElementById('resCorrect');
+        if(corrEl){ corrEl.textContent=ispCorrect+'/'+ispTotal+' câu'; corrEl.style.color='var(--accent)'; }
+      }
       /* Hide review button for iSpring */
       const reviewBtn = document.getElementById('resBtnReview');
       if(reviewBtn) reviewBtn.style.display = 'none';
