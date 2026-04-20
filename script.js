@@ -953,7 +953,9 @@ window.nbAddQuestionInit = function(){
    ══════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', function(){
   const path=window.location.pathname;
-  if(path.includes('dashboard.html'))    nbDashboardInit();
+  /* dashboard.html tự gọi nbDashboardInit() trước để đảm bảo thứ tự đúng.
+     Script.js chỉ gọi nếu dashboard chưa tự gọi (guard chống double-init). */
+  if(path.includes('dashboard.html') && !window._dashInitDone) nbDashboardInit();
   if(path.includes('add-question.html')) nbAddQuestionInit();
   if(!path.includes('login.html') && !path.includes('index.html')){
     nbSessionInit();
@@ -2459,13 +2461,9 @@ window.nbPlayerInit = function(){
       finalCorrect = domCorrect;
       finalTotal   = domTotal;
       src='dom';
-    } else if(isFileProt){
-      /* file:// và không có dữ liệu → hiện hướng dẫn */
-      src='file_blocked';
-      finalPct=0; finalCorrect=0; finalTotal=0;
     } else {
-      /* HTTP nhưng iSpring không gửi SCORM */
-      src='none';
+      /* SCORM không gửi dữ liệu (cả file:// lẫn HTTP) → hiện hướng dẫn bridge */
+      src='no_bridge';
       finalPct=0; finalCorrect=0; finalTotal=0;
     }
 
@@ -2607,7 +2605,7 @@ window.nbPlayerInit = function(){
 
   /* ════════════════════════════════════════════════════════════
      DIALOG KẾT QUẢ — Hoàn toàn READ-ONLY
-     Nguồn: scorm_full > scorm_pct > dom > file_blocked > none
+     Nguồn dữ liệu ưu tiên: scorm_full > scorm_pct > dom > no_bridge
      ════════════════════════════════════════════════════════════ */
   function showScoreConfirm(d){
     const st  = scormStatus||'completed';
@@ -2616,7 +2614,6 @@ window.nbPlayerInit = function(){
     const tot = d.total  ||0;
     const src = d.src    ||'none';
     const autoOk = (src==='scorm_full'||src==='scorm_pct'||src==='dom');
-
     if(typeof Swal==='undefined'){
       if(autoOk){ showResult(pct,st); _doSaveAndGo(pct,cor,tot,st); }
       else { doneF=false; state='doing'; setExit('ready'); }

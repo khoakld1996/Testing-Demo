@@ -1,48 +1,40 @@
 @echo off
-title Nebula Quiz - HTTP Server
+title Nebula Quiz
 color 0A
-
 echo.
-echo  ============================================
-echo   NEBULA QUIZ SYSTEM - HTTP Server
-echo  ============================================
+echo  ===================================
+echo   NEBULA QUIZ - Khoi dong server
+echo  ===================================
 echo.
-echo  Dang kiem tra Node.js...
 
-where node >nul 2>&1
-if %errorlevel% neq 0 (
-    echo.
-    echo  [LOI] Khong tim thay Node.js!
-    echo.
-    echo  Cai dat Node.js tai: https://nodejs.org
-    echo  Sau do chay lai file nay.
-    echo.
-    pause
-    exit
+:: Thu Python truoc (co san tren Windows 10/11)
+python --version >nul 2>&1
+if %errorlevel% equ 0 (
+  echo  Dung Python HTTP Server...
+  echo  Mo trinh duyet tai: http://localhost:3000
+  start "" http://localhost:3000
+  python -m http.server 3000
+  goto :end
 )
 
-echo  Node.js: OK
-echo.
-echo  Dang kiem tra npx serve...
-call npx serve --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo  Cai dat serve...
-    call npm install -g serve
+python3 --version >nul 2>&1
+if %errorlevel% equ 0 (
+  echo  Dung Python3 HTTP Server...
+  start "" http://localhost:3000
+  python3 -m http.server 3000
+  goto :end
 )
 
-echo.
-echo  ============================================
-echo   SERVER DANG CHAY tai: http://localhost:3000
-echo  ============================================
-echo.
-echo  Trinh duyet se tu dong mo...
-echo  Nhan Ctrl+C de tat server.
-echo.
+node --version >nul 2>&1
+if %errorlevel% equ 0 (
+  echo  Dung Node.js...
+  start "" http://localhost:3000
+  npx serve -l 3000 .
+  goto :end
+)
 
-:: Mo trinh duyet sau 2 giay
-start "" cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:3000"
-
-:: Chay server
-call npx serve -l 3000 .
-
+echo  [LOI] Can cai Python hoac Node.js
+echo  Tai Python: https://www.python.org/downloads/
 pause
+
+:end

@@ -231,20 +231,7 @@
           <div class="dash-create-form">
             <input id="iName" class="input-dark orange" placeholder="Tên hiển thị">
             <div>
-              <input id="iPath" class="input-dark orange" placeholder="VD: quizzes/FullIOT1GS6LV1/index.html" oninput="updateBridgeScript()">
-              <!-- Bridge script guide -->
-              <div class="nb-bridge-guide" id="bridgeGuide" style="display:none;margin-top:10px">
-                <div class="nb-bridge-title">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-                  Bước kết nối điểm tự động
-                </div>
-                <p class="nb-bridge-desc">Thêm vào cuối <b id="bridgeQuizPath"></b>, trước <code>&lt;/body&gt;</code>:</p>
-                <div class="nb-bridge-code-wrap">
-                  <code id="bridgeCodeLine" class="nb-bridge-code"></code>
-                  <button class="nb-bridge-copy" onclick="copyBridgeScript()">📋 Copy</button>
-                </div>
-                <p class="nb-bridge-note">✓ Điểm sẽ tự động trả về Nebula sau khi làm bài.</p>
-              </div>
+              <input id="iPath" class="input-dark orange" placeholder="VD: quizzes/FullIOT1GS6LV1/index.html">
               <p class="form-hint">Relative path từ gốc web đến <code>index.html</code> của iSpring</p>
             </div>
             <input id="iDesc" class="input-dark orange" placeholder="Mô tả ngắn (tùy chọn)">
@@ -354,8 +341,25 @@ window._nbPending = [];
 
 /* ─── Init ─── */
 window.addEventListener('DOMContentLoaded', async function(){
-  // ĐÃ XÓA: Lời gọi nbDashboardInit() bị trùng lặp ở đây, script.js đã tự gọi
+  /* ══════════════════════════════════════════════════════════════
+     QUAN TRỌNG: Gọi nbDashboardInit() ĐẦU TIÊN.
+     Lý do: script.js load với defer → inline script chạy trước →
+     DOMContentLoaded của dashboard firing TRƯỚC script.js nếu không
+     có guard này. nbDashboardInit() định nghĩa setStatus, log,
+     nbRenderDashChart — những hàm mà loadData() cần ngay lập tức.
+     Đặt _dashInitDone=true để script.js không gọi lại lần 2.
+     ══════════════════════════════════════════════════════════════ */
+  window._dashInitDone = true;
+  if(typeof nbDashboardInit === 'function') nbDashboardInit();
+
+  /* ── Expose render functions lên window để auto-refresh (script.js) dùng được ── */
+  window.renderTests   = renderTests;
+  window.renderResults = renderResults;
+  window.renderPending = renderPending;
+
+  /* ── Load dữ liệu ban đầu ── */
   await Promise.all([ loadIspring(), loadData() ]);
+
   document.getElementById('ispringModal')
     .addEventListener('click', function(e){ if(e.target===this) closeIspringModal(); });
 });
@@ -503,36 +507,6 @@ function renderIspringList(){
   }).join('');
 }
 
-function updateBridgeScript(){
-  const path = document.getElementById('iPath').value.trim();
-  const guideEl = document.getElementById('bridgeGuide');
-  const codeEl  = document.getElementById('bridgeCodeLine');
-  const pathEl  = document.getElementById('bridgeQuizPath');
-  if(!path){ if(guideEl) guideEl.style.display='none'; return; }
-  /* Tính depth: quizzes/Name/index.html = depth 2 từ root → ../../nebula-bridge.js */
-  const depth = (path.match(/\//g)||[]).length;
-  let relPath = '';
-  for(let i=0;i<depth;i++) relPath += '../';
-  relPath += 'nebula-bridge.js';
-  const scriptTag = `<script src="${relPath}"><\/script>`;
-  if(codeEl) codeEl.textContent = `<script src="${relPath}"></script>`;
-  if(pathEl) pathEl.textContent = path;
-  if(guideEl) guideEl.style.display='block';
-}
-
-function copyBridgeScript(){
-  const el = document.getElementById('bridgeCodeLine');
-  if(!el) return;
-  navigator.clipboard.writeText(el.textContent).then(()=>{
-    nbToast('success','Đã copy! Dán vào quiz index.html trước </body>');
-  }).catch(()=>{
-    const ta = document.createElement('textarea');
-    ta.value = el.textContent; document.body.appendChild(ta);
-    ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
-    nbToast('success','Đã copy!');
-  });
-}
-
 async function addIspring(){
   const name=document.getElementById('iName').value.trim();
   const path=document.getElementById('iPath').value.trim();
@@ -627,7 +601,12 @@ async function testIspringPath(){
 
 /* ─── HỆ THỐNG ─── */
 async function loadData(manual=false){
-  setStatus('loading','Đang tải...');
+  /* Safe wrappers — phòng trường hợp nbDashboardInit chưa kịp chạy */
+  const _status = (t,m) => typeof setStatus==='function' ? setStatus(t,m) : null;
+  const _log    = (m,t) => typeof log==='function' ? log(m,t) : null;
+  const _chart  = (d)   => typeof nbRenderDashChart==='function' ? nbRenderDashChart(d) : null;
+
+  _status('loading','Đang tải...');
   const reloadIcon=document.getElementById('reloadIcon');
   if(reloadIcon) reloadIcon.classList.add('spin-anim');
   document.getElementById('testList').innerHTML   = Array(3).fill('<div class="skeleton"></div>').join('');
@@ -641,9 +620,9 @@ async function loadData(manual=false){
     document.getElementById('cTests').innerText   = tests.length;
     document.getElementById('cResults').innerText = results.length;
     document.getElementById('cPending').innerText = pending.length;
-    nbRenderDashChart(results);
-    setStatus('ok','Trực tuyến');
-    log('Tải dữ liệu thành công','ok');
+    _chart(results);
+    _status('ok','Trực tuyến');
+    _log('Tải dữ liệu thành công','ok');
     const syncBadge=document.getElementById('lastSyncBadge');
     if(syncBadge){
       const now=new Date();
@@ -654,8 +633,8 @@ async function loadData(manual=false){
       if(typeof window._nbResetCountdown === 'function') window._nbResetCountdown();
     }
   }catch(e){
-    setStatus('err','Lỗi kết nối');
-    log('loadData error: '+e.message,'err');
+    _status('err','Lỗi kết nối');
+    _log('loadData error: '+e.message,'err');
   }finally{
     if(reloadIcon) reloadIcon.classList.remove('spin-anim');
   }
