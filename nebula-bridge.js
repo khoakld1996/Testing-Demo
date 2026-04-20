@@ -1,5 +1,5 @@
 /* ================================================================
-   NEBULA BRIDGE v2.2 — iSpring SCORM Interceptor + DOM Scraper
+   NEBULA BRIDGE v2.3 — iSpring SCORM Interceptor + DOM Scraper
    ================================================================
    ĐẶT FILE NÀY TRONG <head> của index.html của bài iSpring,
    SAU data/browsersupport.js, TRƯỚC mọi script khác.
@@ -210,6 +210,8 @@
   var _DOM_POLL_MAX   = 300; /* 5 phút × 1 poll/giây */
   var _DOM_POLL_DELAY = 1000; /* ms */
 
+  var _domFoundCount = 0; /* số lần liên tiếp phát hiện trang kết quả */
+
   /* Phân tích text "2% (1 points)" hoặc "100% (45 points)" */
   function _parseScoreText(text){
     /* Khớp "X% (Y points)" */
@@ -356,7 +358,20 @@
          ' correct=' + finalCorrect + '/' + finalTotal +
          ' status=' + finalStatus);
 
-    if(finalPct > 0 || finalCorrect > 0){
+    /* ── BUG FIX v2.3: trước đây chỉ fire khi pct>0 hoặc correct>0 →
+       Nếu điểm thực sự = 0 (thí sinh không trả lời) thì loop vô tận.
+       Sửa: fire _finish() khi trang kết quả đã xuất hiện (result.found)
+       VÀ có trạng thái pass/fail rõ ràng HOẶC đã thấy trang 3 lần liên tiếp. */
+    var pageReady = result.found && result.status !== null;
+
+    /* Nếu trang có "points" nhưng status chưa detect → đếm lần */
+    if(result.found) _domFoundCount++;
+    else _domFoundCount = 0;
+
+    /* Sau 3 poll liên tiếp thấy trang kết quả mà status vẫn null → force fire */
+    var forceByCount = result.found && _domFoundCount >= 3;
+
+    if(pageReady || forceByCount || finalPct > 0 || finalCorrect > 0){
       if(_score === 0)  _score  = finalPct;
       if(_max   === 0)  _max    = 100;
       if(!_status)      _status = finalStatus;
@@ -563,7 +578,7 @@
   });
 
   function _log(msg){
-    if(typeof console !== 'undefined') console.log('[NebulaBridge v2.2]', msg);
+    if(typeof console !== 'undefined') console.log('[NebulaBridge v2.3]', msg);
   }
 
 })();

@@ -71,13 +71,41 @@ async function loadHistory() {
       fetch(API + "?action=getResults&student=" + encodeURIComponent(studentName)).then(r => r.json()),
       fetch(API + "?action=getIspringResults&student=" + encodeURIComponent(studentName)).then(r => r.json())
     ]);
+
+    /* ── Lọc đúng học sinh + gắn type ── */
+    const nameLower = studentName.trim().toLowerCase();
+
     const sys = (Array.isArray(sysRes) ? sysRes : [])
-      .filter(r => String(r.student).trim().toLowerCase() === studentName.toLowerCase())
+      .filter(r => {
+        /* Bỏ các record iSpring bị lọt vào getResults (testName có [iSpring]) */
+        if(/\[iSpring\]/i.test(r.testName||'')) return false;
+        return String(r.student||'').trim().toLowerCase() === nameLower;
+      })
       .map(r => ({ ...r, _type: "sys" }));
+
     const isp = (Array.isArray(ispRes) ? ispRes : [])
-      .filter(r => String(r.student).trim().toLowerCase() === studentName.toLowerCase())
+      .filter(r => String(r.student||'').trim().toLowerCase() === nameLower)
       .map(r => ({ ...r, _type: "isp" }));
-    allRecs = [...sys, ...isp].sort((a,b) => nbParseDate(b.time) - nbParseDate(a.time));
+
+    /* ── Loại bỏ bản ghi trùng lặp ──
+       Key: type | testName chuẩn hóa | phút (bỏ qua giây để gộp submit cách nhau <60s)
+       Xử lý thêm trường hợp iSpring bị lưu 2 lần do player + result cùng submit.  */
+    const seen = new Set();
+    const normalizeTestName = s => String(s||'').replace(/\[iSpring\]\s*/i,'').trim().toLowerCase();
+    const timeToMinute = t => {
+      const d = nbParseDate(t);
+      return isNaN(d) ? t : Math.floor(d / 60000); /* làm tròn xuống phút */
+    };
+
+    const dedup = (arr) => arr.filter(r => {
+      const key = `${r._type}|${normalizeTestName(r.testName)}|${timeToMinute(r.time)}`;
+      if(seen.has(key)) return false;
+      seen.add(key); return true;
+    });
+
+    allRecs = [...dedup(sys), ...dedup(isp)]
+      .sort((a, b) => nbParseDate(b.time) - nbParseDate(a.time));
+
     updateStats(); updateCounts(); renderList(curTab);
   } catch(e) {
     document.getElementById("histList").innerHTML = '<div class="nodata"><i class="fas fa-wifi" style="font-size:2rem;display:block;margin-bottom:10px"></i>Lỗi kết nối</div>';
@@ -85,13 +113,33 @@ async function loadHistory() {
 }
 
 function updateStats() {
-  const allSc = allRecs.map(r => parseFloat(r.score||0));
+  /* Tính stats riêng cho từng loại để hiển thị đúng thang điểm */
+  const sysSc  = allRecs.filter(r=>r._type==="sys").map(r=>parseFloat(r.score||0));
+  const ispSc  = allRecs.filter(r=>r._type==="isp").map(r=>parseFloat(r.score||0));
+  const allSc  = [...sysSc, ...ispSc];
+
   document.getElementById("stTotal").textContent = allRecs.length;
+
   if(allSc.length){
-    const avg = allSc.reduce((a,b)=>a+b,0) / allSc.length;
-    const best= Math.max(...allSc);
-    document.getElementById("stAvg").textContent  = avg.toFixed(1);
-    document.getElementById("stBest").textContent = best.toFixed(1).replace(/\.0$/,"");
+    /* Điểm TB: chuẩn hóa iSpring về /10 trước khi tính chung */
+    const normalized = [
+      ...sysSc,
+      ...ispSc.map(s => s / 10)   /* iSpring /100 → /10 để so sánh ngang */
+    ];
+    const avg  = normalized.reduce((a,b)=>a+b,0) / normalized.length;
+    document.getElementById("stAvg").textContent = avg.toFixed(1) + "/10";
+
+    /* Điểm cao nhất: hiển thị đúng thang */
+    const bestSys = sysSc.length ? Math.max(...sysSc) : null;
+    const bestIsp = ispSc.length ? Math.max(...ispSc) : null;
+    if(bestSys !== null && bestIsp !== null){
+      const bestNorm = Math.max(bestSys, bestIsp/10);
+      document.getElementById("stBest").textContent = bestNorm.toFixed(1).replace(/\.0$/,"") + "/10";
+    } else if(bestSys !== null){
+      document.getElementById("stBest").textContent = bestSys.toFixed(1).replace(/\.0$/,"") + "/10";
+    } else if(bestIsp !== null){
+      document.getElementById("stBest").textContent = bestIsp.toFixed(0) + "/100";
+    }
   } else {
     document.getElementById("stAvg").textContent  = "—";
     document.getElementById("stBest").textContent = "—";
@@ -117,18 +165,34 @@ function switchTab(tab) {
 function renderList(tab) {
   const el = document.getElementById("histList");
   const recs = allRecs.filter(r => tab==="sys"?r._type==="sys":tab==="isp"?r._type==="isp":true);
-  if (!recs.length) { el.innerHTML='<div class="nodata"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:10px"></i>Chưa có lịch sử</div>'; return; }
+  if (!recs.length) {
+    el.innerHTML='<div class="nodata"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:10px"></i>Chưa có lịch sử</div>';
+    return;
+  }
   el.innerHTML = recs.map(r => {
-    const isp   = r._type==="isp";
+    const isp   = r._type === "isp";
     const name  = (r.testName||"").replace(/\[iSpring\]/ig,"").trim();
     const score = parseFloat(r.score||0);
-    const dispScore = score.toFixed(1).replace(/\.0$/,"");
-    const threshold = isp ? [80, 50] : [8, 5];
-    const col   = score >= threshold[0] ? "var(--accent)" : score >= threshold[1] ? "var(--primary)" : "var(--danger)";
+
+    /* ── Hiển thị điểm đúng thang ── */
+    let dispScore, col;
+    if(isp){
+      /* iSpring: thang 100 */
+      dispScore = score.toFixed(0) + "<small style='font-size:.6em;opacity:.6'>/100</small>";
+      col = score >= 85 ? "var(--accent)" : score >= 60 ? "var(--primary)" : "var(--danger)";
+    } else {
+      /* Hệ thống: thang 10 */
+      dispScore = score.toFixed(1).replace(/\.0$/,"") + "<small style='font-size:.6em;opacity:.6'>/10</small>";
+      col = score >= 8 ? "var(--accent)" : score >= 5 ? "var(--primary)" : "var(--danger)";
+    }
+
     const badge = isp
       ? `<span class="hist-badge badge-isp"><i class="fas fa-rocket"></i> iSpring</span>`
       : `<span class="hist-badge badge-sys"><i class="fas fa-database"></i> Hệ thống</span>`;
+
+    /* Hiển thị câu đúng nếu có */
     const totalStr = r.total ? `<span><i class="fas fa-check"></i> ${r.total}</span>` : '';
+
     return `<div class="hist-item" onclick="openDetail(${allRecs.indexOf(r)})">
       <div class="hist-item-info">
         <div class="hist-item-name">${name}</div>

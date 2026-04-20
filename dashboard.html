@@ -120,6 +120,21 @@
               Xuất CSV
             </button>
           </div>
+          <!-- Quick stats bar -->
+          <div id="resQuickStats" style="display:none;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+            <div style="background:rgba(79,172,254,.07);border:1px solid rgba(79,172,254,.15);border-radius:10px;padding:10px 12px;text-align:center">
+              <div style="font-size:1.2rem;font-weight:900;color:var(--primary)" id="rqsTotal">—</div>
+              <div style="font-size:.66rem;opacity:.5;margin-top:1px">Tổng lượt</div>
+            </div>
+            <div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.15);border-radius:10px;padding:10px 12px;text-align:center">
+              <div style="font-size:1.2rem;font-weight:900;color:var(--success)" id="rqsAvg">—</div>
+              <div style="font-size:.66rem;opacity:.5;margin-top:1px">Điểm TB</div>
+            </div>
+            <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:10px 12px;text-align:center">
+              <div style="font-size:1.2rem;font-weight:900;color:var(--warning)" id="rqsHigh">—</div>
+              <div style="font-size:.66rem;opacity:.5;margin-top:1px">Cao nhất</div>
+            </div>
+          </div>
           <!-- Tìm kiếm + lọc điểm -->
           <div style="display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap">
             <div class="dash-search-wrap" style="flex:1;min-width:140px">
@@ -735,7 +750,21 @@ function renderTests(data=tests){
 function renderResults(){
   const el      = document.getElementById('resultList');
   const pageEl  = document.getElementById('resPagination');
+  const qsEl    = document.getElementById('resQuickStats');
   if(!el) return;
+
+  /* ── Quick stats (toàn bộ, không lọc) ── */
+  if(results.length && qsEl){
+    qsEl.style.display='grid';
+    const scores = results.map(r=>parseFloat(r.score||0));
+    const isIspArr = results.map(r=>(r.testName||'').toLowerCase().includes('ispring'));
+    const normed = scores.map((s,i)=>isIspArr[i]?s/10:s);
+    const avg  = normed.reduce((a,b)=>a+b,0)/normed.length;
+    const best = Math.max(...normed);
+    document.getElementById('rqsTotal').textContent = results.length;
+    document.getElementById('rqsAvg').textContent   = avg.toFixed(1)+'đ';
+    document.getElementById('rqsHigh').textContent  = best.toFixed(1).replace(/\.0$/,'')+'đ';
+  }
 
   if(!results.length){
     el.innerHTML='<div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><p>Chưa có dữ liệu</p></div>';
@@ -781,9 +810,11 @@ function renderResults(){
     const score=parseFloat(r.score||0);
     const isIsp=(r.testName||'').toLowerCase().includes('ispring');
     const color=isIsp
-      ?(score>=80?'var(--success)':score>=50?'var(--primary)':'var(--danger)')
+      ?(score>=85?'var(--success)':score>=60?'var(--primary)':'var(--danger)')
       :(score>=8 ?'var(--success)':score>=5 ?'var(--primary)':'var(--danger)');
-    const dispScore=isIsp?score.toFixed(0)+'đ/100':score.toFixed(1).replace(/\.0$/,'')+'đ';
+    const dispScore=isIsp
+      ?score.toFixed(0)+'<small style="font-size:.7em;opacity:.55">/100</small>'
+      :score.toFixed(1).replace(/\.0$/,'')+'<small style="font-size:.7em;opacity:.55">/10</small>';
     return`<div class="result-row">
       <div><div style="font-weight:600">${nbEsc(r.student||'Ẩn danh')}</div><div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div></div>
       <div style="opacity:.7">${nbEsc(r.testName||'Đề thi')}</div>

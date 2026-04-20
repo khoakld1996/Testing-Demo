@@ -150,24 +150,30 @@
       localStorage.setItem('correctCount',  totalStr);
       localStorage.setItem('ispCorrect',    String(cor));
       localStorage.setItem('ispTotal',      String(tot));
-      /* POST lên GAS (no-cors, fire-and-forget) */
-      const tnFull = '[iSpring] '+tn.replace(/^\[iSpring\]\s*/i,'');
-      try{
-        fetch(window.API_URL||window.SCRIPT_URL||'', {
-          method:'POST', mode:'no-cors',
-          headers:{'Content-Type':'text/plain;charset=utf-8'},
-          body: JSON.stringify({
-            action:'submitResult', student:sN, school:sSc,
-            testName:tnFull, score:sc, total:totalStr,
-            answers: JSON.stringify({
-              status:st, source:'nebula-bridge', score:sc,
-              correct:cor, totalQuestions:tot,
-              student:sN, school:sSc, class:sCl,
-              timestamp:new Date().toISOString()
+      /* POST lên GAS — CHỈ khi player.html chưa lưu.
+         player.html set 'ispSavedByPlayer'='1' trước khi redirect.
+         Nếu cờ đó tồn tại → bỏ qua, tránh lưu trùng.            */
+      const alreadySaved = localStorage.getItem('ispSavedByPlayer') === '1';
+      localStorage.removeItem('ispSavedByPlayer'); /* xóa cờ ngay */
+      if(!alreadySaved){
+        const tnFull = '[iSpring] '+tn.replace(/^\[iSpring\]\s*/i,'');
+        try{
+          fetch(window.API_URL||window.SCRIPT_URL||'', {
+            method:'POST', mode:'no-cors',
+            headers:{'Content-Type':'text/plain;charset=utf-8'},
+            body: JSON.stringify({
+              action:'submitResult', student:sN, school:sSc,
+              testName:tnFull, score:sc, total:totalStr,
+              answers: JSON.stringify({
+                status:st, source:'nebula-bridge', score:sc,
+                correct:cor, totalQuestions:tot,
+                student:sN, school:sSc, class:sCl,
+                timestamp:new Date().toISOString()
+              })
             })
-          })
-        });
-      }catch(e){}
+          });
+        }catch(e){}
+      }
       /* Xoá URL params để tránh re-submit khi reload */
       history.replaceState(null,'',location.pathname);
     })();

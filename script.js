@@ -2788,6 +2788,8 @@ window.nbPlayerInit = function(){
           })
         })
       });
+      /* Đánh cờ: player.html đã lưu rồi → result.html sẽ bỏ qua không lưu lại */
+      ls.setItem('ispSavedByPlayer','1');
       syncUI('ok','<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!');
       _loadDistribution(sc,tn);
     }catch(e){
