@@ -120,10 +120,27 @@
               Xuất CSV
             </button>
           </div>
+          <!-- Tìm kiếm + lọc điểm -->
+          <div style="display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap">
+            <div class="dash-search-wrap" style="flex:1;min-width:140px">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" class="dash-search-icon" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <input id="resSearchInput" class="input-dark dash-search-input" style="font-size:.78rem"
+                placeholder="Tìm học sinh, bài thi..." oninput="_resPage=1;renderResults()">
+            </div>
+            <select id="resScoreFilter" class="input-dark" style="font-size:.78rem;padding:7px 10px;cursor:pointer;min-width:138px;border-radius:10px"
+              onchange="_resPage=1;renderResults()">
+              <option value="all">Tất cả điểm</option>
+              <option value="hi">Giỏi (≥8đ / ≥85%)</option>
+              <option value="mid">Trung bình (5–8 / 50–85%)</option>
+              <option value="low">Yếu (&lt;5đ / &lt;50%)</option>
+            </select>
+          </div>
           <div class="result-row dash-result-header">
             <span>THÍ SINH</span><span>ĐỀ THI</span><span>KẾT QUẢ</span>
           </div>
-          <div id="resultList" class="item-list" style="max-height:350px"></div>
+          <div id="resultList" class="item-list" style="max-height:320px"></div>
+          <!-- Phân trang -->
+          <div id="resPagination" style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;gap:8px;min-height:36px"></div>
         </div>
       </main>
 
@@ -277,21 +294,30 @@
             <div class="isp-dist-labels"><span>0–49</span><span>50–69</span><span>70–84</span><span>85–100</span></div>
           </div>
           <!-- Filter -->
-          <div style="display:flex;gap:8px;margin:10px 0 6px">
-            <input id="ispResFilter" class="input-dark orange" style="flex:1;font-size:.78rem;padding:8px 12px"
-              placeholder="Lọc theo tên học sinh..." oninput="renderIspringResults()">
-            <button class="btn btn-orange" style="padding:8px 14px;white-space:nowrap" onclick="loadIspringResults()">
+          <div style="display:flex;gap:7px;margin:10px 0 6px;flex-wrap:wrap">
+            <input id="ispResFilter" class="input-dark orange" style="flex:1;min-width:100px;font-size:.78rem;padding:8px 12px"
+              placeholder="Lọc theo tên học sinh..." oninput="_ispResPage=1;renderIspringResults()">
+            <select id="ispResScoreFilter" class="input-dark orange" style="font-size:.78rem;padding:8px 10px;cursor:pointer;min-width:110px;border-radius:10px"
+              onchange="_ispResPage=1;renderIspringResults()">
+              <option value="all">Tất cả</option>
+              <option value="hi">Giỏi ≥85đ</option>
+              <option value="mid">TB 50–84đ</option>
+              <option value="low">Yếu &lt;50đ</option>
+            </select>
+            <button class="btn btn-orange" style="padding:8px 12px;white-space:nowrap" onclick="loadIspringResults()">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
               Tải lại
             </button>
           </div>
           <!-- Result list -->
-          <div id="ispResultList" class="item-list" style="max-height:320px">
+          <div id="ispResultList" class="item-list" style="max-height:280px">
             <div class="empty-state" style="padding:24px">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style="color:var(--ispring)"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
               <p style="opacity:.5;font-size:.78rem;margin-top:8px">Nhấn "Tải lại" để xem kết quả iSpring</p>
             </div>
           </div>
+          <!-- Phân trang iSpring -->
+          <div id="ispResPagination" style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;gap:8px;min-height:36px"></div>
         </div>
 
         <div class="glass-card dash-section-card">
@@ -339,6 +365,10 @@ let tests=[], results=[], pending=[], ispringList=[], ispringResults=[];
 window._nbResults = [];
 window._nbPending = [];
 
+/* ─── Pagination & filter state ─── */
+let _resPage=1, _ispResPage=1;
+const _RES_PER_PAGE=15, _ISP_RES_PER_PAGE=15;
+
 /* ─── Init ─── */
 window.addEventListener('DOMContentLoaded', async function(){
   /* ══════════════════════════════════════════════════════════════
@@ -380,14 +410,16 @@ async function loadIspringResults(){
 
 function renderIspringResults(){
   const listEl  = document.getElementById('ispResultList');
+  const pageEl  = document.getElementById('ispResPagination');
   const statsEl = document.getElementById('ispResStats');
   const distWrap= document.getElementById('ispDistWrap');
   const barsEl  = document.getElementById('ispDistBars');
-  const filter  = (document.getElementById('ispResFilter')?.value||'').toLowerCase().trim();
+  const nameFilter  = (document.getElementById('ispResFilter')?.value||'').toLowerCase().trim();
+  const scoreFilter = document.getElementById('ispResScoreFilter')?.value||'all';
 
   if(!listEl) return;
 
-  /* Tính stats trên toàn bộ kết quả (không lọc) */
+  /* ── Stats trên toàn bộ dữ liệu (không lọc) ── */
   if(ispringResults.length){
     const scores = ispringResults.map(r=>parseFloat(r.score||0));
     const avg    = scores.reduce((a,b)=>a+b,0)/scores.length;
@@ -415,20 +447,39 @@ function renderIspringResults(){
     if(distWrap) distWrap.style.display='block';
   }
 
-  /* Filter rồi render */
-  const filtered = filter
-    ? ispringResults.filter(r=>String(r.student||'').toLowerCase().includes(filter)||String(r.testName||'').toLowerCase().includes(filter))
-    : ispringResults;
+  /* ── Áp dụng bộ lọc ── */
+  let filtered = [...ispringResults].reverse(); /* mới nhất trước */
+  if(nameFilter){
+    filtered = filtered.filter(r=>
+      String(r.student||'').toLowerCase().includes(nameFilter)||
+      String(r.testName||'').toLowerCase().includes(nameFilter)
+    );
+  }
+  if(scoreFilter!=='all'){
+    filtered = filtered.filter(r=>{
+      const sc=parseFloat(r.score||0);
+      if(scoreFilter==='hi')  return sc>=85;
+      if(scoreFilter==='mid') return sc>=50&&sc<85;
+      if(scoreFilter==='low') return sc<50;
+      return true;
+    });
+  }
 
   if(!filtered.length){
     listEl.innerHTML=`<div class="empty-state" style="padding:20px">
       <p style="opacity:.5;font-size:.78rem">${ispringResults.length?'Không tìm thấy kết quả phù hợp':'Chưa có kết quả iSpring'}</p>
     </div>`;
+    if(pageEl) pageEl.innerHTML='';
     return;
   }
 
-  /* Hiển thị mới nhất trước, tối đa 80 */
-  listEl.innerHTML=[...filtered].reverse().slice(0,80).map(r=>{
+  /* ── Phân trang ── */
+  const total      = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total/_ISP_RES_PER_PAGE));
+  if(_ispResPage>totalPages) _ispResPage=totalPages;
+  const pageData   = filtered.slice((_ispResPage-1)*_ISP_RES_PER_PAGE, _ispResPage*_ISP_RES_PER_PAGE);
+
+  listEl.innerHTML=pageData.map(r=>{
     const sc    = parseFloat(r.score||0);
     const color = sc>=85?'var(--success)':sc>=70?'var(--primary)':sc>=50?'var(--warning)':'var(--danger)';
     const name  = String(r.testName||'').replace(/\[iSpring\]\s*/i,'').trim();
@@ -441,6 +492,24 @@ function renderIspringResults(){
       <div style="font-weight:800;color:${color};white-space:nowrap">${sc.toFixed(1).replace(/\.0$/,'')}đ</div>
     </div>`;
   }).join('');
+
+  /* ── Pagination controls ── */
+  if(pageEl){
+    const info=`<span style="font-size:.72rem;opacity:.45">${total} kết quả${nameFilter||scoreFilter!=='all'?' (đã lọc)':''}</span>`;
+    if(totalPages<=1){
+      pageEl.innerHTML=info;
+    } else {
+      const prevSt = _ispResPage<=1           ?'opacity:.3;pointer-events:none':'';
+      const nextSt = _ispResPage>=totalPages   ?'opacity:.3;pointer-events:none':'';
+      pageEl.innerHTML=`
+        ${info}
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="btn btn-outline" style="padding:5px 11px;font-size:.82rem;${prevSt}" onclick="_ispResPage--;renderIspringResults()">‹</button>
+          <span style="font-size:.75rem;min-width:64px;text-align:center;opacity:.65">${_ispResPage} / ${totalPages}</span>
+          <button class="btn btn-outline" style="padding:5px 11px;font-size:.82rem;${nextSt}" onclick="_ispResPage++;renderIspringResults()">›</button>
+        </div>`;
+    }
+  }
 }
 
 
@@ -664,9 +733,51 @@ function renderTests(data=tests){
 }
 
 function renderResults(){
-  const el=document.getElementById('resultList');
-  if(!results.length){el.innerHTML='<div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><p>Chưa có dữ liệu</p></div>'; return;}
-  el.innerHTML=[...results].reverse().slice(0,60).map(r=>{
+  const el      = document.getElementById('resultList');
+  const pageEl  = document.getElementById('resPagination');
+  if(!el) return;
+
+  if(!results.length){
+    el.innerHTML='<div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><p>Chưa có dữ liệu</p></div>';
+    if(pageEl) pageEl.innerHTML='';
+    return;
+  }
+
+  /* ── Bộ lọc ── */
+  const search      = (document.getElementById('resSearchInput')?.value||'').toLowerCase().trim();
+  const scoreFilter = document.getElementById('resScoreFilter')?.value||'all';
+
+  let filtered = [...results].reverse(); /* mới nhất trước */
+  if(search){
+    filtered = filtered.filter(r=>
+      String(r.student||'').toLowerCase().includes(search)||
+      String(r.testName||'').toLowerCase().includes(search)
+    );
+  }
+  if(scoreFilter!=='all'){
+    filtered = filtered.filter(r=>{
+      const sc   = parseFloat(r.score||0);
+      const isIsp= (r.testName||'').toLowerCase().includes('ispring');
+      if(scoreFilter==='hi')  return isIsp ? sc>=85  : sc>=8;
+      if(scoreFilter==='mid') return isIsp ? sc>=50&&sc<85 : sc>=5&&sc<8;
+      if(scoreFilter==='low') return isIsp ? sc<50   : sc<5;
+      return true;
+    });
+  }
+
+  /* ── Phân trang ── */
+  const total      = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total/_RES_PER_PAGE));
+  if(_resPage>totalPages) _resPage=totalPages;
+  const pageData   = filtered.slice((_resPage-1)*_RES_PER_PAGE, _resPage*_RES_PER_PAGE);
+
+  if(!pageData.length){
+    el.innerHTML=`<div class="empty-state"><p style="opacity:.5;font-size:.78rem">Không tìm thấy kết quả phù hợp</p></div>`;
+    if(pageEl) pageEl.innerHTML='';
+    return;
+  }
+
+  el.innerHTML=pageData.map(r=>{
     const score=parseFloat(r.score||0);
     const isIsp=(r.testName||'').toLowerCase().includes('ispring');
     const color=isIsp
@@ -679,6 +790,24 @@ function renderResults(){
       <div style="font-weight:800;color:${color}">${dispScore}</div>
     </div>`;
   }).join('');
+
+  /* ── Pagination controls ── */
+  if(pageEl){
+    const info = `<span style="font-size:.72rem;opacity:.45">${total} kết quả${search||scoreFilter!=='all'?' (đã lọc)':''}</span>`;
+    if(totalPages<=1){
+      pageEl.innerHTML=info;
+    } else {
+      const prevSt = _resPage<=1        ?'opacity:.3;pointer-events:none':'';
+      const nextSt = _resPage>=totalPages?'opacity:.3;pointer-events:none':'';
+      pageEl.innerHTML=`
+        ${info}
+        <div style="display:flex;align-items:center;gap:4px">
+          <button class="btn btn-outline" style="padding:5px 11px;font-size:.82rem;${prevSt}" onclick="_resPage--;renderResults()">‹</button>
+          <span style="font-size:.75rem;min-width:64px;text-align:center;opacity:.65">${_resPage} / ${totalPages}</span>
+          <button class="btn btn-outline" style="padding:5px 11px;font-size:.82rem;${nextSt}" onclick="_resPage++;renderResults()">›</button>
+        </div>`;
+    }
+  }
 }
 
 function renderPending(){

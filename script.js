@@ -1410,7 +1410,7 @@ window.nbSelectInit = function(){
 document.addEventListener('DOMContentLoaded', function(){
   const path=window.location.pathname;
   if(path.includes('name.html'))   nbNameInit();
-  if(path.includes('select.html')) nbSelectInit();
+  if(path.includes('select.html') && !window._selectInitDone) nbSelectInit();
 });
 
 /* ══════════════════════════════════════════════

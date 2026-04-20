@@ -126,6 +126,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', function(){
+      window._selectInitDone = true;          /* chặn script.js gọi lại lần 2 */
       if(typeof nbSelectInit === 'function') nbSelectInit();
     });
 

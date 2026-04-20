@@ -4071,23 +4071,23 @@ body.qz-body[data-mode="test"] .qz-timer {
    PLAYER: "Nộp kết quả" button + Score Confirm dialog
    ═══════════════════════════════════════════════════════ */
 
-/* Header submit button */
+/* Header submit button — iSpring orange theme, đồng nhất với #pl-exit */
 .pl-submit-score {
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border-radius: 12px; border: none; cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), #7c3aed);
-  color: #fff; font-size: .78rem; font-weight: 800;
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 11px; border-radius: 10px;
+  border: 1px solid rgba(249,115,22,.55); cursor: pointer;
+  background: rgba(249,115,22,.18);
+  color: var(--ispring); font-size: .72rem; font-weight: 800;
   font-family: var(--font); letter-spacing: .3px;
-  box-shadow: 0 4px 14px rgba(124,77,255,.4);
-  transition: all .2s; animation: pulse-glow 2s infinite;
+  box-shadow: none; transition: all .2s; white-space: nowrap;
 }
-.pl-submit-score svg { width: 14px; height: 14px; fill: currentColor; }
-.pl-submit-score:hover { filter: brightness(1.12); transform: translateY(-1px); }
-.pl-submit-score:active { transform: scale(.97); }
-@keyframes pulse-glow {
-  0%,100% { box-shadow: 0 4px 14px rgba(124,77,255,.4); }
-  50%      { box-shadow: 0 4px 24px rgba(124,77,255,.7); }
+.pl-submit-score svg { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
+.pl-submit-score:hover {
+  background: var(--ispring); color: #fff;
+  box-shadow: 0 4px 14px rgba(249,115,22,.4);
+  transform: translateY(-1px);
 }
+.pl-submit-score:active { transform: scale(.97); opacity: .85; }
 
 /* Score confirm Swal popup */
 .nb-score-popup.swal2-popup {
