@@ -495,7 +495,10 @@ function renderIspringResults(){
   const pageData   = filtered.slice((_ispResPage-1)*_ISP_RES_PER_PAGE, _ispResPage*_ISP_RES_PER_PAGE);
 
   listEl.innerHTML=pageData.map(r=>{
-    const sc    = parseFloat(r.score||0);
+    let sc = parseFloat(r.score||0);
+    /* Cap score phòng dữ liệu cũ sai */
+    if(sc > 100) sc = parseFloat((sc / Math.pow(10, Math.floor(Math.log10(sc/100)+1))).toFixed(1));
+    sc = Math.min(100, Math.max(0, sc));
     const color = sc>=85?'var(--success)':sc>=70?'var(--primary)':sc>=50?'var(--warning)':'var(--danger)';
     const name  = String(r.testName||'').replace(/\[iSpring\]\s*/i,'').trim();
     return`<div class="result-row animate__animated animate__fadeInUp">
@@ -504,7 +507,7 @@ function renderIspringResults(){
         <div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div>
       </div>
       <div style="font-size:.75rem;opacity:.65;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nbEsc(name)}</div>
-      <div style="font-weight:800;color:${color};white-space:nowrap">${sc.toFixed(1).replace(/\.0$/,'')}đ</div>
+      <div style="font-weight:800;color:${color};white-space:nowrap">${sc.toFixed(0)}<small style="font-size:.7em;opacity:.55">/100</small></div>
     </div>`;
   }).join('');
 
@@ -697,14 +700,31 @@ async function loadData(manual=false){
   document.getElementById('resultList').innerHTML = Array(3).fill('<div class="skeleton"></div>').join('');
   document.getElementById('pendingList').innerHTML= '<div class="skeleton"></div>';
   try{
-    const[tData,rData,pData]=await Promise.all([callAPI('getTests'),callAPI('getResults'),callAPI('getPendingUsers')]);
+    /* Tải cả 4 nguồn dữ liệu song song — bao gồm iSpring results */
+    const[tData,rData,pData,ispResData]=await Promise.all([
+      callAPI('getTests'), callAPI('getResults'),
+      callAPI('getPendingUsers'), callAPI('getIspringResults')
+    ]);
     if(tData){ tests=tData; renderTests(); }
-    if(rData){ results=rData; window._nbResults=results; window.results=results; renderResults(); }
+    if(rData){
+      results=rData; window._nbResults=results; window.results=results;
+      renderResults();
+    }
     if(pData){ pending=pData; window._nbPending=pending; window.pending=pending; renderPending(); }
+
+    /* Lưu iSpring results để auto-refresh dùng */
+    window._nbIspResults = Array.isArray(ispResData)?ispResData:[];
+
     document.getElementById('cTests').innerText   = tests.length;
-    document.getElementById('cResults').innerText = results.length;
     document.getElementById('cPending').innerText = pending.length;
-    _chart(results);
+    /* cResults = tổng bài hệ thống + iSpring */
+    const totalResults = results.length + (window._nbIspResults||[]).length;
+    document.getElementById('cResults').innerText = totalResults;
+
+    /* Chart dùng cả 2 loại kết quả */
+    const combined=[...results,...(window._nbIspResults||[])];
+    _chart(combined);
+
     _status('ok','Trực tuyến');
     _log('Tải dữ liệu thành công','ok');
     const syncBadge=document.getElementById('lastSyncBadge');
@@ -758,10 +778,12 @@ function renderResults(){
     qsEl.style.display='grid';
     const scores = results.map(r=>parseFloat(r.score||0));
     const isIspArr = results.map(r=>(r.testName||'').toLowerCase().includes('ispring'));
-    /* BUG FIX: chuẩn hóa điểm hệ thống > 10 về thang /10 trước khi tính TB */
+    /* Chuẩn hoá tất cả về thang /10 để tính trung bình chung
+       - iSpring: score/100 * 10
+       - Hệ thống: nếu score > 10 (totalScore=100) thì chia 10 */
     const normed = scores.map((s,i)=>{
-      if(isIspArr[i]) return s/10; /* iSpring /100 → /10 */
-      return s > 10 ? s/10 : s;   /* sys có thể > 10 nếu totalScore=100 */
+      if(isIspArr[i]) return s / 10;        /* iSpring /100 → /10 */
+      return s > 10 ? s / 10 : s;           /* sys /100 → /10 nếu cần */
     });
     const avg  = normed.reduce((a,b)=>a+b,0)/normed.length;
     const best = Math.max(...normed);
@@ -811,17 +833,23 @@ function renderResults(){
   }
 
   el.innerHTML=pageData.map(r=>{
-    const isIsp=(r.testName||'').toLowerCase().includes('ispring');
-    let score=parseFloat(r.score||0);
-    /* BUG FIX: Bài hệ thống đôi khi lưu điểm trên thang 100 (totalScore=100).
-       Chuẩn hóa: nếu score > 10 và không phải iSpring → chia 10 để hiển thị /10. */
-    if(!isIsp && score > 10) score = parseFloat((score / 10).toFixed(2));
-    const color=isIsp
-      ?(score>=85?'var(--success)':score>=60?'var(--primary)':'var(--danger)')
-      :(score>=8 ?'var(--success)':score>=5 ?'var(--primary)':'var(--danger)');
-    const dispScore=isIsp
-      ?score.toFixed(0)+'<small style="font-size:.7em;opacity:.55">/100</small>'
-      :score.toFixed(1).replace(/\.0$/,'')+'<small style="font-size:.7em;opacity:.55">/10</small>';
+    const rawScore = parseFloat(r.score||0);
+    const isIsp    = (r.testName||'').toLowerCase().includes('ispring');
+    let score, color, dispScore;
+
+    if(isIsp){
+      /* Cap iSpring score — phòng dữ liệu cũ bị lưu sai (vd: 1900 thay vì 19) */
+      score = rawScore > 100
+        ? parseFloat((rawScore / Math.pow(10, Math.floor(Math.log10(rawScore/100)+1))).toFixed(1))
+        : rawScore;
+      score = Math.min(100, Math.max(0, score));
+      color = score>=85?'var(--success)':score>=60?'var(--primary)':'var(--danger)';
+      dispScore = score.toFixed(0)+'<small style="font-size:.7em;opacity:.55">/100</small>';
+    } else {
+      score = rawScore > 10 ? parseFloat((rawScore/10).toFixed(2)) : rawScore;
+      color = score>=8?'var(--success)':score>=5?'var(--primary)':'var(--danger)';
+      dispScore = score.toFixed(1).replace(/\.0$/,'')+'<small style="font-size:.7em;opacity:.55">/10</small>';
+    }
     return`<div class="result-row">
       <div><div style="font-weight:600">${nbEsc(r.student||'Ẩn danh')}</div><div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div></div>
       <div style="opacity:.7">${nbEsc(r.testName||'Đề thi')}</div>

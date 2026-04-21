@@ -257,15 +257,18 @@ window.nbEsc       = nbEsc;
 /* ─── ANSWER CHECK ─── */
 function nbCheckAns(type, userAns, correctAns){
   if(userAns===undefined||userAns===null||userAns==='') return false;
-  const norm  = s=>String(s).trim().toLowerCase().replace(/\s+/g,' ');
+  /* Chuẩn hoá: NFC để đồng nhất encoding Vietnamese, loại bỏ khoảng trắng thừa */
+  const norm  = s=>String(s).normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');
   const sort  = s=>String(s).split('|').map(norm).sort().join('|');
   const order = s=>String(s).split('|').map(norm).join('|');
   type=(type||'single').toLowerCase();
   if(type==='ordering')                      return order(userAns)===order(correctAns);
   if(type==='multiple'||type==='matching')   return sort(userAns) ===sort(correctAns);
   if(type==='fill'){
-    const accepts = String(correctAns).split('|').map(norm);
-    return accepts.includes(norm(userAns));
+    /* Hỗ trợ nhiều đáp án phân cách bằng | — so sánh sau khi chuẩn hoá */
+    const accepts = String(correctAns).split('|').map(norm).filter(Boolean);
+    const userN   = norm(userAns);
+    return accepts.some(a => a === userN);
   }
   return norm(userAns)===norm(correctAns);
 }
@@ -505,16 +508,22 @@ window.nbDashboardInit = function(){
     if(!canvas||typeof Chart==='undefined') return;
     const s=[0,0,0];
     (results||[]).forEach(r=>{
-      const v=parseFloat(r.score||0);
+      const raw=parseFloat(r.score||0);
       const isIsp=(r.testName||'').toLowerCase().includes('ispring');
-      if(isIsp){ if(v>=80)s[0]++; else if(v>=50)s[1]++; else s[2]++; }
-      else     { if(v>=8) s[0]++; else if(v>=5) s[1]++; else s[2]++; }
+      if(isIsp){
+        /* iSpring: thang 100 → Giỏi ≥80, TB 50-79, Yếu <50 */
+        if(raw>=80)s[0]++; else if(raw>=50)s[1]++; else s[2]++;
+      } else {
+        /* Hệ thống: thang 10 (hoặc 100 → chuẩn hoá về 10) */
+        const v = raw > 10 ? raw/10 : raw;
+        if(v>=8)s[0]++; else if(v>=5)s[1]++; else s[2]++;
+      }
     });
     if(window._nbChart) window._nbChart.destroy();
     window._nbChart=new Chart(canvas,{
       type:'doughnut',
       data:{
-        labels:['Giỏi (≥8)','TB (5-7.9)','Yếu (<5)'],
+        labels:['Giỏi (≥8/≥80%)','TB (5-7.9/50-79%)','Yếu (<5/<50%)'],
         datasets:[{ data:s,
           backgroundColor:['rgba(16,185,129,.8)','rgba(59,130,246,.8)','rgba(239,68,68,.8)'],
           borderColor:['#10b981','#3b82f6','#ef4444'], borderWidth:2 }]
@@ -551,8 +560,9 @@ window.nbDashboardInit = function(){
   }
   async function _silentRefresh(){
     try{
-      const[tData,rData,pData]=await Promise.all([
+      const[tData,rData,pData,ispData]=await Promise.all([
         callAPI('getTests'), callAPI('getResults'), callAPI('getPendingUsers'),
+        callAPI('getIspringResults'),
       ]);
       _failStreak=0;
       const tStr=JSON.stringify((tData||[]).map(t=>t.id));
@@ -564,13 +574,26 @@ window.nbDashboardInit = function(){
         if(el) el.innerText=(tData||[]).length;
       }
       const rLen=(rData||[]).length;
-      if(rLen!==(window._nbResults||[]).length){
-        const added=rLen-(window._nbResults||[]).length;
+      const ispLen=(ispData||[]).length;
+      /* Tổng lượt làm bài = hệ thống + iSpring */
+      const totalResultLen = rLen + ispLen;
+      const prevTotalLen = (window._nbResults||[]).length + (window._nbIspResults||[]).length;
+      if(totalResultLen !== prevTotalLen){
+        const added = totalResultLen - prevTotalLen;
+        window._nbResults  = rData||[]; window.results=rData||[];
+        window._nbIspResults = ispData||[];
+        if(window.renderResults) window.renderResults();
+        const el=document.getElementById('cResults'); if(el) el.innerText=totalResultLen;
+        if(added>0) nbToast('info',`+${added} kết quả mới!`);
+        /* Cập nhật chart với cả 2 loại kết quả */
+        if(window.nbRenderDashChart){
+          const combined=[...(rData||[]),...(ispData||[])];
+          window.nbRenderDashChart(combined);
+        }
+      } else if(rLen!==(window._nbResults||[]).length){
+        /* Số hệ thống thay đổi nhưng tổng không đổi (có iSpring bù) */
         window._nbResults=rData||[]; window.results=rData||[];
         if(window.renderResults) window.renderResults();
-        const el=document.getElementById('cResults'); if(el) el.innerText=rLen;
-        if(added>0) nbToast('info',`+${added} kết quả mới!`);
-        if(window.nbRenderDashChart) window.nbRenderDashChart(rData);
       }
       const now=new Date();
       const syncBadge=document.getElementById('lastSyncBadge');
@@ -1436,12 +1459,48 @@ window.nbResultInit = function(){
   const titleEl =document.getElementById('resTitle');
   const trophyEl=document.getElementById('resTrophy');
   const totalScoreBase=parseFloat(nb.get('quizTotalScore')||10)||10;
-  const pct=totalScoreBase>0?(score/totalScoreBase):0;
+  const isIspringMode = (nb.get('quizMode')||'') === 'ispring';
+
+  /* Chuẩn hoá score để tính % (score ring dùng % 0-100) */
+  let displayScore = score;
+  let scoreForRing = 0; /* 0-100 cho vòng tròn */
+  if(isIspringMode){
+    /* iSpring: score đã là 0-100 */
+    scoreForRing  = Math.min(100, Math.max(0, score));
+    displayScore  = score;
+  } else {
+    /* Hệ thống: score/totalScoreBase → % */
+    const normScore = totalScoreBase > 0 ? (score / totalScoreBase) : 0;
+    scoreForRing  = Math.round(normScore * 100);
+    displayScore  = score;
+  }
+
+  const pct = totalScoreBase > 0 ? (score / totalScoreBase) : 0;
   if(pct>=0.8)      {if(titleEl)titleEl.textContent='XUẤT SẮC!';    if(trophyEl)trophyEl.textContent='👑';}
   else if(pct>=0.5) {if(titleEl)titleEl.textContent='TỐT LẮM!';     if(trophyEl)trophyEl.textContent='🚀';}
   else              {if(titleEl)titleEl.textContent='CỐ GẮNG LÊN!'; if(trophyEl)trophyEl.textContent='🎯';}
 
-  _animateScore(score);
+  _animateScore(displayScore);
+
+  /* Cập nhật label "/ X ĐIỂM" */
+  const lblEl=document.getElementById('resScoreLbl');
+  if(lblEl){
+    const dispTotal=totalScoreBase%1===0?totalScoreBase.toFixed(0):totalScoreBase;
+    lblEl.textContent=`/ ${dispTotal} ĐIỂM`;
+  }
+
+  /* Cập nhật score ring SVG (vòng tròn tiến trình) */
+  setTimeout(()=>{
+    const ring=document.querySelector('.res-score-ring');
+    if(ring) ring.style.setProperty('--pct', scoreForRing+'%');
+    /* Nếu dùng SVG stroke dashoffset */
+    const fg=document.querySelector('.res-ring-fg,[class*="ring-fg"]');
+    if(fg){
+      const r=parseFloat(fg.getAttribute('r')||'56');
+      const C=2*Math.PI*r;
+      fg.style.strokeDashoffset=String(C-(scoreForRing/100)*C);
+    }
+  },100);
 
   try{
     _quizData.answers  =JSON.parse(nb.get('quizAnswers')  ||'{}');
@@ -1651,11 +1710,22 @@ window.nbQuizInit = function(){
       let rawQ=data.map(q=>{
         let details={items:[]};
         try{ details=typeof q.answer==='string'?JSON.parse(q.answer):(q.answer||{items:[]}); }catch(e){}
+        /* Đảm bảo details.items luôn là mảng hợp lệ */
+        if(!Array.isArray(details.items)) details.items=[];
         const correct=(q.correct||q.correctAnswer||q.correctanswer||'').toString().trim();
         return{...q,details,correct,points:parseFloat(q.points)||0};
       });
+      /* ── Xáo trộn câu hỏi trong chế độ kiểm tra ── */
       if(quizMode==='test') rawQ=_shuffle(rawQ);
-      questions=rawQ.map(q=>{ if(q.details?.items) q.details.items=_shuffle(q.details.items); return q; });
+      /* ── Xáo trộn đáp án trong mỗi câu (cả train lẫn test) ── */
+      questions=rawQ.map(q=>{
+        const qType=(q.type||'single').toLowerCase();
+        /* Chỉ xáo trộn options cho câu single/multiple; ordering giữ nguyên thứ tự đúng */
+        if(['single','mcq','multiple'].includes(qType) && q.details?.items?.length){
+          q.details.items=_shuffle(q.details.items);
+        }
+        return q;
+      });
       const durStorage=parseInt(localStorage.getItem('currentTestDuration')||'0');
       const durData   =parseInt(data[0]?.testTime||'0');
       const minutes   =durStorage>0?durStorage:(durData>0?durData:20);
@@ -1978,7 +2048,15 @@ window.nbQuizInit = function(){
       const pts=q.points>0?q.points:(totalScoreBase/questions.length);
       let studentAns='';
       if(type==='fill'){
-        studentAns=userAnswers[i]||'';
+        /* Ưu tiên đọc từ DOM nếu đây là câu hiện tại (tránh mất đáp án chưa blur) */
+        if(currentIdx === i){
+          const liveInp=document.querySelector('.qz-fill-input');
+          if(liveInp){
+            const domVal=liveInp.value.trim();
+            if(domVal){ studentAns=domVal; saveAnswer(i,domVal); }
+          }
+        }
+        if(!studentAns) studentAns=userAnswers[i]||'';
       } else if(['single','mcq','tf'].includes(type)){
         studentAns=document.querySelector(`input[name="ans${i}"]:checked`)?.value.trim()||userAnswers[i]||'';
       } else {
@@ -2306,10 +2384,12 @@ window.nbPlayerInit = function(){
     }catch(e){}
   },false);
 
-  /* Hàm lưu + chuyển trang KHÔNG qua dialog (dùng khi bridge cung cấp đủ dữ liệu) */
+  /* Hàm lưu im lặng khi bridge cung cấp đủ dữ liệu.
+     KHÔNG mở panel kết quả ngay — HS cần xem lại bài trong iSpring.
+     Khi HS bấm "NỘP KẾT QUẢ" mới mở panel + cho phép chuyển sang result.html. */
   function _autoSaveAndGo(pct,cor,tot,st){
-    showResult(pct,st);
     _doSaveAndGo(pct,cor,tot,st);
+    _highlightSubmitBtn();
   }
 
   /* ════════════════════════════════════════════════════════════
@@ -2782,9 +2862,13 @@ window.nbPlayerInit = function(){
       return;
     }
 
-    /* state === 'done' → có _pendingResult → hiện confirm rồi submit */
-    const d = window._pendingResult || {pct:0,correct:0,total:0,src:'none'};
-    showScoreConfirm(d);
+    /* state === 'done' → mở result panel trong player.html
+       HS xem xong bài trong iSpring → bấm nút này → thấy kết quả
+       → chọn "TRANG KẾT QUẢ NEBULA" để chuyển trang             */
+    const d = window._pendingResult || {pct:scormScore,correct:domCorrect,total:domTotal,src:'manual'};
+    showResult(d.pct, scormStatus||'completed');
+    /* Đảm bảo kết quả đã được lưu (saveResult có guard saveF để không lưu trùng) */
+    if(!saveF) saveResult(d.pct, d.correct, d.total, scormStatus||'completed');
   };
 
   /* ════════════════════════════════════════════════════════════
@@ -2882,7 +2966,11 @@ window.nbPlayerInit = function(){
   }
 
   window._plRetrySave=()=>{ saveF=false; saveResult(0,0,0,'completed'); };
-  window._plGoResult =()=>{ location.href='result.html'; };
+  window._plGoResult =()=>{
+    /* Đặt cờ báo player đã lưu → result.html không lưu lại lần 2 */
+    localStorage.setItem('ispSavedByPlayer','1');
+    location.href='result.html';
+  };
   window._plExit=function(){
     if(state==='done'){ location.href='select.html'; return; }
     if(state==='doing'){ const d=$('pl-dlg'); if(d)d.classList.add('open'); }

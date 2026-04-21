@@ -113,29 +113,28 @@ async function loadHistory() {
 }
 
 function updateStats() {
-  /* Tính stats riêng cho từng loại để hiển thị đúng thang điểm */
   const sysSc  = allRecs.filter(r=>r._type==="sys").map(r=>parseFloat(r.score||0));
-  const ispSc  = allRecs.filter(r=>r._type==="isp").map(r=>parseFloat(r.score||0));
-  const allSc  = [...sysSc, ...ispSc];
+  const ispSc  = allRecs.filter(r=>r._type==="isp").map(r=>{
+    /* Cap iSpring score: nếu > 100 → chia để về đúng thang */
+    const s = parseFloat(r.score||0);
+    if(s > 100) return parseFloat((s / Math.pow(10, Math.floor(Math.log10(s/100)+1))).toFixed(1));
+    return s;
+  });
 
   document.getElementById("stTotal").textContent = allRecs.length;
 
-  if(allSc.length){
-    /* Điểm TB: chuẩn hóa iSpring về /10 trước khi tính chung
-       BUG FIX: sys score > 10 (totalScore=100) cũng chia 10   */
+  if(sysSc.length || ispSc.length){
     const normalized = [
       ...sysSc.map(s => s > 10 ? s/10 : s),
       ...ispSc.map(s => s / 10)
     ];
-    const avg  = normalized.reduce((a,b)=>a+b,0) / normalized.length;
+    const avg = normalized.reduce((a,b)=>a+b,0) / normalized.length;
     document.getElementById("stAvg").textContent = avg.toFixed(1) + "/10";
 
-    /* Điểm cao nhất */
     const bestSys = sysSc.length ? Math.max(...sysSc.map(s => s > 10 ? s/10 : s)) : null;
     const bestIsp = ispSc.length ? Math.max(...ispSc) : null;
     if(bestSys !== null && bestIsp !== null){
-      const bestNorm = Math.max(bestSys, bestIsp/10);
-      document.getElementById("stBest").textContent = bestNorm.toFixed(1).replace(/\.0$/,"") + "/10";
+      document.getElementById("stBest").textContent = Math.max(bestSys, bestIsp/10).toFixed(1).replace(/\.0$/,"") + "/10";
     } else if(bestSys !== null){
       document.getElementById("stBest").textContent = bestSys.toFixed(1).replace(/\.0$/,"") + "/10";
     } else if(bestIsp !== null){
@@ -178,9 +177,11 @@ function renderList(tab) {
     /* ── Hiển thị điểm đúng thang ── */
     let dispScore, col;
     if(isp){
-      /* iSpring: thang 100 */
-      dispScore = score.toFixed(0) + "<small style='font-size:.6em;opacity:.6'>/100</small>";
-      col = score >= 85 ? "var(--accent)" : score >= 60 ? "var(--primary)" : "var(--danger)";
+      /* iSpring: thang 100 — cap phòng dữ liệu cũ bị sai (ví dụ 1900 thay vì 19) */
+      const safeScore = score > 100 ? parseFloat((score / Math.pow(10, Math.floor(Math.log10(score/100)+1))).toFixed(1)) : score;
+      const displayPct = Math.min(100, Math.max(0, safeScore));
+      dispScore = displayPct.toFixed(0) + "<small style='font-size:.6em;opacity:.6'>/100</small>";
+      col = displayPct >= 85 ? "var(--accent)" : displayPct >= 60 ? "var(--primary)" : "var(--danger)";
     } else {
       /* Hệ thống: thang 10
          BUG FIX: nếu score > 10 (totalScore=100 trong quiz data) → chia 10 */
