@@ -545,6 +545,16 @@
       }, '*');
     } catch(e){}
 
+    /* Fallback redirect với URL params (hoạt động file://)
+       BUG FIX v2.3: Chỉ redirect khi KHÔNG chạy trong iframe của player.html.
+       Nếu chạy trong iframe: player.html đã nhận postMessage, tự lưu GAS.
+       Redirect từ iframe → double-save vì result.html lại lưu lần 2.           */
+    var _inIframe = (typeof window.parent !== 'undefined' && window.parent !== window);
+    if(_inIframe){
+      _log('Trong iframe player.html → bỏ qua fallback redirect, chỉ dùng postMessage');
+      return;
+    }
+
     setTimeout(function(){
       if(!_done) return;
       var base = location.href;
@@ -557,7 +567,7 @@
                + '&correct=' + cor
                + '&total='   + tot
                + '&status='  + st;
-      _log('Redirect → ' + url);
+      _log('Standalone mode → Redirect → ' + url);
       location.href = url;
     }, 1200);
   }

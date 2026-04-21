@@ -758,7 +758,11 @@ function renderResults(){
     qsEl.style.display='grid';
     const scores = results.map(r=>parseFloat(r.score||0));
     const isIspArr = results.map(r=>(r.testName||'').toLowerCase().includes('ispring'));
-    const normed = scores.map((s,i)=>isIspArr[i]?s/10:s);
+    /* BUG FIX: chuẩn hóa điểm hệ thống > 10 về thang /10 trước khi tính TB */
+    const normed = scores.map((s,i)=>{
+      if(isIspArr[i]) return s/10; /* iSpring /100 → /10 */
+      return s > 10 ? s/10 : s;   /* sys có thể > 10 nếu totalScore=100 */
+    });
     const avg  = normed.reduce((a,b)=>a+b,0)/normed.length;
     const best = Math.max(...normed);
     document.getElementById('rqsTotal').textContent = results.length;
@@ -807,8 +811,11 @@ function renderResults(){
   }
 
   el.innerHTML=pageData.map(r=>{
-    const score=parseFloat(r.score||0);
     const isIsp=(r.testName||'').toLowerCase().includes('ispring');
+    let score=parseFloat(r.score||0);
+    /* BUG FIX: Bài hệ thống đôi khi lưu điểm trên thang 100 (totalScore=100).
+       Chuẩn hóa: nếu score > 10 và không phải iSpring → chia 10 để hiển thị /10. */
+    if(!isIsp && score > 10) score = parseFloat((score / 10).toFixed(2));
     const color=isIsp
       ?(score>=85?'var(--success)':score>=60?'var(--primary)':'var(--danger)')
       :(score>=8 ?'var(--success)':score>=5 ?'var(--primary)':'var(--danger)');

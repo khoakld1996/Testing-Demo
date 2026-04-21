@@ -2436,42 +2436,93 @@ window.nbPlayerInit = function(){
     /* Scale score nếu SCORM gửi scaled 0-1 */
     if(scormScore>0&&scormScore<=1&&!scormMax) scormScore=Math.round(scormScore*100);
 
-    /* Ưu tiên: SCORM > DOM text
-       - scormReported=true → SCORM đã gửi điểm (kể cả 0)
-       - scormMax > 0 → biết số câu tổng (raw=số câu đúng)   */
     let finalPct, finalCorrect, finalTotal, src;
 
     if(scormReported){
       if(scormMax>0){
-        /* Tốt nhất: có cả raw và max */
         finalCorrect = Math.round(scormScore);
         finalTotal   = Math.round(scormMax);
         finalPct     = Math.min(100,Math.round((scormScore/scormMax)*100));
         src='scorm_full';
       } else {
-        /* Chỉ có raw (thường là % trực tiếp) */
         finalPct     = Math.min(100,Math.max(0,Math.round(scormScore)));
         finalCorrect = domCorrect||0;
         finalTotal   = domTotal  ||0;
         src='scorm_pct';
       }
     } else if(domFound){
-      /* Fallback: DOM text scrape (chỉ hoạt động qua HTTP) */
       finalPct     = domScore;
       finalCorrect = domCorrect;
       finalTotal   = domTotal;
       src='dom';
     } else {
-      /* SCORM không gửi dữ liệu (cả file:// lẫn HTTP) → hiện hướng dẫn bridge */
       src='no_bridge';
       finalPct=0; finalCorrect=0; finalTotal=0;
     }
 
     console.log('[Nebula] Kết quả iSpring:', {src,finalPct,finalCorrect,finalTotal,scormReported,scormScore,scormMax});
-    showScoreConfirm({pct:finalPct, correct:finalCorrect, total:finalTotal, src});
+
+    /* ════════════════════════════════════════════════════════
+       Lưu kết quả vào _pendingResult — CHƯA xử lý ngay.
+       Chỉ khi người dùng bấm nút "Nộp kết quả" mới submit.
+
+       Ngoại lệ: src==='no_bridge' → hiện hướng dẫn cài bridge
+       vì lúc này không có điểm nào để nộp cả.
+    ════════════════════════════════════════════════════════ */
+    window._pendingResult = {pct:finalPct, correct:finalCorrect, total:finalTotal, src};
+
+    if(src==='no_bridge'){
+      /* Không có điểm → hiện dialog hướng dẫn bridge như cũ */
+      showScoreConfirm(window._pendingResult);
+    } else {
+      /* Có điểm → im lặng, chỉ highlight nút Nộp kết quả */
+      _highlightSubmitBtn();
+    }
   }
 
   function onDone(){ _triggerDone(); }
+
+  /* Làm nút "Nộp kết quả" nổi bật khi bài thi kết thúc */
+  function _highlightSubmitBtn(){
+    const btn = document.getElementById('pl-submit-btn');
+    if(!btn) return;
+    btn.style.display = 'flex';
+    /* Đổi style: cam đặc, to hơn, pulse mạnh */
+    btn.style.cssText = [
+      'display:flex','align-items:center','gap:6px',
+      'padding:8px 16px','border-radius:10px',
+      'border:none','cursor:pointer',
+      'background:var(--ispring)',
+      'color:#fff','font-size:.8rem','font-weight:900',
+      'font-family:var(--font)','letter-spacing:.4px',
+      'animation:pulse-submit 1.1s infinite',
+      'box-shadow:0 0 0 0 rgba(249,115,22,.7)',
+      'white-space:nowrap','transition:none'
+    ].join(';');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> NỘP KẾT QUẢ';
+
+    /* Inject keyframe nếu chưa có */
+    if(!document.getElementById('_nb_pulse_kf')){
+      const s = document.createElement('style');
+      s.id = '_nb_pulse_kf';
+      s.textContent = '@keyframes pulse-submit{0%{box-shadow:0 0 0 0 rgba(249,115,22,.7)}70%{box-shadow:0 0 0 10px rgba(249,115,22,0)}100%{box-shadow:0 0 0 0 rgba(249,115,22,0)}}';
+      document.head.appendChild(s);
+    }
+
+    /* Toast nhỏ thông báo bài thi kết thúc */
+    if(typeof Swal !== 'undefined'){
+      Swal.fire({
+        toast: true, position: 'top',
+        icon: 'success',
+        title: 'Bài thi đã kết thúc — Bấm <b>NỘP KẾT QUẢ</b> để lưu điểm!',
+        showConfirmButton: false,
+        timer: 4000, timerProgressBar: true,
+        background: 'rgba(10,18,36,0.97)',
+        color: '#f1f5f9',
+        customClass: { popup: 'nb-toast-popup' }
+      });
+    }
+  }
 
   /* ════════════════════════════════════════════════════════════
      DOM OBSERVER — attach vào iframe (chỉ hoạt động HTTP)
@@ -2688,8 +2739,10 @@ window.nbPlayerInit = function(){
       showClass:{popup:'animate__animated animate__zoomIn'},
     }).then(res=>{
       if(res.isConfirmed&&autoOk){
+        /* Lưu + chuyển thẳng sang result.html */
         showResult(pct,st);
-        _doSaveAndGo(pct,cor,tot,st);
+        saveResult(pct,cor,tot,st)
+          .then(()=>{ location.href='result.html'; });
       } else if(autoOk&&!res.isConfirmed){
         _doRetry();
       } else {
@@ -2702,11 +2755,18 @@ window.nbPlayerInit = function(){
 
 
   function _doSaveAndGo(pct,correct,total,st){
-    saveResult(pct,correct,total,st)
-      .then(()=>setTimeout(()=>location.href='result.html',1800));
+    /* Lưu kết quả vào GAS + localStorage.
+       KHÔNG tự redirect — người dùng bấm nút "TRANG KẾT QUẢ NEBULA" để chuyển trang. */
+    saveResult(pct,correct,total,st);
+    /* Đảm bảo nút "TRANG KẾT QUẢ NEBULA" luôn hoạt động */
+    window._plGoResult = ()=>{ location.href='result.html'; };
   }
 
-  /* "Nộp kết quả" header button */
+  /* ════════════════════════════════════════════════════════════
+     "Nộp kết quả" header button
+     - Trong lúc làm bài (state=doing): trigger done (thu thập điểm)
+     - Sau khi bài xong (state=done):   hiện confirm → save → result.html
+  ════════════════════════════════════════════════════════════ */
   window._plManualScore=function(){
     if(state==='doing'||state==='idle'){
       /* Lấy DOM text lần cuối trước khi kết thúc */
@@ -2719,9 +2779,12 @@ window.nbPlayerInit = function(){
         }
       }
       _triggerDone();
-    } else if(state==='done'){
-      location.href='result.html';
+      return;
     }
+
+    /* state === 'done' → có _pendingResult → hiện confirm rồi submit */
+    const d = window._pendingResult || {pct:0,correct:0,total:0,src:'none'};
+    showScoreConfirm(d);
   };
 
   /* ════════════════════════════════════════════════════════════
@@ -2788,9 +2851,7 @@ window.nbPlayerInit = function(){
           })
         })
       });
-      /* Đánh cờ: player.html đã lưu rồi → result.html sẽ bỏ qua không lưu lại */
-      ls.setItem('ispSavedByPlayer','1');
-      syncUI('ok','<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả!');
+      syncUI('ok','<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Đã lưu kết quả! Bấm <b>TRANG KẾT QUẢ NEBULA</b> để xem chi tiết.');
       _loadDistribution(sc,tn);
     }catch(e){
       saveF=false;
@@ -2887,7 +2948,30 @@ window.nbPlayerInit = function(){
     },300);
   }
 
-  window._plRetry=_doRetry;
+  window._plRetry=function(){
+    /* Hỏi xác nhận trước khi làm lại — tránh vô tình mất kết quả đang xem */
+    if(typeof Swal!=='undefined'){
+      Swal.fire({
+        title:'Làm lại bài thi?',
+        html:`<div style="font-size:.88rem;color:rgba(255,255,255,.75);line-height:1.7">
+          Kết quả hiện tại đã được lưu.<br>
+          Làm lại sẽ <b>bắt đầu từ đầu</b> và ghi đè lên điểm lần trước.
+        </div>`,
+        icon:'question',
+        confirmButtonText:'↺ Làm lại ngay',
+        cancelButtonText:'← Ở lại xem kết quả',
+        showCancelButton:true,
+        background:'rgba(10,15,30,0.97)', color:'#f1f5f9',
+        customClass:{
+          confirmButton:'nb-swal-btn nb-swal-btn-cancel',
+          cancelButton:'nb-swal-btn nb-swal-btn-confirm'
+        },
+        buttonsStyling:false,
+      }).then(r=>{ if(r.isConfirmed) _doRetry(); });
+    } else {
+      _doRetry();
+    }
+  };
 
   history.pushState(null,'',location.href);
   window.addEventListener('popstate',function(){

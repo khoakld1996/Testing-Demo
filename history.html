@@ -121,16 +121,17 @@ function updateStats() {
   document.getElementById("stTotal").textContent = allRecs.length;
 
   if(allSc.length){
-    /* Điểm TB: chuẩn hóa iSpring về /10 trước khi tính chung */
+    /* Điểm TB: chuẩn hóa iSpring về /10 trước khi tính chung
+       BUG FIX: sys score > 10 (totalScore=100) cũng chia 10   */
     const normalized = [
-      ...sysSc,
-      ...ispSc.map(s => s / 10)   /* iSpring /100 → /10 để so sánh ngang */
+      ...sysSc.map(s => s > 10 ? s/10 : s),
+      ...ispSc.map(s => s / 10)
     ];
     const avg  = normalized.reduce((a,b)=>a+b,0) / normalized.length;
     document.getElementById("stAvg").textContent = avg.toFixed(1) + "/10";
 
-    /* Điểm cao nhất: hiển thị đúng thang */
-    const bestSys = sysSc.length ? Math.max(...sysSc) : null;
+    /* Điểm cao nhất */
+    const bestSys = sysSc.length ? Math.max(...sysSc.map(s => s > 10 ? s/10 : s)) : null;
     const bestIsp = ispSc.length ? Math.max(...ispSc) : null;
     if(bestSys !== null && bestIsp !== null){
       const bestNorm = Math.max(bestSys, bestIsp/10);
@@ -181,9 +182,11 @@ function renderList(tab) {
       dispScore = score.toFixed(0) + "<small style='font-size:.6em;opacity:.6'>/100</small>";
       col = score >= 85 ? "var(--accent)" : score >= 60 ? "var(--primary)" : "var(--danger)";
     } else {
-      /* Hệ thống: thang 10 */
-      dispScore = score.toFixed(1).replace(/\.0$/,"") + "<small style='font-size:.6em;opacity:.6'>/10</small>";
-      col = score >= 8 ? "var(--accent)" : score >= 5 ? "var(--primary)" : "var(--danger)";
+      /* Hệ thống: thang 10
+         BUG FIX: nếu score > 10 (totalScore=100 trong quiz data) → chia 10 */
+      const dispVal = score > 10 ? parseFloat((score/10).toFixed(1)) : score;
+      dispScore = dispVal.toFixed(1).replace(/\.0$/,"") + "<small style='font-size:.6em;opacity:.6'>/10</small>";
+      col = dispVal >= 8 ? "var(--accent)" : dispVal >= 5 ? "var(--primary)" : "var(--danger)";
     }
 
     const badge = isp
@@ -210,8 +213,11 @@ async function openDetail(idx) {
   document.getElementById("viewDetail").style.display = "block";
   window.scrollTo(0,0);
   const name  = (rec.testName||"").replace(/\[iSpring\]/ig,"").trim();
-  const score = parseFloat(rec.score||0).toFixed(1);
   const isIsp = rec._type==="isp";
+  /* BUG FIX: chuẩn hóa sys score > 10 (totalScore=100 case) */
+  let scoreRaw = parseFloat(rec.score||0);
+  if(!isIsp && scoreRaw > 10) scoreRaw = parseFloat((scoreRaw/10).toFixed(2));
+  const score = scoreRaw.toFixed(1);
   const scoreCol = isIsp
     ? (parseFloat(score)>=80?'var(--accent)':parseFloat(score)>=50?'var(--primary)':'var(--danger)')
     : (parseFloat(score)>=8?'var(--accent)':parseFloat(score)>=5?'var(--primary)':'var(--danger)');
