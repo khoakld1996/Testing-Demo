@@ -257,20 +257,38 @@ window.nbEsc       = nbEsc;
 /* ─── ANSWER CHECK ─── */
 function nbCheckAns(type, userAns, correctAns){
   if(userAns===undefined||userAns===null||userAns==='') return false;
-  /* Chuẩn hoá: NFC để đồng nhất encoding Vietnamese, loại bỏ khoảng trắng thừa */
-  const norm  = s=>String(s).normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');
-  const sort  = s=>String(s).split('|').map(norm).sort().join('|');
-  const order = s=>String(s).split('|').map(norm).join('|');
-  type=(type||'single').toLowerCase();
-  if(type==='ordering')                      return order(userAns)===order(correctAns);
-  if(type==='multiple'||type==='matching')   return sort(userAns) ===sort(correctAns);
-  if(type==='fill'){
-    /* Hỗ trợ nhiều đáp án phân cách bằng | — so sánh sau khi chuẩn hoá */
-    const accepts = String(correctAns).split('|').map(norm).filter(Boolean);
-    const userN   = norm(userAns);
-    return accepts.some(a => a === userN);
+
+  /* ── Chuẩn hoá: xử lý tất cả biến thể Unicode tiếng Việt ──
+     Bàn phím Windows/Mac/telex lưu cùng ký tự nhưng khác encoding.
+     Giải pháp: thử NFC → NFKC → bỏ dấu hoàn toàn (fallback).     */
+  function _n(s){ try{ return String(s||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' '); }catch(e){ return String(s||'').toLowerCase().trim(); } }
+  function _nkc(s){ try{ return String(s||'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' '); }catch(e){ return String(s||'').toLowerCase().trim(); } }
+  function _strip(s){
+    try{
+      return String(s||'').normalize('NFD')
+        .replace(/[\u0300-\u036f\u1DC0-\u1DFF\u20D0-\u20FF]/g,'')
+        .toLowerCase().trim().replace(/\s+/g,' ');
+    }catch(e){ return String(s||'').toLowerCase().trim(); }
   }
-  return norm(userAns)===norm(correctAns);
+
+  const sort  = s=>String(s).split('|').map(_n).sort().join('|');
+  const order = s=>String(s).split('|').map(_n).join('|');
+  type=(type||'single').toLowerCase();
+
+  if(type==='ordering')                      return order(userAns)===order(correctAns);
+  if(type==='multiple'||type==='matching')   return sort(userAns)===sort(correctAns);
+
+  if(type==='fill'){
+    const accepts = String(correctAns).split('|').map(s=>s.trim()).filter(Boolean);
+    const uN=_n(userAns), uKC=_nkc(userAns), uSt=_strip(userAns);
+    for(var i=0;i<accepts.length;i++){
+      if(_n(accepts[i])===uN)     return true;  /* NFC */
+      if(_nkc(accepts[i])===uKC)  return true;  /* NFKC */
+      if(_strip(accepts[i])===uSt) return true; /* bỏ dấu */
+    }
+    return false;
+  }
+  return _n(userAns)===_n(correctAns);
 }
 window.nbCheckAns = nbCheckAns;
 
@@ -1554,6 +1572,12 @@ window.nbResultInit = function(){
       list: `<svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>`,
       link: `<svg viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm1-4H8v2h8v-2z"/></svg>`,
     };
+    /* Tổng điểm để tính pts/câu khi q.points không có */
+    const _totalBase=parseFloat((_quizData.questions[0]&&_quizData.questions[0].totalScore)||10)||10;
+    const _nQ=_quizData.questions.length||1;
+    const _hasQPts=_quizData.questions.some(function(q){return parseFloat(q.points)>0;});
+    const _ptsPerQ=_hasQPts?null:parseFloat((_totalBase/_nQ).toFixed(4));
+
     const rows=_quizData.questions.map((q,i)=>{
       const userAns   =String(_quizData.answers[q.question]||'');
       const correctAns=String(q.correct||q.correctAnswer||'').trim();
@@ -1561,11 +1585,14 @@ window.nbResultInit = function(){
       const isCorrect =nbCheckAns(type,userAns,correctAns);
       const status    =!userAns?'skip':(isCorrect?'ok':'err');
       if(status==='ok')cOk++; else if(status==='err')cErr++; else cSkip++;
-      const pts=parseFloat(q.points)||0;
-      const ptsHtml=pts>0?`<div class="res-q-pts">${isCorrect?'+'+pts:'0'}đ</div>`:'';
-      const imgHtml=(q.image&&q.image.length>10)?`<img src="${nbEsc(q.image)}" class="res-q-img" onerror="this.style.display='none'">`:'';
-      const badgeSvg=status==='ok'?SVG.check:(status==='err'?SVG.times:SVG.minus);
-      return `<div class="res-q-item q-${status}" id="rqi${i}">
+      /* Điểm mỗi câu: dùng q.points nếu có, còn lại chia đều */
+      const pts=_hasQPts?(parseFloat(q.points)||0):_ptsPerQ;
+      const ptsStr=pts?(isCorrect?'+'+parseFloat(pts.toFixed(2)):'0')+'đ':'';
+      const ptsHtml=ptsStr?`<div class="res-q-pts" style="color:${isCorrect?'var(--accent)':'rgba(255,255,255,.4)'}">${ptsStr}</div>`:'';
+      const imgHtml=(q.image&&q.image.length>10)?`<img src="${nbEsc(q.image)}" class="res-q-img" onerror="this.style.display='none'">`:'';      const badgeSvg=status==='ok'?SVG.check:(status==='err'?SVG.times:SVG.minus);
+      /* Câu sai + bỏ qua → auto-expand để dễ xem lại */
+      const autoOpen=(status==='err'||status==='skip')?' open':'';
+      return `<div class="res-q-item q-${status}${autoOpen}" id="rqi${i}">
         <div class="res-q-head" onclick="nbToggleQ(${i})">
           <div class="res-q-badge q-${status}">${badgeSvg}</div>
           <div class="res-q-text">Câu ${i+1}: ${nbEsc(q.question)}</div>
@@ -1576,7 +1603,7 @@ window.nbResultInit = function(){
         </div>
       </div>`;
     });
-    const chipsEl=document.getElementById('resChips');
+        const chipsEl=document.getElementById('resChips');
     if(chipsEl) chipsEl.innerHTML=`
       <div class="res-chip res-chip-ok">${cOk}<small>Đúng</small></div>
       <div class="res-chip res-chip-err">${cErr}<small>Sai</small></div>
@@ -2041,11 +2068,16 @@ window.nbQuizInit = function(){
       Swal.fire({title:'Đang chấm điểm...',allowOutsideClick:false,background:'rgba(10,15,30,0.97)',color:'#f1f5f9',didOpen:()=>Swal.showLoading()});
     let scoreCount=0, totalScoreAchieved=0;
     const quizAnswersMap={};
+    /* Tổng điểm bộ đề (thường = 10 hoặc 100) */
     const totalScoreBase=parseFloat(questions[0]?.totalScore)||10;
+    const n=questions.length||1;
+    /* Điểm mỗi câu: q.points nếu có, còn lại chia đều = totalScore / số câu */
+    const hasPoints=questions.some(q=>parseFloat(q.points)>0);
+    const ptsPerQ=hasPoints ? null : parseFloat((totalScoreBase/n).toFixed(6));
     questions.forEach((q,i)=>{
       const type=(q.type||'single').toLowerCase();
       const correctAns=q.correct||'';
-      const pts=q.points>0?q.points:(totalScoreBase/questions.length);
+      const pts=hasPoints?(parseFloat(q.points)||0):ptsPerQ;
       let studentAns='';
       if(type==='fill'){
         /* Ưu tiên đọc từ DOM nếu đây là câu hiện tại (tránh mất đáp án chưa blur) */
@@ -2066,11 +2098,10 @@ window.nbQuizInit = function(){
       quizAnswersMap[q.question]=studentAns;
       if(isOk){ scoreCount++; totalScoreAchieved+=pts; }
     });
-    const hasValidPoints=questions.some(q=>q.points>0);
-    const rawScore=hasValidPoints?totalScoreAchieved:(scoreCount/questions.length)*totalScoreBase;
-    const finalScore=parseFloat(rawScore.toFixed(2));
+    /* Làm tròn 2 chữ số thập phân, tránh floating point 7.500000000001 */
+    const finalScore=parseFloat(totalScoreAchieved.toFixed(2));
     localStorage.setItem('lastScore',finalScore);
-    localStorage.setItem('correctCount',`${scoreCount}/${questions.length}`);
+    localStorage.setItem('correctCount',`${scoreCount}/${n}`);
     localStorage.setItem('quizAnswers',JSON.stringify(quizAnswersMap));
     localStorage.setItem('quizQuestions',JSON.stringify(questions));
     localStorage.setItem('quizTotalScore',totalScoreBase);
@@ -2566,43 +2597,44 @@ window.nbPlayerInit = function(){
   function _highlightSubmitBtn(){
     const btn = document.getElementById('pl-submit-btn');
     if(!btn) return;
-    btn.style.display = 'flex';
-    /* Đổi style: cam đặc, to hơn, pulse mạnh */
-    btn.style.cssText = [
+
+    /* Nút: cam đặc + pulse */
+    btn.style.cssText=[
       'display:flex','align-items:center','gap:6px',
-      'padding:8px 16px','border-radius:10px',
-      'border:none','cursor:pointer',
-      'background:var(--ispring)',
+      'padding:7px 14px','border-radius:10px',
+      'border:2px solid rgba(249,115,22,.7)','cursor:pointer',
+      'background:var(--ispring,#f97316)',
       'color:#fff','font-size:.8rem','font-weight:900',
       'font-family:var(--font)','letter-spacing:.4px',
-      'animation:pulse-submit 1.1s infinite',
-      'box-shadow:0 0 0 0 rgba(249,115,22,.7)',
-      'white-space:nowrap','transition:none'
+      'animation:_nb_pulse 1.4s ease-in-out infinite',
+      'white-space:nowrap','transition:none','flex-shrink:0'
     ].join(';');
-    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> NỘP KẾT QUẢ';
+    btn.innerHTML='<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> NỘP KẾT QUẢ';
 
-    /* Inject keyframe nếu chưa có */
-    if(!document.getElementById('_nb_pulse_kf')){
-      const s = document.createElement('style');
-      s.id = '_nb_pulse_kf';
-      s.textContent = '@keyframes pulse-submit{0%{box-shadow:0 0 0 0 rgba(249,115,22,.7)}70%{box-shadow:0 0 0 10px rgba(249,115,22,0)}100%{box-shadow:0 0 0 0 rgba(249,115,22,0)}}';
+    if(!document.getElementById('_nb_kf')){
+      var s=document.createElement('style'); s.id='_nb_kf';
+      s.textContent='@keyframes _nb_pulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.55)}50%{box-shadow:0 0 0 9px rgba(249,115,22,0)}}';
       document.head.appendChild(s);
     }
 
-    /* Toast nhỏ thông báo bài thi kết thúc */
-    if(typeof Swal !== 'undefined'){
-      Swal.fire({
-        toast: true, position: 'top',
-        icon: 'success',
-        title: 'Bài thi đã kết thúc — Bấm <b>NỘP KẾT QUẢ</b> để lưu điểm!',
-        showConfirmButton: false,
-        timer: 4000, timerProgressBar: true,
-        background: 'rgba(10,18,36,0.97)',
-        color: '#f1f5f9',
-        customClass: { popup: 'nb-toast-popup' }
-      });
-    }
+    /* Banner thông báo CSS thuần — tránh Swal toast lỗi backdrop */
+    var old=document.getElementById('_nb_banner');
+    if(old) old.remove();
+    var b=document.createElement('div'); b.id='_nb_banner';
+    b.style.cssText='position:fixed;top:calc(var(--ph,54px)+2px);left:0;right:0;z-index:498;'
+      +'padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:8px;'
+      +'background:rgba(249,115,22,.13);border-bottom:1px solid rgba(249,115,22,.3);'
+      +'font-size:.8rem;font-weight:700;color:#f97316;'
+      +'backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)';
+    b.innerHTML='<svg style="width:14px;height:14px;fill:currentColor;flex-shrink:0" viewBox="0 0 24 24">'
+      +'<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'
+      +' Bài thi hoàn thành — Xem lại bài rồi bấm '
+      +'<b style="color:#fff;margin:0 3px;font-weight:900">NỘP KẾT QUẢ</b> để lưu điểm';
+    document.body.appendChild(b);
+    setTimeout(function(){ if(b.parentNode){ b.style.transition='opacity .5s'; b.style.opacity='0'; }},9000);
+    setTimeout(function(){ if(b.parentNode) b.remove(); },9600);
   }
+
 
   /* ════════════════════════════════════════════════════════════
      DOM OBSERVER — attach vào iframe (chỉ hoạt động HTTP)
@@ -2745,94 +2777,95 @@ window.nbPlayerInit = function(){
     const tot = d.total  ||0;
     const src = d.src    ||'none';
     const autoOk = (src==='scorm_full'||src==='scorm_pct'||src==='dom');
+
     if(typeof Swal==='undefined'){
-      if(autoOk){ showResult(pct,st); _doSaveAndGo(pct,cor,tot,st); }
+      if(autoOk){ showResult(pct,st); saveResult(pct,cor,tot,st).then(()=>{location.href='result.html';}); }
       else { doneF=false; state='doing'; setExit('ready'); }
       return;
     }
 
-    const scoreColor = pct>=80?'#10b981':pct>=50?'#3b82f6':'#ef4444';
-    const emoji      = pct>=80?'🏆':pct>=50?'🚀':'🎯';
+    const col  = pct>=80?'#10b981':pct>=60?'#4facfe':'#ef4444';
+    const emo  = pct>=80?'🏆':pct>=60?'🚀':'🎯';
+    const lbl  = pct>=80?'Xuất sắc!':pct>=60?'Tốt lắm!':pct>=40?'Cố gắng thêm!':'Làm lại nhé!';
+    const stLbl= {passed:'✓ Đạt',completed:'✓ Hoàn thành',failed:'✗ Chưa đạt',incomplete:'⚠ Chưa xong'};
 
-    /* Badge nguồn dữ liệu */
-    const srcBadge = autoOk
-      ?`<div class="nb-sc-src nb-sc-src-ok">✓ ${
-          src==='scorm_full'?'SCORM đầy đủ (điểm + số câu)':
-          src==='scorm_pct' ?'SCORM % (điểm tự động)':
-                             'Đọc từ màn hình kết quả iSpring'
-        }</div>`
-      :`<div class="nb-sc-src nb-sc-src-warn">⚠ iSpring chưa kết nối với Nebula</div>`;
-
-    const corrHtml = (cor>0&&tot>0)
-      ?`<div class="nb-sc-stat-row">
-           <span class="nb-sc-stat-lbl">Câu đúng</span>
-           <span class="nb-sc-stat-val">${cor} / ${tot} câu</span>
-         </div>` : '';
-
-    /* Hướng dẫn cài bridge khi chưa tự động */
-    const relBridge = _getRelBridgePath();
-    const bridgeGuide = autoOk ? '' :
-      `<div class="nb-sc-install-guide">
-         <p style="margin:0 0 8px"><strong>Kết nối tự động bằng 1 bước:</strong></p>
-         <p style="margin:0 0 5px;font-size:.73rem">Thêm vào <code>${path||'quiz/index.html'}</code> trước <code>&lt;/body&gt;</code>:</p>
-         <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.35);
-           border-radius:8px;padding:8px 10px;margin:6px 0">
-           <code style="flex:1;font-size:.69rem;color:#7dd3fc;word-break:break-all;
-             font-family:Fira Mono,Courier New,monospace">
-             &lt;script src="${relBridge}"&gt;&lt;/script&gt;
-           </code>
-           <button onclick="navigator.clipboard&&navigator.clipboard.writeText('<script src=\'${relBridge}\'></script>')"
-             style="border:none;background:rgba(79,172,254,.2);color:var(--primary);
-             border-radius:6px;padding:4px 8px;font-size:.65rem;cursor:pointer;
-             white-space:nowrap">📋 Copy</button>
-         </div>
-         <p style="margin:4px 0 0;font-size:.7rem;color:rgba(16,185,129,.8)">
-           ✓ Sau đó điểm tự động trả về — không cần thao tác thêm.
-         </p>
-       </div>`;
-
-    Swal.fire({
-      html:`<div class="nb-sc-wrap">
-        <div class="nb-sc-header">
-          <span class="nb-sc-emoji">${autoOk?emoji:'🔗'}</span>
-          <div class="nb-sc-title">${autoOk?'Kết quả bài thi iSpring':'Cần kết nối Nebula Bridge'}</div>
-          <div class="nb-sc-quiz">${iName||'Bài thi'}</div>
-        </div>
-        ${srcBadge}
-        ${autoOk
-          ?`<div class="nb-sc-score-big" style="color:${scoreColor}">
-               ${pct}<span class="nb-sc-score-denom">/100</span>
-             </div>
-             ${corrHtml}
-             <div class="nb-sc-lock">🔒 Điểm do hệ thống xác định</div>`
-          : bridgeGuide
+    if(autoOk){
+      /* Hiện câu đúng/tổng nếu có */
+      const corrRow=(cor>0&&tot>0)
+        ?`<div style="display:flex;justify-content:space-between;padding:8px 14px;
+            background:rgba(255,255,255,.04);border-radius:10px;border:1px solid rgba(255,255,255,.08);
+            font-size:.85rem;margin-top:4px">
+            <span style="opacity:.55">Câu đúng</span>
+            <b style="color:#f1f5f9">${cor} / ${tot} câu</b>
+          </div>`
+        :'';
+      Swal.fire({
+        html:`<div style="text-align:center;padding:2px 0">
+          <div style="font-size:2.8rem;line-height:1;margin-bottom:6px">${emo}</div>
+          <div style="font-size:1rem;font-weight:800;color:#f1f5f9;margin-bottom:2px">${lbl}</div>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:14px;
+            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;margin-left:auto;margin-right:auto">
+            ${iName||'Bài thi iSpring'}
+          </div>
+          <div style="font-size:4.2rem;font-weight:900;letter-spacing:-4px;color:${col};line-height:1">
+            ${pct}<span style="font-size:1.3rem;font-weight:500;color:rgba(255,255,255,.25);letter-spacing:0;margin-left:2px">/100</span>
+          </div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.3);margin:4px 0 14px">${stLbl[st]||'Hoàn thành'}</div>
+          ${corrRow}
+          <div style="margin-top:14px;font-size:.7rem;color:rgba(255,255,255,.2);
+            border-top:1px solid rgba(255,255,255,.07);padding-top:10px;line-height:1.5">
+            Xem lại bài trong iframe bên dưới, sau đó bấm Nộp kết quả.
+          </div>
+        </div>`,
+        background:'rgba(8,14,30,0.97)', color:'#f1f5f9',
+        confirmButtonText:'✓ Nộp kết quả',
+        showCancelButton:true,
+        cancelButtonText:'← Xem lại bài',
+        customClass:{popup:'nb-swal-popup nb-score-popup',
+          confirmButton:'nb-swal-btn nb-swal-btn-confirm',
+          cancelButton:'nb-swal-btn nb-swal-btn-cancel'},
+        buttonsStyling:false, allowOutsideClick:false,
+        showClass:{popup:'animate__animated animate__zoomIn'},
+      }).then(res=>{
+        if(res.isConfirmed){
+          showResult(pct,st);
+          saveResult(pct,cor,tot,st).then(()=>{ location.href='result.html'; });
         }
+        /* Cancel → popup đóng, banner + nút vẫn pulse, HS tiếp tục xem */
+      });
+      return;
+    }
+
+    /* no_bridge: hướng dẫn cài nebula-bridge.js */
+    const relBridge=_getRelBridgePath();
+    Swal.fire({
+      html:`<div style="text-align:left;padding:2px 0">
+        <div style="text-align:center;margin-bottom:14px">
+          <div style="font-size:1.8rem;margin-bottom:6px">🔗</div>
+          <b style="font-size:.95rem;color:#f1f5f9">Chưa kết nối Nebula Bridge</b>
+          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:3px">Điểm chưa được ghi nhận tự động</div>
+        </div>
+        <div style="background:rgba(79,172,254,.07);border:1px solid rgba(79,172,254,.18);
+          border-radius:12px;padding:12px 14px;font-size:.78rem;line-height:1.7;color:rgba(255,255,255,.7)">
+          <b style="color:var(--primary,#4facfe)">Cài 1 lần, dùng mãi:</b> thêm vào
+          <code style="color:#7dd3fc;background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;font-size:.7rem">${path||'quiz/index.html'}</code>
+          trước <code style="color:#7dd3fc;background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;font-size:.7rem">&lt;/body&gt;</code>:
+          <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);border-radius:8px;padding:7px 10px;margin:8px 0">
+            <code style="flex:1;font-size:.68rem;color:#7dd3fc;word-break:break-all;font-family:monospace">&lt;script src="${relBridge}"&gt;&lt;/script&gt;</code>
+            <button onclick="navigator.clipboard&&navigator.clipboard.writeText('<script src=\'${relBridge}\'></script>')"
+              style="border:none;background:rgba(79,172,254,.2);color:var(--primary,#4facfe);border-radius:6px;padding:4px 10px;font-size:.65rem;cursor:pointer;white-space:nowrap">📋 Copy</button>
+          </div>
+        </div>
       </div>`,
       background:'rgba(8,14,30,0.97)', color:'#f1f5f9',
-      confirmButtonText: autoOk?'✓ Lưu & Xem kết quả':'Đã hiểu, sẽ cài ngay',
-      showCancelButton:  autoOk,
-      cancelButtonText:  '↺ Làm lại bài',
-      customClass:{popup:'nb-swal-popup nb-score-popup',
-        confirmButton:'nb-swal-btn nb-swal-btn-confirm',
-        cancelButton:'nb-swal-btn nb-swal-btn-cancel'},
+      confirmButtonText:'Đã hiểu',
+      customClass:{popup:'nb-swal-popup nb-score-popup',confirmButton:'nb-swal-btn nb-swal-btn-confirm'},
       buttonsStyling:false, allowOutsideClick:false,
-      showClass:{popup:'animate__animated animate__zoomIn'},
-    }).then(res=>{
-      if(res.isConfirmed&&autoOk){
-        /* Lưu + chuyển thẳng sang result.html */
-        showResult(pct,st);
-        saveResult(pct,cor,tot,st)
-          .then(()=>{ location.href='result.html'; });
-      } else if(autoOk&&!res.isConfirmed){
-        _doRetry();
-      } else {
-        /* bridge chưa cài → reset về playing state */
-        doneF=false; state='doing'; setExit('ready');
-        pg(Math.min(30+_pgElapsed/3,90));
-      }
+    }).then(()=>{
+      doneF=false; state='doing'; setExit('ready');
+      pg(Math.min(30+_pgElapsed/3,90));
     });
   }
-
 
   function _doSaveAndGo(pct,correct,total,st){
     /* Lưu kết quả vào GAS + localStorage.
