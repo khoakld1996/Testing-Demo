@@ -375,6 +375,23 @@
 </div>
 
 <script>
+/* Override nbFmtTime: GAS đôi khi trả về ISO 8601 UTC (Z suffix) */
+function nbFmtTime(val){
+  if(!val) return '—';
+  try{
+    let s=String(val).trim();
+    if(/^\d{4}-\d{2}-\d{2}T/.test(s)){
+      const dt=new Date(s);
+      if(!isNaN(dt)) return dt.toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Ho_Chi_Minh'});
+    }
+    if(/^\d{4}-\d{2}-\d{2}\s/.test(s)) s=s.replace(' ','T');
+    else if(/^\d{2}\/\d{2}\/\d{4}/.test(s)){const[d,t]=s.split(' '),p=d.split('/');s=`${p[2]}-${p[1]}-${p[0]}T${t||'00:00:00'}`;}
+    const dt=new Date(s);
+    if(!isNaN(dt)) return dt.toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Ho_Chi_Minh'});
+    return val;
+  }catch(e){ return val; }
+}
+
 /* ─── State ─── */
 let tests=[], results=[], pending=[], ispringList=[], ispringResults=[];
 window._nbResults = [];

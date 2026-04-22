@@ -257,34 +257,22 @@ window.nbEsc       = nbEsc;
 /* ─── ANSWER CHECK ─── */
 function nbCheckAns(type, userAns, correctAns){
   if(userAns===undefined||userAns===null||userAns==='') return false;
-
-  /* ── Chuẩn hoá: xử lý tất cả biến thể Unicode tiếng Việt ──
-     Bàn phím Windows/Mac/telex lưu cùng ký tự nhưng khác encoding.
-     Giải pháp: thử NFC → NFKC → bỏ dấu hoàn toàn (fallback).     */
-  function _n(s){ try{ return String(s||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' '); }catch(e){ return String(s||'').toLowerCase().trim(); } }
-  function _nkc(s){ try{ return String(s||'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' '); }catch(e){ return String(s||'').toLowerCase().trim(); } }
-  function _strip(s){
-    try{
-      return String(s||'').normalize('NFD')
-        .replace(/[\u0300-\u036f\u1DC0-\u1DFF\u20D0-\u20FF]/g,'')
-        .toLowerCase().trim().replace(/\s+/g,' ');
-    }catch(e){ return String(s||'').toLowerCase().trim(); }
-  }
-
+  /* NFC / NFKC / strip-diacritic — xử lý mọi biến thể Unicode tiếng Việt */
+  function _n(s){ try{return String(s||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');}catch(e){return String(s||'').toLowerCase().trim();} }
+  function _nkc(s){ try{return String(s||'').normalize('NFKC').trim().toLowerCase().replace(/\s+/g,' ');}catch(e){return String(s||'').toLowerCase().trim();} }
+  function _strip(s){ try{return String(s||'').normalize('NFD').replace(/[\u0300-\u036f\u1DC0-\u1DFF\u20D0-\u20FF]/g,'').toLowerCase().trim().replace(/\s+/g,' ');}catch(e){return String(s||'').toLowerCase().trim();} }
   const sort  = s=>String(s).split('|').map(_n).sort().join('|');
   const order = s=>String(s).split('|').map(_n).join('|');
   type=(type||'single').toLowerCase();
-
-  if(type==='ordering')                      return order(userAns)===order(correctAns);
-  if(type==='multiple'||type==='matching')   return sort(userAns)===sort(correctAns);
-
+  if(type==='ordering')                    return order(userAns)===order(correctAns);
+  if(type==='multiple'||type==='matching') return sort(userAns)===sort(correctAns);
   if(type==='fill'){
-    const accepts = String(correctAns).split('|').map(s=>s.trim()).filter(Boolean);
-    const uN=_n(userAns), uKC=_nkc(userAns), uSt=_strip(userAns);
+    const accepts=String(correctAns).split('|').map(s=>s.trim()).filter(Boolean);
+    const uN=_n(userAns),uKC=_nkc(userAns),uSt=_strip(userAns);
     for(var i=0;i<accepts.length;i++){
-      if(_n(accepts[i])===uN)     return true;  /* NFC */
-      if(_nkc(accepts[i])===uKC)  return true;  /* NFKC */
-      if(_strip(accepts[i])===uSt) return true; /* bỏ dấu */
+      if(_n(accepts[i])===uN)     return true;
+      if(_nkc(accepts[i])===uKC)  return true;
+      if(_strip(accepts[i])===uSt) return true;
     }
     return false;
   }
@@ -1479,21 +1467,26 @@ window.nbResultInit = function(){
   const totalScoreBase=parseFloat(nb.get('quizTotalScore')||10)||10;
   const isIspringMode = (nb.get('quizMode')||'') === 'ispring';
 
-  /* Chuẩn hoá score để tính % (score ring dùng % 0-100) */
-  let displayScore = score;
-  let scoreForRing = 0; /* 0-100 cho vòng tròn */
+  /* ── Tính displayScore: chuẩn hóa về thang /10 cho sys, /100 cho iSpring ──
+     GAS lưu score theo thang totalScoreBase (có thể là 10 hoặc 100).
+     Để nhất quán với history.html, luôn hiển thị:
+       - Sys:     X.X / 10 ĐIỂM  (normalize: score/totalScoreBase*10)
+       - iSpring: X   / 100 ĐIỂM (score đã là %)
+  ──────────────────────────────────────────────── */
+  let displayScore, scoreForRing, displayTotal;
   if(isIspringMode){
-    /* iSpring: score đã là 0-100 */
-    scoreForRing  = Math.min(100, Math.max(0, score));
-    displayScore  = score;
+    displayScore  = Math.min(100, Math.max(0, score));
+    scoreForRing  = displayScore;
+    displayTotal  = 100;
   } else {
-    /* Hệ thống: score/totalScoreBase → % */
-    const normScore = totalScoreBase > 0 ? (score / totalScoreBase) : 0;
-    scoreForRing  = Math.round(normScore * 100);
-    displayScore  = score;
+    /* Normalize sang thang /10 */
+    const pctNorm = totalScoreBase > 0 ? (score / totalScoreBase) : 0;
+    displayScore  = parseFloat((pctNorm * 10).toFixed(2));
+    scoreForRing  = Math.round(pctNorm * 100);
+    displayTotal  = 10;
   }
 
-  const pct = totalScoreBase > 0 ? (score / totalScoreBase) : 0;
+  const pct = isIspringMode ? displayScore/100 : displayScore/10;
   if(pct>=0.8)      {if(titleEl)titleEl.textContent='XUẤT SẮC!';    if(trophyEl)trophyEl.textContent='👑';}
   else if(pct>=0.5) {if(titleEl)titleEl.textContent='TỐT LẮM!';     if(trophyEl)trophyEl.textContent='🚀';}
   else              {if(titleEl)titleEl.textContent='CỐ GẮNG LÊN!'; if(trophyEl)trophyEl.textContent='🎯';}
@@ -1502,10 +1495,7 @@ window.nbResultInit = function(){
 
   /* Cập nhật label "/ X ĐIỂM" */
   const lblEl=document.getElementById('resScoreLbl');
-  if(lblEl){
-    const dispTotal=totalScoreBase%1===0?totalScoreBase.toFixed(0):totalScoreBase;
-    lblEl.textContent=`/ ${dispTotal} ĐIỂM`;
-  }
+  if(lblEl) lblEl.textContent=`/ ${displayTotal} ĐIỂM`;
 
   /* Cập nhật score ring SVG (vòng tròn tiến trình) */
   setTimeout(()=>{
@@ -1558,7 +1548,13 @@ window.nbResultInit = function(){
     if(modal) modal.classList.remove('open');
   };
   window.nbToggleQ=function(i){
-    document.getElementById('rqi'+i)?.classList.toggle('open');
+    const el=document.getElementById('rqi'+i);
+    if(!el) return;
+    el.classList.toggle('open');
+    /* Scroll để nội dung chi tiết không bị khuất */
+    if(el.classList.contains('open')){
+      setTimeout(()=>el.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+    }
   };
 
   function _renderReview(){
@@ -1572,11 +1568,11 @@ window.nbResultInit = function(){
       list: `<svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>`,
       link: `<svg viewBox="0 0 24 24"><path d="M17 7h-4v2h4c1.65 0 3 1.35 3 3s-1.35 3-3 3h-4v2h4c2.76 0 5-2.24 5-5s-2.24-5-5-5zm-6 8H7c-1.65 0-3-1.35-3-3s1.35-3 3-3h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-2zm1-4H8v2h8v-2z"/></svg>`,
     };
-    /* Tổng điểm để tính pts/câu khi q.points không có */
-    const _totalBase=parseFloat((_quizData.questions[0]&&_quizData.questions[0].totalScore)||10)||10;
+    /* điểm/câu kể cả khi q.points không set */
+    const _tBase=parseFloat((_quizData.questions[0]&&_quizData.questions[0].totalScore)||10)||10;
     const _nQ=_quizData.questions.length||1;
-    const _hasQPts=_quizData.questions.some(function(q){return parseFloat(q.points)>0;});
-    const _ptsPerQ=_hasQPts?null:parseFloat((_totalBase/_nQ).toFixed(4));
+    const _hasQP=_quizData.questions.some(function(q){return parseFloat(q.points)>0;});
+    const _ppq=_hasQP?null:parseFloat((_tBase/_nQ).toFixed(4));
 
     const rows=_quizData.questions.map((q,i)=>{
       const userAns   =String(_quizData.answers[q.question]||'');
@@ -1585,12 +1581,12 @@ window.nbResultInit = function(){
       const isCorrect =nbCheckAns(type,userAns,correctAns);
       const status    =!userAns?'skip':(isCorrect?'ok':'err');
       if(status==='ok')cOk++; else if(status==='err')cErr++; else cSkip++;
-      /* Điểm mỗi câu: dùng q.points nếu có, còn lại chia đều */
-      const pts=_hasQPts?(parseFloat(q.points)||0):_ptsPerQ;
-      const ptsStr=pts?(isCorrect?'+'+parseFloat(pts.toFixed(2)):'0')+'đ':'';
-      const ptsHtml=ptsStr?`<div class="res-q-pts" style="color:${isCorrect?'var(--accent)':'rgba(255,255,255,.4)'}">${ptsStr}</div>`:'';
+      const pts=_hasQP?(parseFloat(q.points)||0):_ppq;
+      const ptsDisp=pts?(isCorrect?'+'+parseFloat(pts.toFixed(2)):'0')+'đ':'';
+      const ptsColor=isCorrect?'var(--accent)':'rgba(255,255,255,.35)';
+      const ptsHtml=ptsDisp?`<div class="res-q-pts" style="color:${ptsColor}">${ptsDisp}</div>`:'';
       const imgHtml=(q.image&&q.image.length>10)?`<img src="${nbEsc(q.image)}" class="res-q-img" onerror="this.style.display='none'">`:'';      const badgeSvg=status==='ok'?SVG.check:(status==='err'?SVG.times:SVG.minus);
-      /* Câu sai + bỏ qua → auto-expand để dễ xem lại */
+      /* câu sai + bỏ qua → auto-expand */
       const autoOpen=(status==='err'||status==='skip')?' open':'';
       return `<div class="res-q-item q-${status}${autoOpen}" id="rqi${i}">
         <div class="res-q-head" onclick="nbToggleQ(${i})">
@@ -1627,25 +1623,37 @@ window.nbResultInit = function(){
           else if(chosen&&!right){cls='opt-err';svg=SVG.times;}
           html+=`<div class="res-opt ${cls}">${svg}${nbEsc(opt)}</div>`;
         });
+        /* Nếu bỏ qua → nhắc đáp án đúng bên dưới các lựa chọn */
+        if(status==='skip') html+=`<div class="res-opt opt-err" style="margin-top:6px">${SVG.minus}Chưa trả lời — Đáp án đúng đã đánh dấu ✓</div>`;
         return html;
       }
+      /* Không có options (single-text answer) */
       html+=`<div class="res-opt opt-ok">${SVG.star}Đáp án đúng: ${nbEsc(correctAns||'—')}</div>`;
-      if(userAns) html+=`<div class="res-opt ${status==='ok'?'opt-ok':'opt-err'}">${SVG.pen}Bài làm: ${nbEsc(userAns)}</div>`;
+      if(status==='skip')
+        html+=`<div class="res-opt opt-err">${SVG.minus}Bài làm: (Chưa trả lời)</div>`;
+      else if(userAns)
+        html+=`<div class="res-opt ${status==='ok'?'opt-ok':'opt-err'}">${SVG.pen}Bài làm: ${nbEsc(userAns)}</div>`;
       return html;
     }
     if(type==='ordering'){
-      html+=`<div class="res-opt ${status==='ok'?'opt-ok':'opt-err'}" style="margin-bottom:6px">${SVG.list}Thứ tự bạn chọn: ${nbEsc(userAns?userAns.replace(/\|/g,' → '):'(Chưa sắp xếp)')}</div>`;
+      const userDisp=userAns?userAns.replace(/\|/g,' → '):'(Chưa sắp xếp)';
+      html+=`<div class="res-opt ${status==='ok'?'opt-ok':'opt-err'}" style="margin-bottom:6px">${SVG.list}Bài làm: ${nbEsc(userDisp)}</div>`;
       if(status!=='ok') html+=`<div class="res-opt opt-ok">${SVG.star}Đáp án đúng: ${nbEsc(correctAns.replace(/\|/g,' → '))}</div>`;
       return html;
     }
     if(type==='matching'){
-      html+=`<div class="res-opt ${status==='ok'?'opt-ok':'opt-err'}" style="margin-bottom:6px">${SVG.link}Bạn ghép: ${nbEsc(userAns?userAns.replace(/\|/g,' | '):'(Chưa ghép)')}</div>`;
+      const userDisp=userAns?userAns.replace(/\|/g,' | '):'(Chưa ghép)';
+      html+=`<div class="res-opt ${status==='ok'?'opt-ok':'opt-err'}" style="margin-bottom:6px">${SVG.link}Bài làm: ${nbEsc(userDisp)}</div>`;
       if(status!=='ok') html+=`<div class="res-opt opt-ok">${SVG.star}Đáp án đúng: ${nbEsc(correctAns.replace(/\|/g,' | '))}</div>`;
       return html;
     }
-    const fCls=status==='ok'?'opt-ok':'opt-err';
-    const fSvg=status==='ok'?SVG.check:SVG.times;
-    html+=`<div class="res-opt ${fCls}" style="margin-bottom:6px">${fSvg}Bài làm: ${nbEsc(userAns||'(Trống)')}</div>`;
+    /* fill và các loại khác */
+    if(status==='skip'){
+      html+=`<div class="res-opt opt-err" style="margin-bottom:6px">${SVG.minus}Bài làm: (Chưa điền)</div>`;
+    } else {
+      const fCls=status==='ok'?'opt-ok':'opt-err';
+      html+=`<div class="res-opt ${fCls}" style="margin-bottom:6px">${status==='ok'?SVG.check:SVG.times}Bài làm: ${nbEsc(userAns)}</div>`;
+    }
     html+=`<div class="res-opt opt-ok">${SVG.star}Đáp án đúng: ${nbEsc(correctAns||'—')}</div>`;
     return html;
   }
@@ -2068,25 +2076,21 @@ window.nbQuizInit = function(){
       Swal.fire({title:'Đang chấm điểm...',allowOutsideClick:false,background:'rgba(10,15,30,0.97)',color:'#f1f5f9',didOpen:()=>Swal.showLoading()});
     let scoreCount=0, totalScoreAchieved=0;
     const quizAnswersMap={};
-    /* Tổng điểm bộ đề (thường = 10 hoặc 100) */
+    /* Tổng điểm bộ đề (setup khi tạo đề, thường 10 hoặc 100) */
     const totalScoreBase=parseFloat(questions[0]?.totalScore)||10;
     const n=questions.length||1;
-    /* Điểm mỗi câu: q.points nếu có, còn lại chia đều = totalScore / số câu */
+    /* Điểm mỗi câu: dùng q.points nếu có, còn lại chia đều = totalScore / n */
     const hasPoints=questions.some(q=>parseFloat(q.points)>0);
-    const ptsPerQ=hasPoints ? null : parseFloat((totalScoreBase/n).toFixed(6));
+    const ptsPerQ=hasPoints?null:parseFloat((totalScoreBase/n).toFixed(6));
     questions.forEach((q,i)=>{
       const type=(q.type||'single').toLowerCase();
       const correctAns=q.correct||'';
       const pts=hasPoints?(parseFloat(q.points)||0):ptsPerQ;
       let studentAns='';
       if(type==='fill'){
-        /* Ưu tiên đọc từ DOM nếu đây là câu hiện tại (tránh mất đáp án chưa blur) */
-        if(currentIdx === i){
+        if(currentIdx===i){
           const liveInp=document.querySelector('.qz-fill-input');
-          if(liveInp){
-            const domVal=liveInp.value.trim();
-            if(domVal){ studentAns=domVal; saveAnswer(i,domVal); }
-          }
+          if(liveInp){ const v=liveInp.value.trim(); if(v){ studentAns=v; saveAnswer(i,v); } }
         }
         if(!studentAns) studentAns=userAnswers[i]||'';
       } else if(['single','mcq','tf'].includes(type)){
@@ -2098,7 +2102,6 @@ window.nbQuizInit = function(){
       quizAnswersMap[q.question]=studentAns;
       if(isOk){ scoreCount++; totalScoreAchieved+=pts; }
     });
-    /* Làm tròn 2 chữ số thập phân, tránh floating point 7.500000000001 */
     const finalScore=parseFloat(totalScoreAchieved.toFixed(2));
     localStorage.setItem('lastScore',finalScore);
     localStorage.setItem('correctCount',`${scoreCount}/${n}`);
@@ -2595,10 +2598,8 @@ window.nbPlayerInit = function(){
 
   /* Làm nút "Nộp kết quả" nổi bật khi bài thi kết thúc */
   function _highlightSubmitBtn(){
-    const btn = document.getElementById('pl-submit-btn');
+    const btn=document.getElementById('pl-submit-btn');
     if(!btn) return;
-
-    /* Nút: cam đặc + pulse */
     btn.style.cssText=[
       'display:flex','align-items:center','gap:6px',
       'padding:7px 14px','border-radius:10px',
@@ -2606,35 +2607,31 @@ window.nbPlayerInit = function(){
       'background:var(--ispring,#f97316)',
       'color:#fff','font-size:.8rem','font-weight:900',
       'font-family:var(--font)','letter-spacing:.4px',
-      'animation:_nb_pulse 1.4s ease-in-out infinite',
+      'animation:_nb_pl 1.4s ease-in-out infinite',
       'white-space:nowrap','transition:none','flex-shrink:0'
     ].join(';');
     btn.innerHTML='<svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:currentColor;flex-shrink:0"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> NỘP KẾT QUẢ';
-
     if(!document.getElementById('_nb_kf')){
       var s=document.createElement('style'); s.id='_nb_kf';
-      s.textContent='@keyframes _nb_pulse{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.55)}50%{box-shadow:0 0 0 9px rgba(249,115,22,0)}}';
+      s.textContent='@keyframes _nb_pl{0%,100%{box-shadow:0 0 0 0 rgba(249,115,22,.5)}50%{box-shadow:0 0 0 9px rgba(249,115,22,0)}}';
       document.head.appendChild(s);
     }
-
-    /* Banner thông báo CSS thuần — tránh Swal toast lỗi backdrop */
-    var old=document.getElementById('_nb_banner');
-    if(old) old.remove();
-    var b=document.createElement('div'); b.id='_nb_banner';
-    b.style.cssText='position:fixed;top:calc(var(--ph,54px)+2px);left:0;right:0;z-index:498;'
+    /* CSS banner — không dùng Swal toast (gây lỗi backdrop) */
+    var old=document.getElementById('_nb_bn'); if(old) old.remove();
+    var b=document.createElement('div'); b.id='_nb_bn';
+    b.style.cssText='position:fixed;top:calc(var(--ph,54px) + 2px);left:0;right:0;z-index:498;'
       +'padding:8px 16px;display:flex;align-items:center;justify-content:center;gap:8px;'
-      +'background:rgba(249,115,22,.13);border-bottom:1px solid rgba(249,115,22,.3);'
+      +'background:rgba(249,115,22,.12);border-bottom:1px solid rgba(249,115,22,.3);'
       +'font-size:.8rem;font-weight:700;color:#f97316;'
       +'backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)';
     b.innerHTML='<svg style="width:14px;height:14px;fill:currentColor;flex-shrink:0" viewBox="0 0 24 24">'
       +'<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>'
-      +' Bài thi hoàn thành — Xem lại bài rồi bấm '
-      +'<b style="color:#fff;margin:0 3px;font-weight:900">NỘP KẾT QUẢ</b> để lưu điểm';
+      +' Bài thi hoàn thành! Xem lại bài rồi bấm '
+      +'<b style="color:#fff;margin:0 3px">NỘP KẾT QUẢ</b> để lưu điểm';
     document.body.appendChild(b);
     setTimeout(function(){ if(b.parentNode){ b.style.transition='opacity .5s'; b.style.opacity='0'; }},9000);
     setTimeout(function(){ if(b.parentNode) b.remove(); },9600);
   }
-
 
   /* ════════════════════════════════════════════════════════════
      DOM OBSERVER — attach vào iframe (chỉ hoạt động HTTP)
@@ -2771,51 +2768,31 @@ window.nbPlayerInit = function(){
      Nguồn dữ liệu ưu tiên: scorm_full > scorm_pct > dom > no_bridge
      ════════════════════════════════════════════════════════════ */
   function showScoreConfirm(d){
-    const st  = scormStatus||'completed';
-    const pct = Math.min(100,Math.max(0,Math.round(d.pct||0)));
-    const cor = d.correct||0;
-    const tot = d.total  ||0;
-    const src = d.src    ||'none';
-    const autoOk = (src==='scorm_full'||src==='scorm_pct'||src==='dom');
-
+    const st =scormStatus||'completed';
+    const pct=Math.min(100,Math.max(0,Math.round(d.pct||0)));
+    const cor=d.correct||0, tot=d.total||0, src=d.src||'none';
+    const autoOk=(src==='scorm_full'||src==='scorm_pct'||src==='dom');
     if(typeof Swal==='undefined'){
       if(autoOk){ showResult(pct,st); saveResult(pct,cor,tot,st).then(()=>{location.href='result.html';}); }
       else { doneF=false; state='doing'; setExit('ready'); }
       return;
     }
-
-    const col  = pct>=80?'#10b981':pct>=60?'#4facfe':'#ef4444';
-    const emo  = pct>=80?'🏆':pct>=60?'🚀':'🎯';
-    const lbl  = pct>=80?'Xuất sắc!':pct>=60?'Tốt lắm!':pct>=40?'Cố gắng thêm!':'Làm lại nhé!';
-    const stLbl= {passed:'✓ Đạt',completed:'✓ Hoàn thành',failed:'✗ Chưa đạt',incomplete:'⚠ Chưa xong'};
-
+    const col=pct>=80?'#10b981':pct>=60?'#4facfe':'#ef4444';
+    const emo=pct>=80?'🏆':pct>=60?'🚀':'🎯';
+    const lbl=pct>=80?'Xuất sắc!':pct>=60?'Tốt lắm!':pct>=40?'Cố gắng thêm!':'Làm lại nhé!';
+    const stLbl={passed:'✓ Đạt',completed:'✓ Hoàn thành',failed:'✗ Chưa đạt',incomplete:'⚠ Chưa xong'};
     if(autoOk){
-      /* Hiện câu đúng/tổng nếu có */
       const corrRow=(cor>0&&tot>0)
-        ?`<div style="display:flex;justify-content:space-between;padding:8px 14px;
-            background:rgba(255,255,255,.04);border-radius:10px;border:1px solid rgba(255,255,255,.08);
-            font-size:.85rem;margin-top:4px">
-            <span style="opacity:.55">Câu đúng</span>
-            <b style="color:#f1f5f9">${cor} / ${tot} câu</b>
-          </div>`
-        :'';
+        ?`<div style="display:flex;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.04);border-radius:10px;border:1px solid rgba(255,255,255,.08);font-size:.85rem;margin-top:6px"><span style="opacity:.5">Câu đúng</span><b style="color:#f1f5f9">${cor} / ${tot} câu</b></div>`:'';
       Swal.fire({
         html:`<div style="text-align:center;padding:2px 0">
           <div style="font-size:2.8rem;line-height:1;margin-bottom:6px">${emo}</div>
           <div style="font-size:1rem;font-weight:800;color:#f1f5f9;margin-bottom:2px">${lbl}</div>
-          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-bottom:14px;
-            overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;margin-left:auto;margin-right:auto">
-            ${iName||'Bài thi iSpring'}
-          </div>
-          <div style="font-size:4.2rem;font-weight:900;letter-spacing:-4px;color:${col};line-height:1">
-            ${pct}<span style="font-size:1.3rem;font-weight:500;color:rgba(255,255,255,.25);letter-spacing:0;margin-left:2px">/100</span>
-          </div>
-          <div style="font-size:.72rem;color:rgba(255,255,255,.3);margin:4px 0 14px">${stLbl[st]||'Hoàn thành'}</div>
+          <div style="font-size:.73rem;color:rgba(255,255,255,.35);margin-bottom:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:240px;margin-left:auto;margin-right:auto">${iName||'Bài thi iSpring'}</div>
+          <div style="font-size:4.2rem;font-weight:900;letter-spacing:-4px;color:${col};line-height:1">${pct}<span style="font-size:1.3rem;font-weight:400;color:rgba(255,255,255,.22);letter-spacing:0;margin-left:2px">/100</span></div>
+          <div style="font-size:.72rem;color:rgba(255,255,255,.3);margin:4px 0 10px">${stLbl[st]||'Hoàn thành'}</div>
           ${corrRow}
-          <div style="margin-top:14px;font-size:.7rem;color:rgba(255,255,255,.2);
-            border-top:1px solid rgba(255,255,255,.07);padding-top:10px;line-height:1.5">
-            Xem lại bài trong iframe bên dưới, sau đó bấm Nộp kết quả.
-          </div>
+          <div style="margin-top:12px;font-size:.7rem;color:rgba(255,255,255,.2);border-top:1px solid rgba(255,255,255,.07);padding-top:10px">Bấm Nộp kết quả để lưu. Chọn Xem lại bài để quay lại iframe.</div>
         </div>`,
         background:'rgba(8,14,30,0.97)', color:'#f1f5f9',
         confirmButtonText:'✓ Nộp kết quả',
@@ -2831,40 +2808,19 @@ window.nbPlayerInit = function(){
           showResult(pct,st);
           saveResult(pct,cor,tot,st).then(()=>{ location.href='result.html'; });
         }
-        /* Cancel → popup đóng, banner + nút vẫn pulse, HS tiếp tục xem */
+        /* Cancel → popup đóng, banner + nút vẫn pulse */
       });
       return;
     }
-
-    /* no_bridge: hướng dẫn cài nebula-bridge.js */
-    const relBridge=_getRelBridgePath();
+    /* no_bridge */
+    const rb=_getRelBridgePath();
     Swal.fire({
-      html:`<div style="text-align:left;padding:2px 0">
-        <div style="text-align:center;margin-bottom:14px">
-          <div style="font-size:1.8rem;margin-bottom:6px">🔗</div>
-          <b style="font-size:.95rem;color:#f1f5f9">Chưa kết nối Nebula Bridge</b>
-          <div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:3px">Điểm chưa được ghi nhận tự động</div>
-        </div>
-        <div style="background:rgba(79,172,254,.07);border:1px solid rgba(79,172,254,.18);
-          border-radius:12px;padding:12px 14px;font-size:.78rem;line-height:1.7;color:rgba(255,255,255,.7)">
-          <b style="color:var(--primary,#4facfe)">Cài 1 lần, dùng mãi:</b> thêm vào
-          <code style="color:#7dd3fc;background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;font-size:.7rem">${path||'quiz/index.html'}</code>
-          trước <code style="color:#7dd3fc;background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;font-size:.7rem">&lt;/body&gt;</code>:
-          <div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);border-radius:8px;padding:7px 10px;margin:8px 0">
-            <code style="flex:1;font-size:.68rem;color:#7dd3fc;word-break:break-all;font-family:monospace">&lt;script src="${relBridge}"&gt;&lt;/script&gt;</code>
-            <button onclick="navigator.clipboard&&navigator.clipboard.writeText('<script src=\'${relBridge}\'></script>')"
-              style="border:none;background:rgba(79,172,254,.2);color:var(--primary,#4facfe);border-radius:6px;padding:4px 10px;font-size:.65rem;cursor:pointer;white-space:nowrap">📋 Copy</button>
-          </div>
-        </div>
-      </div>`,
-      background:'rgba(8,14,30,0.97)', color:'#f1f5f9',
+      html:`<div style="text-align:left;padding:2px 0"><div style="text-align:center;margin-bottom:14px"><div style="font-size:1.8rem;margin-bottom:6px">🔗</div><b style="font-size:.95rem;color:#f1f5f9">Chưa kết nối Nebula Bridge</b><div style="font-size:.75rem;color:rgba(255,255,255,.4);margin-top:3px">Điểm chưa được ghi nhận tự động</div></div><div style="background:rgba(79,172,254,.07);border:1px solid rgba(79,172,254,.18);border-radius:12px;padding:12px 14px;font-size:.78rem;line-height:1.7;color:rgba(255,255,255,.7)"><b style="color:var(--primary,#4facfe)">Cài 1 lần, dùng mãi:</b> thêm vào <code style="color:#7dd3fc">${path||'quiz/index.html'}</code> trước <code style="color:#7dd3fc">&lt;/body&gt;</code>:<div style="display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.4);border-radius:8px;padding:7px 10px;margin:8px 0"><code style="flex:1;font-size:.68rem;color:#7dd3fc;word-break:break-all;font-family:monospace">&lt;script src="${rb}"&gt;&lt;/script&gt;</code><button onclick="navigator.clipboard&&navigator.clipboard.writeText('<script src=\'${rb}\'></script>')" style="border:none;background:rgba(79,172,254,.2);color:var(--primary,#4facfe);border-radius:6px;padding:4px 10px;font-size:.65rem;cursor:pointer;white-space:nowrap">📋 Copy</button></div></div></div>`,
+      background:'rgba(8,14,30,0.97)',color:'#f1f5f9',
       confirmButtonText:'Đã hiểu',
       customClass:{popup:'nb-swal-popup nb-score-popup',confirmButton:'nb-swal-btn nb-swal-btn-confirm'},
-      buttonsStyling:false, allowOutsideClick:false,
-    }).then(()=>{
-      doneF=false; state='doing'; setExit('ready');
-      pg(Math.min(30+_pgElapsed/3,90));
-    });
+      buttonsStyling:false,allowOutsideClick:false,
+    }).then(()=>{ doneF=false; state='doing'; setExit('ready'); pg(Math.min(30+_pgElapsed/3,90)); });
   }
 
   function _doSaveAndGo(pct,correct,total,st){

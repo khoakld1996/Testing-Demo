@@ -65,6 +65,50 @@ const studentName = localStorage.getItem("studentName") || "Học sinh";
 
 window.onload = async () => { await loadHistory(); };
 
+/* Override nbFmtTime để xử lý ISO 8601 với Z suffix (UTC) từ GAS */
+function nbFmtTime(val){
+  if(!val) return '—';
+  try{
+    let s=String(val).trim();
+    /* ISO 8601: 2026-04-01T17:00:00.000Z → parse directly */
+    if(/^\d{4}-\d{2}-\d{2}T/.test(s)){
+      const dt=new Date(s);
+      if(!isNaN(dt)) return dt.toLocaleString('vi-VN',{
+        hour:'2-digit',minute:'2-digit',
+        day:'2-digit',month:'2-digit',year:'numeric',
+        timeZone:'Asia/Ho_Chi_Minh'
+      });
+    }
+    /* 2026-04-22 08:33:43 format */
+    if(/^\d{4}-\d{2}-\d{2}\s/.test(s)) s=s.replace(' ','T');
+    /* dd/mm/yyyy hh:mm:ss */
+    else if(/^\d{2}\/\d{2}\/\d{4}/.test(s)){
+      const[d,t]=s.split(' '),p=d.split('/');
+      s=`${p[2]}-${p[1]}-${p[0]}T${t||'00:00:00'}`;
+    }
+    const dt=new Date(s);
+    if(!isNaN(dt)) return dt.toLocaleString('vi-VN',{
+      hour:'2-digit',minute:'2-digit',
+      day:'2-digit',month:'2-digit',year:'numeric',
+      timeZone:'Asia/Ho_Chi_Minh'
+    });
+    return val;
+  }catch(e){ return val; }
+}
+function nbParseDate(val){
+  if(!val) return 0;
+  try{
+    let s=String(val).trim();
+    if(/^\d{4}-\d{2}-\d{2}T/.test(s)) return new Date(s).getTime()||0;
+    if(/^\d{4}-\d{2}-\d{2}\s/.test(s)) s=s.replace(' ','T');
+    else if(/^\d{2}\/\d{2}\/\d{4}/.test(s)){
+      const[d,t]=s.split(' '),p=d.split('/');
+      s=`${p[2]}-${p[1]}-${p[0]}T${t||'00:00:00'}`;
+    }
+    return new Date(s).getTime()||0;
+  }catch(e){ return 0; }
+}
+
 async function loadHistory() {
   try {
     const [sysRes, ispRes] = await Promise.all([
@@ -195,7 +239,10 @@ function renderList(tab) {
       : `<span class="hist-badge badge-sys"><i class="fas fa-database"></i> Hệ thống</span>`;
 
     /* Hiển thị câu đúng nếu có */
-    const totalStr = r.total ? `<span><i class="fas fa-check"></i> ${r.total}</span>` : '';
+    /* total có thể là "2/4" hoặc Date string nếu GAS format sai — lọc */
+    const rawTotal = String(r.total||'').trim();
+    const cleanTotal = /^\d+\/\d+$/.test(rawTotal) ? rawTotal : '';
+    const totalStr = cleanTotal ? `<span><i class="fas fa-check"></i> ${cleanTotal}</span>` : '';
 
     return `<div class="hist-item" onclick="openDetail(${allRecs.indexOf(r)})">
       <div class="hist-item-info">
