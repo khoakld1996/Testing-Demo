@@ -227,11 +227,15 @@ function renderList(tab) {
       dispScore = displayPct.toFixed(0) + "<small style='font-size:.6em;opacity:.6'>/100</small>";
       col = displayPct >= 85 ? "var(--accent)" : displayPct >= 60 ? "var(--primary)" : "var(--danger)";
     } else {
-      /* Hệ thống: thang 10
-         BUG FIX: nếu score > 10 (totalScore=100 trong quiz data) → chia 10 */
-      const dispVal = score > 10 ? parseFloat((score/10).toFixed(1)) : score;
-      dispScore = dispVal.toFixed(1).replace(/\.0$/,"") + "<small style='font-size:.6em;opacity:.6'>/10</small>";
-      col = dispVal >= 8 ? "var(--accent)" : dispVal >= 5 ? "var(--primary)" : "var(--danger)";
+      /* Hệ thống: hiển thị theo đúng thang gốc — không chia về /10
+         score ≤ 10 → thang /10 | score > 10 → thang /100
+         Nhất quán với dữ liệu trong AppScript */
+      const rawMax = score > 10 ? 100 : 10;
+      const fmtVal = score > 10 ? Math.round(score) : parseFloat(score.toFixed(1));
+      dispScore = String(fmtVal).replace(/\.0$/,"") + `<small style='font-size:.6em;opacity:.6'>/${rawMax}</small>`;
+      col = score > 10
+        ? (score >= 80 ? "var(--accent)" : score >= 50 ? "var(--primary)" : "var(--danger)")
+        : (score >= 8  ? "var(--accent)" : score >= 5  ? "var(--primary)" : "var(--danger)");
     }
 
     const badge = isp
@@ -262,18 +266,22 @@ async function openDetail(idx) {
   window.scrollTo(0,0);
   const name  = (rec.testName||"").replace(/\[iSpring\]/ig,"").trim();
   const isIsp = rec._type==="isp";
-  /* BUG FIX: chuẩn hóa sys score > 10 (totalScore=100 case) */
+  /* Hiển thị theo thang gốc — khớp với AppScript */
   let scoreRaw = parseFloat(rec.score||0);
-  if(!isIsp && scoreRaw > 10) scoreRaw = parseFloat((scoreRaw/10).toFixed(2));
-  const score = scoreRaw.toFixed(1);
+  const scoreMax = isIsp ? 100 : (scoreRaw > 10 ? 100 : 10);
+  const scoreDisplay = isIsp
+    ? Math.min(100, Math.max(0, scoreRaw)).toFixed(0)
+    : (scoreRaw > 10 ? Math.round(scoreRaw).toString() : scoreRaw.toFixed(1).replace(/\.0$/,""));
   const scoreCol = isIsp
-    ? (parseFloat(score)>=80?'var(--accent)':parseFloat(score)>=50?'var(--primary)':'var(--danger)')
-    : (parseFloat(score)>=8?'var(--accent)':parseFloat(score)>=5?'var(--primary)':'var(--danger)');
+    ? (scoreRaw>=80?'var(--accent)':scoreRaw>=50?'var(--primary)':'var(--danger)')
+    : (scoreRaw > 10
+       ? (scoreRaw>=80?'var(--accent)':scoreRaw>=50?'var(--primary)':'var(--danger)')
+       : (scoreRaw>=8 ?'var(--accent)':scoreRaw>=5 ?'var(--primary)':'var(--danger)'));
   const ispBadge = isIsp ? `<span class="hist-det-badge" style="background:rgba(249,115,22,.12);color:var(--ispring);border-color:rgba(249,115,22,.25)"><i class="fas fa-rocket"></i> iSpring</span>` : "";
   document.getElementById("detSum").innerHTML = `
     <h3>${name}</h3>
     <div class="hist-det-badges">
-      <span class="hist-det-badge score" style="color:${scoreCol}"><i class="fas fa-star"></i> ${score} điểm</span>
+      <span class="hist-det-badge score" style="color:${scoreCol}"><i class="fas fa-star"></i> ${scoreDisplay}/${scoreMax} điểm</span>
       <span class="hist-det-badge"><i class="fas fa-check-double"></i> ${rec.total||"—"}</span>
       <span class="hist-det-badge"><i class="far fa-clock"></i> ${nbFmtTime(rec.time)}</span>
       ${ispBadge}

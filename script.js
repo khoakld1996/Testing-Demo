@@ -1457,21 +1457,23 @@ window.nbResultInit = function(){
   const correct  =nb.get('correctCount')   ||'0/0';
 
   const _set=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
-  _set('resName',   name);
-  _set('resSchool', school+(cls?' · '+cls:''));
-  _set('resCorrect',correct);
-  _set('resTestName',testName);
-
-  const titleEl =document.getElementById('resTitle');
-  const trophyEl=document.getElementById('resTrophy');
   const totalScoreBase=parseFloat(nb.get('quizTotalScore')||10)||10;
   const isIspringMode = (nb.get('quizMode')||'') === 'ispring';
 
-  /* ── Tính displayScore: chuẩn hóa về thang /10 cho sys, /100 cho iSpring ──
-     GAS lưu score theo thang totalScoreBase (có thể là 10 hoặc 100).
-     Để nhất quán với history.html, luôn hiển thị:
-       - Sys:     X.X / 10 ĐIỂM  (normalize: score/totalScoreBase*10)
-       - iSpring: X   / 100 ĐIỂM (score đã là %)
+  _set('resName',   name);
+  _set('resSchool', school+(cls?' · '+cls:''));
+  /* Không ghi đè resCorrect cho iSpring — inline script đã set đúng định dạng "X/Y câu" */
+  if(!isIspringMode) _set('resCorrect',correct);
+  /* Xoá prefix [iSpring] khỏi tên bài thi */
+  _set('resTestName', testName.replace(/^\[iSpring\]\s*/i,''));
+
+  const titleEl =document.getElementById('resTitle');
+  const trophyEl=document.getElementById('resTrophy');
+
+  /* ── Hiển thị điểm theo đúng thang gốc — nhất quán với GAS ──
+     Không chuẩn hoá về /10 nữa để tránh sai lệch giữa AppScript và UI.
+       - Sys:     X / totalScore ĐIỂM  (ví dụ 75/100 hoặc 7.5/10)
+       - iSpring: X / 100 ĐIỂM
   ──────────────────────────────────────────────── */
   let displayScore, scoreForRing, displayTotal;
   if(isIspringMode){
@@ -1479,14 +1481,16 @@ window.nbResultInit = function(){
     scoreForRing  = displayScore;
     displayTotal  = 100;
   } else {
-    /* Normalize sang thang /10 */
-    const pctNorm = totalScoreBase > 0 ? (score / totalScoreBase) : 0;
-    displayScore  = parseFloat((pctNorm * 10).toFixed(2));
-    scoreForRing  = Math.round(pctNorm * 100);
-    displayTotal  = 10;
+    /* Hiển thị nguyên thang gốc — khớp với dữ liệu lưu trong Google Sheets */
+    displayScore  = score;
+    displayTotal  = totalScoreBase;
+    scoreForRing  = totalScoreBase > 0 ? Math.round((score / totalScoreBase) * 100) : 0;
   }
 
-  const pct = isIspringMode ? displayScore/100 : displayScore/10;
+  /* pct dùng để xác định title/trophy (0–1) */
+  const pct = isIspringMode
+    ? displayScore / 100
+    : (totalScoreBase > 0 ? displayScore / totalScoreBase : 0);
   if(pct>=0.8)      {if(titleEl)titleEl.textContent='XUẤT SẮC!';    if(trophyEl)trophyEl.textContent='👑';}
   else if(pct>=0.5) {if(titleEl)titleEl.textContent='TỐT LẮM!';     if(trophyEl)trophyEl.textContent='🚀';}
   else              {if(titleEl)titleEl.textContent='CỐ GẮNG LÊN!'; if(trophyEl)trophyEl.textContent='🎯';}
@@ -1536,11 +1540,18 @@ window.nbResultInit = function(){
       }
     }
     if(!_quizData.questions.length){
-      if(listEl) listEl.innerHTML=`<div class="res-empty">Không có câu hỏi.</div>`;
+      if(listEl) listEl.innerHTML=`<div class="res-empty"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>Không có câu hỏi.</div>`;
       return;
     }
-    _renderReview();
-    _reviewLoaded=true;
+    try{
+      _renderReview();
+      _reviewLoaded=true;
+    }catch(err){
+      console.error('[nbOpenReview] _renderReview error:',err);
+      if(listEl) listEl.innerHTML=`<div class="res-empty" style="color:var(--danger)">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <p>Lỗi hiển thị câu hỏi. Vui lòng thử lại.</p></div>`;
+    }
   };
 
   window.nbCloseReview=function(){
@@ -1661,7 +1672,13 @@ window.nbResultInit = function(){
   function _getOpts(q,type){
     if(type==='tf') return ['Đúng','Sai'];
     try{
-      const det=q.details||(typeof q.answer==='string'?JSON.parse(q.answer):(q.answer||{}));
+      /* Ưu tiên q.details.items nếu có dữ liệu thực sự */
+      if(q.details && Array.isArray(q.details.items) && q.details.items.length > 0){
+        return q.details.items.map(o=>typeof o==='object'&&o?(o.text||JSON.stringify(o)):String(o));
+      }
+      /* Fallback: parse q.answer (JSON gốc từ GAS) —
+         trường hợp q.details.items rỗng do parse thất bại khi lưu quiz */
+      const det=typeof q.answer==='string'?JSON.parse(q.answer):(q.answer||{});
       const items=det.items||det.options||[];
       return items.map(o=>typeof o==='object'&&o?(o.text||JSON.stringify(o)):String(o));
     }catch(e){ return []; }
