@@ -1701,8 +1701,12 @@ window.nbResultInit = function(){
 /* Auto-init */
 document.addEventListener('DOMContentLoaded', function(){
   const path=window.location.pathname;
-  if(path.includes('result.html')) nbResultInit();
-  if(path.includes('quiz.html'))   nbQuizInit();
+  /* result.html: inline script gọi nbResultInit() trước → guard tránh double-init */
+  if(path.includes('result.html') && !window._resultInitDone){
+    window._resultInitDone=true;
+    nbResultInit();
+  }
+  if(path.includes('quiz.html')) nbQuizInit();
 });
 
 /* ══════════════════════════════════════════════

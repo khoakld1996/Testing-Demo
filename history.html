@@ -110,6 +110,8 @@ function nbParseDate(val){
 }
 
 async function loadHistory() {
+  const listEl = document.getElementById("histList");
+  if(listEl) listEl.classList.add("loading");
   try {
     const [sysRes, ispRes] = await Promise.all([
       fetch(API + "?action=getResults&student=" + encodeURIComponent(studentName)).then(r => r.json()),
@@ -150,6 +152,7 @@ async function loadHistory() {
     allRecs = [...dedup(sys), ...dedup(isp)]
       .sort((a, b) => nbParseDate(b.time) - nbParseDate(a.time));
 
+    if(listEl) listEl.classList.remove("loading");
     updateStats(); updateCounts(); renderList(curTab);
   } catch(e) {
     document.getElementById("histList").innerHTML = '<div class="nodata"><i class="fas fa-wifi" style="font-size:2rem;display:block;margin-bottom:10px"></i>Lỗi kết nối</div>';
@@ -215,8 +218,7 @@ function renderList(tab) {
   }
   el.innerHTML = recs.map(r => {
     const isp   = r._type === "isp";
-    const name  = (r.testName||"").replace(/\[iSpring\]/ig,"").trim();
-    const score = parseFloat(r.score||0);
+    const name  = (r.testName||"").replace(/\[iSpring\]/ig,"").trim();    const score = parseFloat(r.score||0);
 
     /* ── Hiển thị điểm đúng thang ── */
     let dispScore, col;

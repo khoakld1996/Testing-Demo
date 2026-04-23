@@ -795,18 +795,19 @@ function renderResults(){
     qsEl.style.display='grid';
     const scores = results.map(r=>parseFloat(r.score||0));
     const isIspArr = results.map(r=>(r.testName||'').toLowerCase().includes('ispring'));
-    /* Chuẩn hoá tất cả về thang /10 để tính trung bình chung
-       - iSpring: score/100 * 10
-       - Hệ thống: nếu score > 10 (totalScore=100) thì chia 10 */
+    /* Chuẩn hoá về thang /100 để tính trung bình chung:
+       - iSpring: đã là /100
+       - Sys /10 (score ≤ 10): *10
+       - Sys /100 (score > 10): giữ nguyên */
     const normed = scores.map((s,i)=>{
-      if(isIspArr[i]) return s / 10;        /* iSpring /100 → /10 */
-      return s > 10 ? s / 10 : s;           /* sys /100 → /10 nếu cần */
+      if(isIspArr[i]) return s;          /* iSpring: đã /100 */
+      return s > 10 ? s : s * 10;       /* sys: chuẩn hoá về /100 */
     });
     const avg  = normed.reduce((a,b)=>a+b,0)/normed.length;
     const best = Math.max(...normed);
     document.getElementById('rqsTotal').textContent = results.length;
-    document.getElementById('rqsAvg').textContent   = avg.toFixed(1)+'đ';
-    document.getElementById('rqsHigh').textContent  = best.toFixed(1).replace(/\.0$/,'')+'đ';
+    document.getElementById('rqsAvg').textContent   = avg.toFixed(1)+'%';
+    document.getElementById('rqsHigh').textContent  = best.toFixed(1).replace(/\.0$/,'')+'%';
   }
 
   if(!results.length){
@@ -830,9 +831,11 @@ function renderResults(){
     filtered = filtered.filter(r=>{
       const sc   = parseFloat(r.score||0);
       const isIsp= (r.testName||'').toLowerCase().includes('ispring');
-      if(scoreFilter==='hi')  return isIsp ? sc>=85  : sc>=8;
-      if(scoreFilter==='mid') return isIsp ? sc>=50&&sc<85 : sc>=5&&sc<8;
-      if(scoreFilter==='low') return isIsp ? sc<50   : sc<5;
+      /* Chuẩn hoá về % để lọc thống nhất */
+      const pct = isIsp ? sc : (sc > 10 ? sc : sc * 10);
+      if(scoreFilter==='hi')  return pct>=80;
+      if(scoreFilter==='mid') return pct>=50&&pct<80;
+      if(scoreFilter==='low') return pct<50;
       return true;
     });
   }
@@ -863,9 +866,14 @@ function renderResults(){
       color = score>=85?'var(--success)':score>=60?'var(--primary)':'var(--danger)';
       dispScore = score.toFixed(0)+'<small style="font-size:.7em;opacity:.55">/100</small>';
     } else {
-      score = rawScore > 10 ? parseFloat((rawScore/10).toFixed(2)) : rawScore;
-      color = score>=8?'var(--success)':score>=5?'var(--primary)':'var(--danger)';
-      dispScore = score.toFixed(1).replace(/\.0$/,'')+'<small style="font-size:.7em;opacity:.55">/10</small>';
+      /* Hiển thị theo thang gốc — không chia về /10, khớp với AppScript */
+      const rawMax = rawScore > 10 ? 100 : 10;
+      score = rawScore;
+      color = rawScore > 10
+        ? (rawScore>=80?'var(--success)':rawScore>=50?'var(--primary)':'var(--danger)')
+        : (rawScore>=8 ?'var(--success)':rawScore>=5 ?'var(--primary)':'var(--danger)');
+      dispScore = (rawScore > 10 ? Math.round(rawScore) : rawScore.toFixed(1).replace(/\.0$/,''))
+        +'<small style="font-size:.7em;opacity:.55">/'+rawMax+'</small>';
     }
     return`<div class="result-row">
       <div><div style="font-weight:600">${nbEsc(r.student||'Ẩn danh')}</div><div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div></div>
