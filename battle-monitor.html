@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Monitor Phòng Thi | Nebula</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+</head>
+<body class="mon-body">
+
+<div class="mon-wrap">
+
+  <!-- Header -->
+  <div class="mon-header">
+    <div class="mon-header-left">
+      <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:var(--primary)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      <div>
+        <div class="mon-header-title">MONITOR PHÒNG THI ĐẤU</div>
+        <div class="mon-room-info" id="monitorRoomInfo">Đang tải...</div>
+      </div>
+    </div>
+    <div class="mon-header-right">
+      <div class="mon-live-badge">
+        <span class="mon-live-dot"></span>LIVE
+      </div>
+      <div class="mon-last-update" id="monLastUpdate">—</div>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="mon-stats-bar">
+    <div class="mon-stat-pill">
+      <span class="mon-stat-n" id="monTotal">0</span>
+      <span class="mon-stat-l">Tổng</span>
+    </div>
+    <div class="mon-stat-pill doing">
+      <span class="mon-stat-n" id="monDoing">0</span>
+      <span class="mon-stat-l">Đang làm</span>
+    </div>
+    <div class="mon-stat-pill done">
+      <span class="mon-stat-n" id="monDone">0</span>
+      <span class="mon-stat-l">Nộp bài</span>
+    </div>
+    <div class="mon-stat-pill wait">
+      <span class="mon-stat-n" id="monWaiting">0</span>
+      <span class="mon-stat-l">Chờ</span>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="mon-progress-track">
+    <div class="mon-progress-fill" id="monProgressBar" style="width:0%"></div>
+  </div>
+
+  <!-- Actions -->
+  <div class="mon-actions" id="monRoomActions">
+    <div class="db-empty">Đang tải...</div>
+  </div>
+
+  <!-- Two columns -->
+  <div class="mon-cols">
+
+    <!-- Left: Leaderboard -->
+    <div class="mon-col">
+      <div class="mon-col-title">🏆 Bảng Xếp Hạng Tức Thì</div>
+      <div class="mon-lb-wrap" id="monLeaderboard">
+        <div class="mon-lb-empty">Chờ học sinh nộp bài...</div>
+      </div>
+    </div>
+
+    <!-- Right: All participants -->
+    <div class="mon-col">
+      <div class="mon-col-title">👥 Tất Cả Thí Sinh</div>
+      <div class="mon-parts-wrap" id="monAllParts">
+        <div class="mon-lb-empty">Chưa có thí sinh nào...</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

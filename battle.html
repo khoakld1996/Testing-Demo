@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <title>Phòng Thi Đấu | Nebula</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+</head>
+<body class="battle-body">
+
+<nav class="sel-nav">
+  <a class="sel-brand" href="select.html">
+    <svg viewBox="0 0 24 24"><path d="M19.07 4.93a1 1 0 0 0-1.41 0L4.93 17.66a1 1 0 1 0 1.41 1.41L19.07 6.34a1 1 0 0 0 0-1.41zM6.5 8C5.12 8 4 9.12 4 10.5S5.12 13 6.5 13 9 11.88 9 10.5 7.88 8 6.5 8zm11 5c-1.38 0-2.5 1.12-2.5 2.5S16.12 18 17.5 18 20 16.88 20 15.5 18.88 13 17.5 13z"/></svg>
+    NEBULA <span>QUIZ</span>
+  </a>
+  <div class="sel-user">
+    <div class="sel-user-info">
+      <span class="sel-user-name" id="btlNavName">Học sinh</span>
+    </div>
+    <button class="sel-logout" title="Đăng xuất" onclick="_nbSelectLogout()">
+      <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="battle-container">
+
+  <!-- Left: Active rooms -->
+  <div class="battle-left">
+    <div class="battle-section-title">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      Phòng Thi Đang Hoạt Động
+      <span class="battle-live-badge">🔴 LIVE</span>
+    </div>
+    <div id="battleRooms">
+      <div class="battle-loading">
+        <div class="hist-spinner"></div>
+        <p>Đang tải phòng thi...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Leaderboard -->
+  <div class="battle-right">
+    <div class="battle-section-title">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Bảng Xếp Hạng
+    </div>
+    <div id="battleLeaderboard">
+      <div class="battle-loading"><div class="hist-spinner"></div></div>
+    </div>
+
+    <!-- My stats -->
+    <div class="battle-my-stats" id="battleMyStats" style="display:none">
+      <div class="battle-my-title">⭐ Thống Kê Của Bạn</div>
+      <div class="battle-my-tier" id="battleMyTier"></div>
+      <div class="battle-my-info" id="battleMyInfo"></div>
+    </div>
+  </div>
+
+</div>
+
+<script src="script.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const u = nb.json('currentUser',null);
+    const el = document.getElementById('btlNavName');
+    if(el && u) el.textContent = u.name || nbStudentName() || 'Học sinh';
+  });
+</script>
+</body>
+</html>

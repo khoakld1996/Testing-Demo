@@ -3,975 +3,240 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Hệ thống Quản trị — Nebula</title>
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <title>Nebula | Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
-  <script src="script.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<body class="dash-body">
-<div class="container animate__animated animate__fadeIn">
+<body class="db-body">
 
-  <header class="nav-header">
-    <div class="logo-area">
-      <h1>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="dash-logo-icon" aria-hidden="true">
-          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93-2.67-1.14-5-4.43-5-7.93V7.18L12 5zm-1 3v4h2V8h-2zm0 6v2h2v-2h-2z"/>
-        </svg>
-        NEBULA ADMIN
-      </h1>
-      <p>Hệ thống quản trị tối cao &nbsp;
-        <span class="refresh-badge" id="refreshBadge">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-          Auto&nbsp;<span id="refreshCountdown">30</span>s
-        </span>
-      </p>
+<!-- ── Sidebar ── -->
+<aside class="db-sidebar" id="dbSidebar">
+  <div class="db-sidebar-top">
+    <div class="db-brand">
+      <svg viewBox="0 0 24 24"><path d="M19.07 4.93a1 1 0 0 0-1.41 0L4.93 17.66a1 1 0 1 0 1.41 1.41L19.07 6.34a1 1 0 0 0 0-1.41zM6.5 8C5.12 8 4 9.12 4 10.5S5.12 13 6.5 13 9 11.88 9 10.5 7.88 8 6.5 8zm11 5c-1.38 0-2.5 1.12-2.5 2.5S16.12 18 17.5 18 20 16.88 20 15.5 18.88 13 17.5 13z"/></svg>
+      <span>NEBULA</span>
     </div>
-    <div class="dash-header-actions">
-      <span id="apiStatus" class="api-status loading"><span class="dot"></span> Kết nối...</span>
-
-      <button class="btn btn-outline" onclick="exportResults()" title="Xuất CSV kết quả">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-        <span class="hide-sm">Xuất CSV</span>
-      </button>
-
-      <button class="btn btn-outline" onclick="toggleDebug()" title="Debug log">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 8h-2.81c-.45-.78-1.07-1.45-1.82-1.96L17 4.41 15.59 3l-2.17 2.17C12.96 5.06 12.49 5 12 5s-.96.06-1.41.17L8.41 3 7 4.41l1.62 1.63C7.88 6.55 7.26 7.22 6.81 8H4v2h2.09c-.05.33-.09.66-.09 1v1H4v2h2v1c0 .34.04.67.09 1H4v2h2.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H20v-2h-2.09c.05-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.04-.67-.09-1H20V8zm-6 8h-4v-2h4v2zm0-4h-4v-2h4v2z"/></svg>
-      </button>
-
-      <button class="btn btn-outline" id="btnReload" onclick="loadData(true)" title="Tải lại dữ liệu">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" id="reloadIcon" aria-hidden="true"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-      </button>
-
-      <button class="btn btn-outline dash-btn-danger" onclick="logout()" title="Đăng xuất">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
-      </button>
-    </div>
-  </header>
-
-  <div id="debugPanel"></div>
-
-  <div class="stats-grid">
-    <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(59,130,246,.1);color:var(--primary)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
-      </div>
-      <div><p>Đề thi hệ thống</p><h2 id="cTests">—</h2></div>
-    </div>
-    <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(249,115,22,.1);color:var(--ispring)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/></svg>
-      </div>
-      <div><p>Bài iSpring</p><h2 id="cIspring">0</h2></div>
-    </div>
-    <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(245,158,11,.1);color:var(--warning)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/><circle cx="18" cy="17" r="4" fill="var(--warning)" opacity=".9"/><path d="M18 15v2.5l1.5 1.5-.7.7-1.8-1.8V15H18z" fill="#000"/></svg>
-      </div>
-      <div><p>Chờ duyệt</p><h2 id="cPending">—</h2></div>
-    </div>
-    <div class="glass-card stat-box">
-      <div class="stat-icon" style="background:rgba(16,185,129,.1);color:var(--success)">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
-      </div>
-      <div><p>Lượt làm bài</p><h2 id="cResults">—</h2></div>
-    </div>
+    <div class="db-user-badge" id="dbUserBadge">Admin</div>
   </div>
 
-  <div class="tab-nav">
-    <button class="tab-btn active" data-tab="system" onclick="switchTab('system')">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 16 18 16s1.5.67 1.5 1.5S18.83 19 18 19zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 6 18 6s1.5.67 1.5 1.5S18.83 9 18 9z"/></svg>
-      HỆ THỐNG
+  <nav class="db-nav">
+    <button class="db-nav-btn active" data-tab="overview" onclick="dbSwitchTab('overview')">
+      <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+      Tổng quan
     </button>
-    <button class="tab-btn" data-tab="ispring" onclick="switchTab('ispring')">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
-      iSPRING
+    <button class="db-nav-btn" data-tab="tests" onclick="dbSwitchTab('tests')">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+      Đề thi
+    </button>
+    <button class="db-nav-btn" data-tab="ispring" onclick="dbSwitchTab('ispring')">
+      <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+      iSpring
+    </button>
+    <button class="db-nav-btn" data-tab="pending" onclick="dbSwitchTab('pending')">
+      <svg viewBox="0 0 24 24"><path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+      Duyệt TK
+      <span class="db-badge-dot" id="dbPendingBadge"></span>
+    </button>
+    <button class="db-nav-btn" data-tab="results" onclick="dbSwitchTab('results')">
+      <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+      Kết quả
+    </button>
+    <button class="db-nav-btn" data-tab="battle" onclick="dbSwitchTab('battle')">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      Phòng Thi Đấu
+    </button>
+    <button class="db-nav-btn super-only" data-tab="admins" onclick="dbSwitchTab('admins')">
+      <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1z"/></svg>
+      Quản lý Admin
+    </button>
+  </nav>
+
+  <div class="db-sidebar-foot">
+    <div class="db-realtime-badge">
+      <span class="db-rt-dot"></span>
+      Auto-refresh 10s
+    </div>
+    <button class="db-logout-btn" onclick="nbLogout()">
+      <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+      Đăng xuất
     </button>
   </div>
+</aside>
 
-  <div id="tab-system" class="tab-content active">
-    <div class="main-grid">
-      <main>
-        <div class="glass-card dash-section-card">
-          <div class="dash-section-header">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--primary)" aria-hidden="true"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-              Danh sách đề thi
-            </h3>
-            <div class="dash-search-wrap">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="dash-search-icon" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-              <input type="text" id="searchInput" class="input-dark dash-search-input"
-                placeholder="Tìm tên đề thi..." oninput="filterTests()">
-            </div>
-          </div>
-          <div id="testList" class="item-list"></div>
-        </div>
-
-        <div class="glass-card dash-section-card">
-          <div class="dash-section-header">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--success)" aria-hidden="true"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-              Kết quả gần đây
-              <span class="dash-live-badge" id="lastSyncBadge"></span>
-            </h3>
-            <button class="btn-export" onclick="exportResults()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 13l-3-3h2V8h2v4h2l-3 3z"/></svg>
-              Xuất CSV
-            </button>
-          </div>
-          <!-- Quick stats bar -->
-          <div id="resQuickStats" style="display:none;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
-            <div style="background:rgba(79,172,254,.07);border:1px solid rgba(79,172,254,.15);border-radius:10px;padding:10px 12px;text-align:center">
-              <div style="font-size:1.2rem;font-weight:900;color:var(--primary)" id="rqsTotal">—</div>
-              <div style="font-size:.66rem;opacity:.5;margin-top:1px">Tổng lượt</div>
-            </div>
-            <div style="background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.15);border-radius:10px;padding:10px 12px;text-align:center">
-              <div style="font-size:1.2rem;font-weight:900;color:var(--success)" id="rqsAvg">—</div>
-              <div style="font-size:.66rem;opacity:.5;margin-top:1px">Điểm TB</div>
-            </div>
-            <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.15);border-radius:10px;padding:10px 12px;text-align:center">
-              <div style="font-size:1.2rem;font-weight:900;color:var(--warning)" id="rqsHigh">—</div>
-              <div style="font-size:.66rem;opacity:.5;margin-top:1px">Cao nhất</div>
-            </div>
-          </div>
-          <!-- Tìm kiếm + lọc điểm -->
-          <div style="display:flex;gap:7px;margin-bottom:8px;flex-wrap:wrap">
-            <div class="dash-search-wrap" style="flex:1;min-width:140px">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" class="dash-search-icon" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-              <input id="resSearchInput" class="input-dark dash-search-input" style="font-size:.78rem"
-                placeholder="Tìm học sinh, bài thi..." oninput="_resPage=1;renderResults()">
-            </div>
-            <select id="resScoreFilter" class="input-dark" style="font-size:.78rem;padding:7px 10px;cursor:pointer;min-width:138px;border-radius:10px"
-              onchange="_resPage=1;renderResults()">
-              <option value="all">Tất cả điểm</option>
-              <option value="hi">Giỏi (≥8đ / ≥85%)</option>
-              <option value="mid">Trung bình (5–8 / 50–85%)</option>
-              <option value="low">Yếu (&lt;5đ / &lt;50%)</option>
-            </select>
-          </div>
-          <div class="result-row dash-result-header">
-            <span>THÍ SINH</span><span>ĐỀ THI</span><span>KẾT QUẢ</span>
-          </div>
-          <div id="resultList" class="item-list" style="max-height:320px"></div>
-          <!-- Phân trang -->
-          <div id="resPagination" style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;gap:8px;min-height:36px"></div>
-        </div>
-      </main>
-
-      <aside>
-        <div class="glass-card dash-section-card dash-create-card">
-          <h3 class="dash-aside-title">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
-            Khởi tạo đề mới
-          </h3>
-          <div class="dash-create-form">
-            <input id="newName" class="input-dark" placeholder="Tên bài thi">
-            <input id="newDesc" class="input-dark" placeholder="Mô tả bài thi">
-            <div class="dash-input-icon-wrap">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="dash-input-prefix-icon" aria-hidden="true"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>
-              <input id="newDur" class="input-dark" type="number" placeholder="Phút" value="45">
-            </div>
-            <button class="btn btn-glow dash-btn-full" onclick="addTest()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-              TẠO BÀI THI NGAY
-            </button>
-          </div>
-        </div>
-
-        <div class="glass-card dash-section-card">
-          <h3 class="dash-aside-title">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/><path d="M5 17h3v-6H5v6zm5 0h3v-9h-3v9zm5 0h3v-3h-3v3z" fill="currentColor"/></svg>
-            Phân tích chất lượng
-            <span style="font-size:.65rem;opacity:.4;font-weight:400;margin-left:4px">(Giỏi/TB/Yếu)</span>
-          </h3>
-          <div style="height:220px"><canvas id="chartEl"></canvas></div>
-        </div>
-
-        <div class="glass-card dash-section-card dash-pending-card">
-          <div class="dash-section-header">
-            <h3 style="color:var(--warning)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
-              Yêu cầu đăng ký
-            </h3>
-            <span class="refresh-badge">
-              <svg width="8" height="8" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>
-              Live
-            </span>
-          </div>
-          <div id="pendingList" class="item-list" style="max-height:280px"></div>
-        </div>
-      </aside>
-    </div>
-  </div>
-
-  <div id="tab-ispring" class="tab-content">
-    <div class="ispring-grid">
-      <div>
-        <div class="glass-card dash-section-card">
-          <div class="dash-section-header">
-            <h3>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--ispring)" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/></svg>
-              Bài thi iSpring
-              <span id="ispringCount" class="dash-ispring-badge">0 bài</span>
-            </h3>
-            <div class="dash-search-wrap">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" class="dash-search-icon" aria-hidden="true"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-              <input type="text" id="ispringSearch" class="input-dark input-dark orange dash-search-input"
-                placeholder="Tìm bài iSpring..." oninput="renderIspringList()">
-              <button class="btn-export" onclick="exportIspringResults()" style="flex-shrink:0">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 13l-3-3h2V8h2v4h2l-3 3z"/></svg>
-                CSV
-              </button>
-            </div>
-          </div>
-          <div id="ispringList" class="item-list" style="max-height:500px">
-            <div class="empty-state">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 6h-2.18c.07-.44.18-.86.18-1.3C18 2.55 15.89.5 13.5.5c-1.3 0-2.51.58-3.36 1.5L9 3.17l-1.15-1.17C6.99 1.06 5.79.5 4.5.5 2.08.5 0 2.55 0 4.7c0 .44.1.86.18 1.3H0v2h18l2-2V6zm-3.5 0H5.32C5.12 5.68 5 5.2 5 4.7 5 3.76 5.67 3 6.5 3c.53 0 1.04.26 1.36.68l1.9 1.92L11.12 3.7C11.46 3.26 11.96 3 12.5 3c.83 0 1.5.76 1.5 1.7 0 .5-.12.98-.32 1.3H16.5zM4 8v12h16V8H4zm8 11l-5-5 1.41-1.41L12 16.17l3.59-3.58L17 14l-5 5z"/></svg>
-              <p>Chưa có bài iSpring nào.<br>Thêm từ form bên phải.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="glass-card dash-section-card dash-folder-card">
-          <h3 class="dash-aside-title" style="color:var(--ispring)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 9h2V7h-2v2zm1 11c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v-6h-2v6z"/></svg>
-            Cấu trúc thư mục
-          </h3>
-          <div class="dash-folder-tree">
-            📁 Testing-Demo/ &nbsp;←&nbsp; <span style="color:var(--ispring)">gốc website</span><br>
-            &nbsp;&nbsp;├─ 📄 select.html<br>
-            &nbsp;&nbsp;└─ 📁 <span style="color:var(--ispring)">quizzes/</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ 📁 <span style="color:var(--ispring)">FullIOT1GS6LV1/</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ 📄 index.html<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ 📁 data/
-          </div>
-          <p class="dash-folder-hint">
-            👉 Đường dẫn cần nhập:
-            <code>quizzes/FullIOT1GS6LV1/index.html</code>
-          </p>
-        </div>
-      </div>
-
-      <aside>
-        <div class="glass-card ispring-add-form dash-section-card">
-          <h3 class="dash-aside-title" style="color:var(--ispring)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-            Thêm bài thi iSpring
-          </h3>
-          <p class="dash-form-subtitle">Nhập thông tin để hiển thị trên trang chọn bài thi</p>
-          <div class="dash-create-form">
-            <input id="iName" class="input-dark orange" placeholder="Tên hiển thị">
-            <div>
-              <input id="iPath" class="input-dark orange" placeholder="VD: quizzes/FullIOT1GS6LV1/index.html">
-              <p class="form-hint">Relative path từ gốc web đến <code>index.html</code> của iSpring</p>
-            </div>
-            <input id="iDesc" class="input-dark orange" placeholder="Mô tả ngắn (tùy chọn)">
-            <div class="dash-row-2">
-              <input id="iDuration" class="input-dark orange" type="number" placeholder="Phút" value="45">
-              <input id="iSubject" class="input-dark orange" placeholder="Môn học">
-            </div>
-            <div class="toggle-wrap">
-              <label>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="opacity:.5;margin-right:5px" aria-hidden="true"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-                Hiển thị với học sinh
-              </label>
-              <div class="toggle on" id="visToggle" onclick="this.classList.toggle('on')"></div>
-            </div>
-            <button class="btn btn-orange dash-btn-full" onclick="addIspring()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
-              THÊM BÀI iSPRING
-            </button>
-          </div>
-        </div>
-
-        <div class="glass-card dash-section-card dash-ispring-result-card">
-          <div class="dash-section-header">
-            <h3 class="dash-aside-title" style="color:var(--ispring)">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 12l-4-4 1.41-1.41L12 12.17l5.59-5.58L19 8l-7 7z"/></svg>
-              Kết quả bài thi iSpring
-            </h3>
-            <button class="btn-export" onclick="exportIspringResults()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 13l-3-3h2V8h2v4h2l-3 3z"/></svg>
-              CSV
-            </button>
-          </div>
-          <!-- Mini stats -->
-          <div class="isp-res-stats" id="ispResStats" style="display:none">
-            <div class="isp-res-stat"><span id="ispResTot">0</span><small>Lượt thi</small></div>
-            <div class="isp-res-stat" style="color:var(--success)"><span id="ispResAvg">—</span><small>Điểm TB</small></div>
-            <div class="isp-res-stat" style="color:var(--accent2)"><span id="ispResBest">—</span><small>Cao nhất</small></div>
-          </div>
-          <!-- Distribution chart -->
-          <div class="isp-dist-wrap" id="ispDistWrap" style="display:none">
-            <div class="isp-dist-title">Phân bố điểm số</div>
-            <div class="isp-dist-bars" id="ispDistBars"></div>
-            <div class="isp-dist-labels"><span>0–49</span><span>50–69</span><span>70–84</span><span>85–100</span></div>
-          </div>
-          <!-- Filter -->
-          <div style="display:flex;gap:7px;margin:10px 0 6px;flex-wrap:wrap">
-            <input id="ispResFilter" class="input-dark orange" style="flex:1;min-width:100px;font-size:.78rem;padding:8px 12px"
-              placeholder="Lọc theo tên học sinh..." oninput="_ispResPage=1;renderIspringResults()">
-            <select id="ispResScoreFilter" class="input-dark orange" style="font-size:.78rem;padding:8px 10px;cursor:pointer;min-width:110px;border-radius:10px"
-              onchange="_ispResPage=1;renderIspringResults()">
-              <option value="all">Tất cả</option>
-              <option value="hi">Giỏi ≥85đ</option>
-              <option value="mid">TB 50–84đ</option>
-              <option value="low">Yếu &lt;50đ</option>
-            </select>
-            <button class="btn btn-orange" style="padding:8px 12px;white-space:nowrap" onclick="loadIspringResults()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
-              Tải lại
-            </button>
-          </div>
-          <!-- Result list -->
-          <div id="ispResultList" class="item-list" style="max-height:280px">
-            <div class="empty-state" style="padding:24px">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style="color:var(--ispring)"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
-              <p style="opacity:.5;font-size:.78rem;margin-top:8px">Nhấn "Tải lại" để xem kết quả iSpring</p>
-            </div>
-          </div>
-          <!-- Phân trang iSpring -->
-          <div id="ispResPagination" style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;gap:8px;min-height:36px"></div>
-        </div>
-
-        <div class="glass-card dash-section-card">
-          <h3 class="dash-aside-title" style="color:var(--ispring)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-            Kiểm tra đường dẫn
-          </h3>
-          <div style="display:flex;gap:8px;margin-bottom:10px;margin-top:12px">
-            <input id="testPath" class="input-dark orange" style="flex:1"
-              placeholder="quizzes/FullIOT1GS6LV1/index.html">
-            <button class="btn btn-outline" onclick="testIspringPath()" style="white-space:nowrap">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-              Test
-            </button>
-          </div>
-          <div id="pathTestResult" style="font-size:.78rem;opacity:.6;min-height:20px"></div>
-        </div>
-      </aside>
-    </div>
-  </div>
-
-  <footer class="dash-footer">NEBULA ECOSYSTEM &copy; 2026</footer>
+<!-- ── Mobile top bar ── -->
+<div class="db-topbar">
+  <button class="db-menu-btn" onclick="document.getElementById('dbSidebar').classList.toggle('open')">
+    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+  </button>
+  <span class="db-topbar-title">NEBULA Dashboard</span>
+  <span class="db-topbar-user" id="dbTopUser"></span>
 </div>
 
-<div id="ispringModal" class="modal-overlay" style="display:none">
-  <div class="modal-box" style="max-width:1100px;height:85vh;padding:0;overflow:hidden">
-    <div class="modal-header" style="padding:14px 20px">
-      <div class="modal-title">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="color:var(--ispring)" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
-        <span id="modalTitle">Preview iSpring</span>
-        <span style="font-size:.7rem;opacity:.4" id="modalPath"></span>
+<!-- ── Main content ── -->
+<main class="db-main">
+
+  <!-- ── TAB: OVERVIEW ── -->
+  <div class="db-tab-pane active" data-tab="overview">
+    <div class="db-pane-title">📊 Tổng Quan Hệ Thống</div>
+
+    <!-- Stats grid -->
+    <div class="db-stats-grid">
+      <div class="db-stat-card">
+        <div class="db-stat-icon" style="background:rgba(79,172,254,.15);color:#4facfe">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6z"/></svg>
+        </div>
+        <div class="db-stat-info">
+          <div class="db-stat-num" id="dbStatTests">—</div>
+          <div class="db-stat-lbl">Đề thi</div>
+        </div>
       </div>
-      <button onclick="closeIspringModal()" class="btn btn-outline dash-btn-danger" style="padding:7px 14px">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        Đóng
+      <div class="db-stat-card">
+        <div class="db-stat-icon" style="background:rgba(0,230,118,.15);color:#00e676">
+          <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2z"/></svg>
+        </div>
+        <div class="db-stat-info">
+          <div class="db-stat-num" id="dbStatQ">—</div>
+          <div class="db-stat-lbl">Câu hỏi</div>
+        </div>
+      </div>
+      <div class="db-stat-card">
+        <div class="db-stat-icon" style="background:rgba(249,115,22,.15);color:#f97316">
+          <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+        </div>
+        <div class="db-stat-info">
+          <div class="db-stat-num" id="dbStatIsp">—</div>
+          <div class="db-stat-lbl">Bài iSpring</div>
+        </div>
+      </div>
+      <div class="db-stat-card">
+        <div class="db-stat-icon" style="background:rgba(139,92,246,.15);color:#8b5cf6">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg>
+        </div>
+        <div class="db-stat-info">
+          <div class="db-stat-num" id="dbStatResults">—</div>
+          <div class="db-stat-lbl">Lượt làm bài</div>
+        </div>
+      </div>
+      <div class="db-stat-card">
+        <div class="db-stat-icon" style="background:rgba(34,197,94,.15);color:#22c55e">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        </div>
+        <div class="db-stat-info">
+          <div class="db-stat-num" id="dbStatStudents">—</div>
+          <div class="db-stat-lbl">Học sinh</div>
+        </div>
+      </div>
+      <div class="db-stat-card">
+        <div class="db-stat-icon" style="background:rgba(239,68,68,.15);color:#ef4444">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+        </div>
+        <div class="db-stat-info">
+          <div class="db-stat-num" id="dbStatRooms">—</div>
+          <div class="db-stat-lbl">Phòng thi đấu</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent results -->
+    <div class="db-card">
+      <div class="db-card-head">
+        <span>⚡ Kết quả gần đây</span>
+        <span class="db-auto-refresh-lbl">🔄 Tự động cập nhật</span>
+      </div>
+      <div id="dbRecentResults"><div class="db-empty">Đang tải...</div></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: TESTS ── -->
+  <div class="db-tab-pane" data-tab="tests">
+    <div class="db-pane-head">
+      <div class="db-pane-title">📚 Quản Lý Đề Thi</div>
+      <button class="dba-btn ok" onclick="dbCreateTest()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Tạo đề mới
       </button>
     </div>
-    <iframe id="ispringFrame" src="" style="flex:1;border:none;width:100%;height:calc(100% - 57px)"></iframe>
+    <div class="db-card">
+      <div id="dbTestList"><div class="db-empty"><i class="fas fa-circle-notch fa-spin"></i> Đang tải...</div></div>
+    </div>
   </div>
-</div>
 
+  <!-- ── TAB: ISPRING ── -->
+  <div class="db-tab-pane" data-tab="ispring">
+    <div class="db-pane-head">
+      <div class="db-pane-title">🌠 Quản Lý Bài iSpring</div>
+      <button class="dba-btn ok" onclick="dbAddIsp()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Thêm bài
+      </button>
+    </div>
+    <div class="db-card">
+      <div id="dbIspList"><div class="db-empty"><i class="fas fa-circle-notch fa-spin"></i> Đang tải...</div></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: PENDING ── -->
+  <div class="db-tab-pane" data-tab="pending">
+    <div class="db-pane-title">👥 Duyệt Tài Khoản Học Sinh</div>
+    <div class="db-card">
+      <div id="dbPendingList"><div class="db-empty"><i class="fas fa-circle-notch fa-spin"></i> Đang tải...</div></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: RESULTS ── -->
+  <div class="db-tab-pane" data-tab="results">
+    <div class="db-pane-title">📊 Kết Quả Làm Bài</div>
+    <div class="db-card">
+      <div id="dbResultList"><div class="db-empty"><i class="fas fa-circle-notch fa-spin"></i> Đang tải...</div></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: BATTLE ── -->
+  <div class="db-tab-pane" data-tab="battle">
+    <div class="db-pane-head">
+      <div class="db-pane-title">⚔️ Phòng Thi Đấu</div>
+      <button class="dba-btn ok" onclick="dbCreateBattleRoom()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Tạo phòng
+      </button>
+    </div>
+    <div class="db-card">
+      <div id="dbBattleList"><div class="db-empty"><i class="fas fa-circle-notch fa-spin"></i> Đang tải...</div></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: ADMINS (super only) ── -->
+  <div class="db-tab-pane super-only" data-tab="admins">
+    <div class="db-pane-head">
+      <div class="db-pane-title">🛡 Quản Lý Tài Khoản Admin</div>
+      <button class="dba-btn ok super-only" onclick="dbCreateAdmin()">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+        Tạo Admin mới
+      </button>
+    </div>
+    <div class="db-card">
+      <div class="db-info-box" style="margin-bottom:12px">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1z"/></svg>
+        <span>Chỉ <b>Super Admin</b> mới có thể tạo / xóa tài khoản Admin. Admin thường có đầy đủ quyền quản lý nhưng không thể tạo admin khác.</span>
+      </div>
+      <div id="dbAdminList"><div class="db-empty"><i class="fas fa-circle-notch fa-spin"></i> Đang tải...</div></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- overlay khi sidebar mở mobile -->
+<div class="db-overlay" onclick="document.getElementById('dbSidebar').classList.remove('open')"></div>
+
+<script src="script.js"></script>
 <script>
-/* Override nbFmtTime: GAS đôi khi trả về ISO 8601 UTC (Z suffix) */
-function nbFmtTime(val){
-  if(!val) return '—';
-  try{
-    let s=String(val).trim();
-    if(/^\d{4}-\d{2}-\d{2}T/.test(s)){
-      const dt=new Date(s);
-      if(!isNaN(dt)) return dt.toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Ho_Chi_Minh'});
-    }
-    if(/^\d{4}-\d{2}-\d{2}\s/.test(s)) s=s.replace(' ','T');
-    else if(/^\d{2}\/\d{2}\/\d{4}/.test(s)){const[d,t]=s.split(' '),p=d.split('/');s=`${p[2]}-${p[1]}-${p[0]}T${t||'00:00:00'}`;}
-    const dt=new Date(s);
-    if(!isNaN(dt)) return dt.toLocaleString('vi-VN',{hour:'2-digit',minute:'2-digit',day:'2-digit',month:'2-digit',year:'numeric',timeZone:'Asia/Ho_Chi_Minh'});
-    return val;
-  }catch(e){ return val; }
-}
-
-/* ─── State ─── */
-let tests=[], results=[], pending=[], ispringList=[], ispringResults=[];
-window._nbResults = [];
-window._nbPending = [];
-
-/* ─── Pagination & filter state ─── */
-let _resPage=1, _ispResPage=1;
-const _RES_PER_PAGE=15, _ISP_RES_PER_PAGE=15;
-
-/* ─── Init ─── */
-window.addEventListener('DOMContentLoaded', async function(){
-  /* ══════════════════════════════════════════════════════════════
-     QUAN TRỌNG: Gọi nbDashboardInit() ĐẦU TIÊN.
-     Lý do: script.js load với defer → inline script chạy trước →
-     DOMContentLoaded của dashboard firing TRƯỚC script.js nếu không
-     có guard này. nbDashboardInit() định nghĩa setStatus, log,
-     nbRenderDashChart — những hàm mà loadData() cần ngay lập tức.
-     Đặt _dashInitDone=true để script.js không gọi lại lần 2.
-     ══════════════════════════════════════════════════════════════ */
-  window._dashInitDone = true;
-  if(typeof nbDashboardInit === 'function') nbDashboardInit();
-
-  /* ── Expose render functions lên window để auto-refresh (script.js) dùng được ── */
-  window.renderTests   = renderTests;
-  window.renderResults = renderResults;
-  window.renderPending = renderPending;
-
-  /* ── Load dữ liệu ban đầu ── */
-  await Promise.all([ loadIspring(), loadData() ]);
-
-  document.getElementById('ispringModal')
-    .addEventListener('click', function(e){ if(e.target===this) closeIspringModal(); });
-});
-
-/* ─── iSpring Results (inline) ─── */
-async function loadIspringResults(){
-  const listEl=document.getElementById('ispResultList');
-  if(listEl) listEl.innerHTML='<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
-  try{
-    const data = await callAPI('getIspringResults');
-    ispringResults = Array.isArray(data) ? data : [];
-    renderIspringResults();
-  }catch(e){
-    if(listEl) listEl.innerHTML='<div class="empty-state"><p style="color:var(--danger)">Lỗi kết nối</p></div>';
-    log('Lỗi loadIspringResults: '+e.message,'err');
-  }
-}
-
-function renderIspringResults(){
-  const listEl  = document.getElementById('ispResultList');
-  const pageEl  = document.getElementById('ispResPagination');
-  const statsEl = document.getElementById('ispResStats');
-  const distWrap= document.getElementById('ispDistWrap');
-  const barsEl  = document.getElementById('ispDistBars');
-  const nameFilter  = (document.getElementById('ispResFilter')?.value||'').toLowerCase().trim();
-  const scoreFilter = document.getElementById('ispResScoreFilter')?.value||'all';
-
-  if(!listEl) return;
-
-  /* ── Stats trên toàn bộ dữ liệu (không lọc) ── */
-  if(ispringResults.length){
-    const scores = ispringResults.map(r=>parseFloat(r.score||0));
-    const avg    = scores.reduce((a,b)=>a+b,0)/scores.length;
-    const best   = Math.max(...scores);
-    const setTxt = (id,v)=>{ const e=document.getElementById(id); if(e) e.textContent=v; };
-    setTxt('ispResTot',  ispringResults.length);
-    setTxt('ispResAvg',  avg.toFixed(1));
-    setTxt('ispResBest', best.toFixed(1).replace(/\.0$/,''));
-    if(statsEl) statsEl.style.display='grid';
-
-    /* Distribution chart */
-    const buckets=[0,0,0,0];
-    scores.forEach(s=>{ if(s<50)buckets[0]++; else if(s<70)buckets[1]++; else if(s<85)buckets[2]++; else buckets[3]++; });
-    const maxB=Math.max(...buckets,1);
-    const colors=['#ef4444','#f59e0b','#4facfe','#10b981'];
-    const labels=['0–49','50–69','70–84','85–100'];
-    if(barsEl){
-      barsEl.innerHTML=buckets.map((cnt,i)=>{
-        const h=Math.round((cnt/maxB)*44)+4;
-        const pct=Math.round((cnt/ispringResults.length)*100);
-        return `<div class="isp-dist-bar" style="height:${h}px;background:${colors[i]};opacity:.85;flex:1;border-radius:5px 5px 0 0;min-height:4px;cursor:default;position:relative;"
-          title="${labels[i]}: ${cnt} (${pct}%)"></div>`;
-      }).join('');
-    }
-    if(distWrap) distWrap.style.display='block';
-  }
-
-  /* ── Áp dụng bộ lọc ── */
-  let filtered = [...ispringResults].reverse(); /* mới nhất trước */
-  if(nameFilter){
-    filtered = filtered.filter(r=>
-      String(r.student||'').toLowerCase().includes(nameFilter)||
-      String(r.testName||'').toLowerCase().includes(nameFilter)
-    );
-  }
-  if(scoreFilter!=='all'){
-    filtered = filtered.filter(r=>{
-      const sc=parseFloat(r.score||0);
-      if(scoreFilter==='hi')  return sc>=85;
-      if(scoreFilter==='mid') return sc>=50&&sc<85;
-      if(scoreFilter==='low') return sc<50;
-      return true;
-    });
-  }
-
-  if(!filtered.length){
-    listEl.innerHTML=`<div class="empty-state" style="padding:20px">
-      <p style="opacity:.5;font-size:.78rem">${ispringResults.length?'Không tìm thấy kết quả phù hợp':'Chưa có kết quả iSpring'}</p>
-    </div>`;
-    if(pageEl) pageEl.innerHTML='';
-    return;
-  }
-
-  /* ── Phân trang ── */
-  const total      = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total/_ISP_RES_PER_PAGE));
-  if(_ispResPage>totalPages) _ispResPage=totalPages;
-  const pageData   = filtered.slice((_ispResPage-1)*_ISP_RES_PER_PAGE, _ispResPage*_ISP_RES_PER_PAGE);
-
-  listEl.innerHTML=pageData.map(r=>{
-    let sc = parseFloat(r.score||0);
-    /* Cap score phòng dữ liệu cũ sai */
-    if(sc > 100) sc = parseFloat((sc / Math.pow(10, Math.floor(Math.log10(sc/100)+1))).toFixed(1));
-    sc = Math.min(100, Math.max(0, sc));
-    const color = sc>=85?'var(--success)':sc>=70?'var(--primary)':sc>=50?'var(--warning)':'var(--danger)';
-    const name  = String(r.testName||'').replace(/\[iSpring\]\s*/i,'').trim();
-    return`<div class="result-row animate__animated animate__fadeInUp">
-      <div>
-        <div style="font-weight:700;font-size:.82rem">${nbEsc(r.student||'Ẩn danh')}</div>
-        <div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div>
-      </div>
-      <div style="font-size:.75rem;opacity:.65;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nbEsc(name)}</div>
-      <div style="font-weight:800;color:${color};white-space:nowrap">${sc.toFixed(0)}<small style="font-size:.7em;opacity:.55">/100</small></div>
-    </div>`;
-  }).join('');
-
-  /* ── Pagination controls ── */
-  if(pageEl){
-    const info=`<span style="font-size:.72rem;opacity:.45">${total} kết quả${nameFilter||scoreFilter!=='all'?' (đã lọc)':''}</span>`;
-    if(totalPages<=1){
-      pageEl.innerHTML=info;
-    } else {
-      const prevSt = _ispResPage<=1           ?'opacity:.3;pointer-events:none':'';
-      const nextSt = _ispResPage>=totalPages   ?'opacity:.3;pointer-events:none':'';
-      pageEl.innerHTML=`
-        ${info}
-        <div style="display:flex;align-items:center;gap:4px">
-          <button class="btn btn-outline" style="padding:5px 11px;font-size:.82rem;${prevSt}" onclick="_ispResPage--;renderIspringResults()">‹</button>
-          <span style="font-size:.75rem;min-width:64px;text-align:center;opacity:.65">${_ispResPage} / ${totalPages}</span>
-          <button class="btn btn-outline" style="padding:5px 11px;font-size:.82rem;${nextSt}" onclick="_ispResPage++;renderIspringResults()">›</button>
-        </div>`;
-    }
-  }
-}
-
-
-async function loadIspring(){
-  try{
-    const data = await callAPI('getIspring');
-    if(Array.isArray(data)){
-      ispringList = data;
-      document.getElementById('cIspring').innerText = ispringList.length;
-      renderIspringList();
-    }
-  }catch(e){ log('Lỗi loadIspring: '+e.message,'err'); }
-}
-
-function renderIspringList(){
-  const el  = document.getElementById('ispringList');
-  const q   = (document.getElementById('ispringSearch')?.value||'').toLowerCase();
-  const filtered = ispringList.filter(item=>(item.name||'').toLowerCase().includes(q));
-  document.getElementById('ispringCount').innerText = ispringList.length+' bài';
-  if(!filtered.length){
-    const emptyIcon = ispringList.length
-      ? `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`
-      : `<svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-2.18c.07-.44.18-.86.18-1.3C18 2.55 15.89.5 13.5.5c-1.3 0-2.51.58-3.36 1.5L9 3.17l-1.15-1.17C6.99 1.06 5.79.5 4.5.5 2.08.5 0 2.55 0 4.7c0 .44.1.86.18 1.3H0v2h20V6z"/></svg>`;
-    el.innerHTML=`<div class="empty-state">${emptyIcon}<p>${ispringList.length?'Không tìm thấy kết quả phù hợp.':'Chưa có bài iSpring nào.<br>Thêm từ form bên phải.'}</p></div>`;
-    return;
-  }
-  el.innerHTML = filtered.map((item,i) => {
-    item.name     = item.name     ||item.nameIPS    ||'?';
-    item.path     = item.path     ||item.pathIPS    ||'';
-    item.duration = item.duration ||item.durationIPS||'';
-    item.subject  = item.subject  ||item.typeIPS    ||'';
-    item.desc     = item.desc     ||item.descriptionIPS||'';
-    const eyeSvg  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>`;
-    const eyeOffSvg=`<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zm5.53 5.53l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2z"/></svg>`;
-    return `
-    <div class="ispring-card animate__animated animate__fadeInUp" style="animation-delay:${i*.04}s">
-      <div style="min-width:0;flex:1">
-        <h4>
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
-          ${nbEsc(item.name)}
-          ${item.visible!==false
-            ?`<span class="badge">${eyeSvg} Hiện</span>`
-            :`<span class="badge" style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.3);border-color:rgba(255,255,255,.1)">${eyeOffSvg} Ẩn</span>`}
-        </h4>
-        <p>${nbEsc(item.path)}</p>
-        ${item.desc?`<p style="color:rgba(255,255,255,.4);margin-top:2px">${nbEsc(item.desc)}</p>`:''}
-        <div class="dash-ispring-meta">
-          ${item.duration?`<span><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg> ${item.duration}p</span>`:''}
-          ${item.subject?`<span><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5 1.35-.85 3.8-1.5 5.5-1.5 1.65 0 3.35.3 4.75 1.05.1.05.15.05.25.05.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1z"/></svg> ${item.subject}</span>`:''}
-        </div>
-      </div>
-      <div class="dash-card-actions">
-        <button class="btn btn-outline" onclick="previewIspring(${i})" title="Preview">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 12.5c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
-        </button>
-        <button class="btn btn-outline" onclick="toggleIspringVisible(${i})" title="Ẩn/Hiện">
-          ${item.visible!==false ? eyeOffSvg : eyeSvg}
-        </button>
-        <button class="btn btn-outline dash-btn-danger" onclick="deleteIspring(${i})">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-async function addIspring(){
-  const name=document.getElementById('iName').value.trim();
-  const path=document.getElementById('iPath').value.trim();
-  const desc=document.getElementById('iDesc').value.trim();
-  const duration=document.getElementById('iDuration').value;
-  const subject=document.getElementById('iSubject').value.trim();
-  const visible=document.getElementById('visToggle').classList.contains('on');
-  if(!name) return nbAlert('warning','Thiếu tên','Vui lòng nhập tên bài thi!');
-  if(!path) return nbAlert('warning','Thiếu đường dẫn','VD: quizzes/FullIOT1GS6LV1/index.html');
-  nbLoading('Đang lưu...');
-  const res=await postAPI({action:'addIspring',name,path,desc,duration,subject,visible});
-  nbClose();
-  if(res&&res.status==='success'){
-    ['iName','iPath','iDesc','iSubject'].forEach(id=>document.getElementById(id).value='');
-    document.getElementById('iDuration').value=45;
-    document.getElementById('visToggle').classList.add('on');
-    await loadIspring();
-    nbToast('success',`Đã thêm "${name}" thành công!`);
-  }else{
-    nbAlert('error','Lỗi!','Không thể lưu. Kiểm tra lại AppScript.');
-  }
-}
-
-async function deleteIspring(idx){
-  const item=ispringList[idx];
-  const r=await nbConfirm({title:'Xóa bài iSpring?',text:`"${item.name}"`,icon:'warning',confirmButtonColor:'#ef4444',confirmButtonText:'XÓA'});
-  if(!r.isConfirmed) return;
-  nbLoading('Đang xóa...');
-  await postAPI({action:'deleteIspring',id:item.id});
-  await loadIspring();
-  nbClose();
-  nbToast('success','Đã xóa!');
-}
-
-async function toggleIspringVisible(idx){
-  const item=ispringList[idx];
-  await postAPI({action:'updateIspring',id:item.id,visible:item.visible===false});
-  await loadIspring();
-}
-
-function previewIspring(idx){
-  const item=ispringList[idx];
-  document.getElementById('modalTitle').innerText=item.name;
-  document.getElementById('modalPath').innerText=item.path;
-  document.getElementById('ispringFrame').src=item.path;
-  document.getElementById('ispringModal').style.display='flex';
-}
-function closeIspringModal(){
-  document.getElementById('ispringModal').style.display='none';
-  document.getElementById('ispringFrame').src='';
-}
-
-async function viewIspringResults(){
-  nbLoading('Đang tải...');
-  const data=await callAPI('getIspringResults');
-  nbClose();
-  if(!data||!Array.isArray(data)||!data.length){ nbAlert('info','Chưa có kết quả iSpring',''); return; }
-  const rows=data.slice(-60).reverse().map(r=>`
-    <tr style="border-bottom:1px solid rgba(255,255,255,.06)">
-      <td style="padding:8px 6px;font-weight:700">${nbEsc(r.student)}</td>
-      <td style="padding:8px 6px;opacity:.7;font-size:.8rem">${nbEsc(String(r.testName||'').replace('[iSpring] ',''))}</td>
-      <td style="padding:8px 6px;color:var(--ispring);font-weight:800">${r.score}đ</td>
-      <td style="padding:8px 6px;opacity:.5;font-size:.72rem">${nbFmtTime(r.time)}</td>
-    </tr>`).join('');
-  Swal.fire({
-    title:'Kết quả bài thi iSpring',
-    html:`<div style="overflow-x:auto"><table style="width:100%;color:#f1f5f9;font-size:.82rem;border-collapse:collapse">
-      <thead><tr style="color:var(--ispring);border-bottom:2px solid rgba(249,115,22,.3)">
-        <th style="padding:8px 6px;text-align:left">Học sinh</th>
-        <th style="padding:8px 6px;text-align:left">Bài thi</th>
-        <th style="padding:8px 6px;text-align:left">Điểm</th>
-        <th style="padding:8px 6px;text-align:left">Thời gian</th>
-      </tr></thead><tbody>${rows}</tbody></table></div>`,
-    width:'700px',background:'rgba(10,15,30,0.97)',color:'#f1f5f9',showCloseButton:true,showConfirmButton:false
+  document.addEventListener('DOMContentLoaded', function(){
+    const u = nb.json('currentUser',null);
+    const top = document.getElementById('dbTopUser');
+    if(top && u) top.textContent = u.name || u.username || '';
   });
-}
-
-async function testIspringPath(){
-  const path=document.getElementById('testPath').value.trim();
-  const result=document.getElementById('pathTestResult');
-  if(!path) return;
-  result.innerHTML=`<span class="spin-anim" style="display:inline-block;font-size:.8rem">↻</span> Đang kiểm tra...`;
-  try{
-    const resp=await fetch(path,{method:'HEAD'});
-    result.innerHTML=resp.ok
-      ?`<span style="color:var(--success)">✓ OK! File tồn tại (${resp.status})</span>`
-      :`<span style="color:var(--danger)">✗ Lỗi ${resp.status} — Kiểm tra lại đường dẫn</span>`;
-  }catch(e){
-    result.innerHTML=`<span style="color:var(--warning)">⚠ Không kiểm tra được qua HEAD. Thử nút Preview.</span>`;
-  }
-}
-
-/* ─── HỆ THỐNG ─── */
-async function loadData(manual=false){
-  /* Safe wrappers — phòng trường hợp nbDashboardInit chưa kịp chạy */
-  const _status = (t,m) => typeof setStatus==='function' ? setStatus(t,m) : null;
-  const _log    = (m,t) => typeof log==='function' ? log(m,t) : null;
-  const _chart  = (d)   => typeof nbRenderDashChart==='function' ? nbRenderDashChart(d) : null;
-
-  _status('loading','Đang tải...');
-  const reloadIcon=document.getElementById('reloadIcon');
-  if(reloadIcon) reloadIcon.classList.add('spin-anim');
-  document.getElementById('testList').innerHTML   = Array(3).fill('<div class="skeleton"></div>').join('');
-  document.getElementById('resultList').innerHTML = Array(3).fill('<div class="skeleton"></div>').join('');
-  document.getElementById('pendingList').innerHTML= '<div class="skeleton"></div>';
-  try{
-    /* Tải cả 4 nguồn dữ liệu song song — bao gồm iSpring results */
-    const[tData,rData,pData,ispResData]=await Promise.all([
-      callAPI('getTests'), callAPI('getResults'),
-      callAPI('getPendingUsers'), callAPI('getIspringResults')
-    ]);
-    if(tData){ tests=tData; renderTests(); }
-    if(rData){
-      results=rData; window._nbResults=results; window.results=results;
-      renderResults();
-    }
-    if(pData){ pending=pData; window._nbPending=pending; window.pending=pending; renderPending(); }
-
-    /* Lưu iSpring results để auto-refresh dùng */
-    window._nbIspResults = Array.isArray(ispResData)?ispResData:[];
-
-    document.getElementById('cTests').innerText   = tests.length;
-    document.getElementById('cPending').innerText = pending.length;
-    /* cResults = tổng bài hệ thống + iSpring */
-    const totalResults = results.length + (window._nbIspResults||[]).length;
-    document.getElementById('cResults').innerText = totalResults;
-
-    /* Chart dùng cả 2 loại kết quả */
-    const combined=[...results,...(window._nbIspResults||[])];
-    _chart(combined);
-
-    _status('ok','Trực tuyến');
-    _log('Tải dữ liệu thành công','ok');
-    const syncBadge=document.getElementById('lastSyncBadge');
-    if(syncBadge){
-      const now=new Date();
-      syncBadge.textContent=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-    }
-    if(manual){
-      nbToast('success','Đã đồng bộ dữ liệu!');
-      if(typeof window._nbResetCountdown === 'function') window._nbResetCountdown();
-    }
-  }catch(e){
-    _status('err','Lỗi kết nối');
-    _log('loadData error: '+e.message,'err');
-  }finally{
-    if(reloadIcon) reloadIcon.classList.remove('spin-anim');
-  }
-}
-
-function renderTests(data=tests){
-  const el=document.getElementById('testList');
-  if(!data.length){el.innerHTML='<div class="empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg><p>Chưa có đề thi nào</p></div>'; return;}
-  el.innerHTML=data.map(t=>`
-    <div class="test-card animate__animated animate__fadeInUp">
-      <div>
-        <h4>${nbEsc(t.name)}</h4>
-        <p>Mã: ${t.id} &bull; ${nbEsc(t.desc||'Không có mô tả')}</p>
-      </div>
-      <div class="dash-card-actions">
-        <button class="btn btn-outline" onclick="goTo('add-question.html','${t.id}','${t.name.replace(/'/g,"\\'")}')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-        </button>
-        <button class="btn btn-outline" onclick="goTo('question-list.html','${t.id}','${t.name.replace(/'/g,"\\'")}')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
-        </button>
-        <button class="btn btn-outline dash-btn-danger" onclick="deleteTest('${t.id}','${t.name.replace(/'/g,"\\'")}')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-        </button>
-      </div>
-    </div>`).join('');
-}
-
-function renderResults(){
-  const el      = document.getElementById('resultList');
-  const pageEl  = document.getElementById('resPagination');
-  const qsEl    = document.getElementById('resQuickStats');
-  if(!el) return;
-
-  /* ── Quick stats (toàn bộ, không lọc) ── */
-  if(results.length && qsEl){
-    qsEl.style.display='grid';
-    const scores = results.map(r=>parseFloat(r.score||0));
-    const isIspArr = results.map(r=>(r.testName||'').toLowerCase().includes('ispring'));
-    /* Chuẩn hoá về thang /100 để tính trung bình chung:
-       - iSpring: đã là /100
-       - Sys /10 (score ≤ 10): *10
-       - Sys /100 (score > 10): giữ nguyên */
-    const normed = scores.map((s,i)=>{
-      if(isIspArr[i]) return s;          /* iSpring: đã /100 */
-      return s > 10 ? s : s * 10;       /* sys: chuẩn hoá về /100 */
-    });
-    const avg  = normed.reduce((a,b)=>a+b,0)/normed.length;
-    const best = Math.max(...normed);
-    document.getElementById('rqsTotal').textContent = results.length;
-    document.getElementById('rqsAvg').textContent   = avg.toFixed(1)+'%';
-    document.getElementById('rqsHigh').textContent  = best.toFixed(1).replace(/\.0$/,'')+'%';
-  }
-
-  if(!results.length){
-    el.innerHTML='<div class="empty-state"><svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg><p>Chưa có dữ liệu</p></div>';
-    if(pageEl) pageEl.innerHTML='';
-    return;
-  }
-
-  /* ── Bộ lọc ── */
-  const search      = (document.getElementById('resSearchInput')?.value||'').toLowerCase().trim();
-  const scoreFilter = document.getElementById('resScoreFilter')?.value||'all';
-
-  let filtered = [...results].reverse(); /* mới nhất trước */
-  if(search){
-    filtered = filtered.filter(r=>
-      String(r.student||'').toLowerCase().includes(search)||
-      String(r.testName||'').toLowerCase().includes(search)
-    );
-  }
-  if(scoreFilter!=='all'){
-    filtered = filtered.filter(r=>{
-      const sc   = parseFloat(r.score||0);
-      const isIsp= (r.testName||'').toLowerCase().includes('ispring');
-      /* Chuẩn hoá về % để lọc thống nhất */
-      const pct = isIsp ? sc : (sc > 10 ? sc : sc * 10);
-      if(scoreFilter==='hi')  return pct>=80;
-      if(scoreFilter==='mid') return pct>=50&&pct<80;
-      if(scoreFilter==='low') return pct<50;
-      return true;
-    });
-  }
-
-  /* ── Phân trang ── */
-  const total      = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(total/_RES_PER_PAGE));
-  if(_resPage>totalPages) _resPage=totalPages;
-  const pageData   = filtered.slice((_resPage-1)*_RES_PER_PAGE, _resPage*_RES_PER_PAGE);
-
-  if(!pageData.length){
-    el.innerHTML=`<div class="empty-state"><p style="opacity:.5;font-size:.78rem">Không tìm thấy kết quả phù hợp</p></div>`;
-    if(pageEl) pageEl.innerHTML='';
-    return;
-  }
-
-  el.innerHTML=pageData.map(r=>{
-    const rawScore = parseFloat(r.score||0);
-    const isIsp    = (r.testName||'').toLowerCase().includes('ispring');
-    let score, color, dispScore;
-
-    if(isIsp){
-      /* Cap iSpring score — phòng dữ liệu cũ bị lưu sai (vd: 1900 thay vì 19) */
-      score = rawScore > 100
-        ? parseFloat((rawScore / Math.pow(10, Math.floor(Math.log10(rawScore/100)+1))).toFixed(1))
-        : rawScore;
-      score = Math.min(100, Math.max(0, score));
-      color = score>=85?'var(--success)':score>=60?'var(--primary)':'var(--danger)';
-      dispScore = score.toFixed(0)+'<small style="font-size:.7em;opacity:.55">/100</small>';
-    } else {
-      /* Hiển thị theo thang gốc — không chia về /10, khớp với AppScript */
-      const rawMax = rawScore > 10 ? 100 : 10;
-      score = rawScore;
-      color = rawScore > 10
-        ? (rawScore>=80?'var(--success)':rawScore>=50?'var(--primary)':'var(--danger)')
-        : (rawScore>=8 ?'var(--success)':rawScore>=5 ?'var(--primary)':'var(--danger)');
-      dispScore = (rawScore > 10 ? Math.round(rawScore) : rawScore.toFixed(1).replace(/\.0$/,''))
-        +'<small style="font-size:.7em;opacity:.55">/'+rawMax+'</small>';
-    }
-    return`<div class="result-row">
-      <div><div style="font-weight:600">${nbEsc(r.student||'Ẩn danh')}</div><div style="font-size:.65rem;opacity:.4">${nbFmtTime(r.time)}</div></div>
-      <div style="opacity:.7">${nbEsc(r.testName||'Đề thi')}</div>
-      <div style="font-weight:800;color:${color}">${dispScore}</div>
-    </div>`;
-  }).join('');
-
-  /* ── Pagination controls ── */
-  if(pageEl){
-    const info = `<span style="font-size:.72rem;opacity:.45">${total} kết quả${search||scoreFilter!=='all'?' (đã lọc)':''}</span>`;
-    if(totalPages<=1){
-      pageEl.innerHTML=info;
-    } else {
-      const prevSt = _resPage<=1        ?'opacity:.3;pointer-events:none':'';
-      const nextSt = _resPage>=totalPages?'opacity:.3;pointer-events:none':'';
-      pageEl.innerHTML=`
-        ${info}
-        <div style="display:flex;align-items:center;gap:4px">
-          <button class="btn btn-outline" style="padding:5px 11px;font-size:.82rem;${prevSt}" onclick="_resPage--;renderResults()">‹</button>
-          <span style="font-size:.75rem;min-width:64px;text-align:center;opacity:.65">${_resPage} / ${totalPages}</span>
-          <button class="btn btn-outline" style="padding:5px 11px;font-size:.82rem;${nextSt}" onclick="_resPage++;renderResults()">›</button>
-        </div>`;
-    }
-  }
-}
-
-function renderPending(){
-  const el=document.getElementById('pendingList');
-  if(!pending.length){el.innerHTML='<div style="text-align:center;padding:20px;opacity:.4;font-size:.8rem">Không có yêu cầu mới</div>'; return;}
-  el.innerHTML=pending.map(u=>`
-    <div class="user-card animate__animated animate__fadeInRight">
-      <div style="min-width:0">
-        <div style="font-weight:800;font-size:.85rem">${nbEsc(u.name)}</div>
-        <div style="font-size:.7rem;opacity:.7">${nbEsc(u.username)} | ${nbEsc(u.class||'N/A')}</div>
-      </div>
-      <div class="dash-card-actions">
-        <button class="btn" style="padding:6px 10px;background:var(--success);color:#000" onclick="handleUser('${u.username}','approve')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-        </button>
-        <button class="btn btn-outline dash-btn-danger" style="padding:6px 10px" onclick="handleUser('${u.username}','reject')">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-        </button>
-      </div>
-    </div>`).join('');
-}
-
-async function addTest(){
-  const name=document.getElementById('newName').value.trim();
-  const desc=document.getElementById('newDesc').value.trim();
-  const dur=Math.max(1, parseInt(document.getElementById('newDur').value,10) || 45);
-  if(!name) return nbAlert('error','Lỗi','Vui lòng nhập tên đề thi!');
-  nbLoading('Đang khởi tạo...');
-  const res=await postAPI({action:'createTest',name,desc,duration:dur});
-  nbClose();
-  if(res&&res.status==='success'){
-    nbToast('success','Đã tạo đề thi!');
-    loadData();
-    document.getElementById('newName').value='';
-    document.getElementById('newDesc').value='';
-    document.getElementById('newDur').value='45';
-  }else{
-    nbAlert('error','Lỗi tạo đề thi','Vui lòng thử lại!');
-  }
-}
-
-async function deleteTest(id,name){
-  const r=await nbConfirm({title:'Xóa đề thi?',text:`"${name}"`,icon:'warning',confirmButtonColor:'#ef4444'});
-  if(!r.isConfirmed) return;
-  nbLoading('Đang xóa...');
-  await postAPI({action:'deleteTest',testId:id});
-  nbClose();
-  nbToast('success','Đã xóa đề thi!');
-  loadData();
-}
-
-async function handleUser(username, act){
-  nbLoading('Đang xử lý...');
-  await postAPI({action:'handleUserRequest', username: username, status: act==='approve'?'approved':'rejected'});
-  nbClose();
-  nbToast(act==='approve'?'success':'info',act==='approve'?'Đã duyệt tài khoản!':'Đã từ chối!');
-  loadData();
-}
-
-function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.toggle('active',c.id===`tab-${tab}`));
-  /* Tự load kết quả iSpring khi vào tab lần đầu */
-  if(tab==='ispring' && !ispringResults.length) loadIspringResults();
-}
-function filterTests(){
-  const q=document.getElementById('searchInput').value.toLowerCase();
-  renderTests(tests.filter(t=>t.name.toLowerCase().includes(q)));
-}
-function goTo(page,id,name){
-  localStorage.setItem('currentTest',JSON.stringify({id,name}));
-  location.href=page;
-}
 </script>
 </body>
 </html>

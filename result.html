@@ -11,47 +11,55 @@
 </head>
 <body class="res-body">
 
-<!-- ── Thẻ kết quả ── -->
 <div class="res-card animate__animated animate__zoomIn">
 
   <!-- Mode badge -->
   <div class="res-mode-badge" id="resModeBadge"></div>
 
-  <!-- Trophy & tiêu đề -->
-  <span class="res-trophy" id="resTrophy">🏆</span>
+  <!-- Trophy -->
+  <span class="res-trophy animate__animated animate__bounceIn animate__delay-1s" id="resTrophy">🏆</span>
   <h2 class="res-title" id="resTitle">HOÀN THÀNH!</h2>
   <p class="res-subtitle" id="resSubtitle">KẾT QUẢ CHUYẾN DU HÀNH</p>
 
-  <!-- Vòng điểm số -->
+  <!-- Score ring (SVG) -->
   <div class="res-score-ring animate__animated animate__bounceIn animate__delay-1s">
-    <div class="res-score-val" id="resScoreVal">0</div>
-    <div class="res-score-lbl" id="resScoreLbl">ĐIỂM SỐ</div>
+    <svg viewBox="0 0 120 120">
+      <circle class="res-score-ring-bg" cx="60" cy="60" r="50"/>
+      <!-- Arc drawn by JS -->
+      <path id="res-ring-arc" fill="none" stroke="var(--primary)" stroke-width="8"
+            stroke-linecap="round" stroke-dasharray="0 314.16"
+            style="transition:stroke-dasharray 1.5s ease"/>
+    </svg>
+    <div class="res-score-inner">
+      <div class="res-score-val" id="resScoreVal">0</div>
+      <div class="res-score-lbl" id="resScoreLbl">/ 10 điểm</div>
+    </div>
   </div>
 
-  <!-- Thông tin thí sinh -->
+  <!-- Info rows -->
   <div class="res-info">
     <div class="res-row">
       <div class="res-row-label">
         <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
         Thí sinh
       </div>
-      <div class="res-row-val" id="resName">...</div>
+      <div class="res-row-val" id="resName">—</div>
     </div>
     <div class="res-row">
       <div class="res-row-label">
         <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
         Trường / Lớp
       </div>
-      <div class="res-row-val" id="resSchool">...</div>
+      <div class="res-row-val" id="resSchool">—</div>
     </div>
     <div class="res-row" id="resCorrectRow">
-      <div class="res-row-label res-row-correct">
+      <div class="res-row-label">
         <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
-        Câu đúng
+        Số câu đúng
       </div>
-      <div class="res-row-val res-correct-val" id="resCorrect">0/0</div>
+      <div class="res-row-val res-correct-val" id="resCorrect">—</div>
     </div>
-    <!-- iSpring: Status row (shown instead of "Câu đúng" for ispring) -->
+    <!-- iSpring only -->
     <div class="res-row" id="resStatusRow" style="display:none">
       <div class="res-row-label">
         <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1z"/></svg>
@@ -64,40 +72,49 @@
         <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
         Bài thi
       </div>
-      <div class="res-row-val res-testname-val" id="resTestName">...</div>
+      <div class="res-row-val res-testname-val" id="resTestName">—</div>
     </div>
   </div>
 
-  <!-- Trạng thái lưu -->
+  <!-- Chart area -->
+  <div class="res-chart-area-wrap">
+    <div id="resChartArea"></div>
+  </div>
+
+  <!-- Sync status -->
   <div class="res-sync" id="resSyncStatus">
-    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
     <span id="syncText">Đã lưu kết quả</span>
   </div>
 
-  <!-- Nút hành động -->
+  <!-- Action buttons -->
   <div class="res-btns">
     <button class="res-btn res-btn-review" id="resBtnReview" onclick="nbOpenReview()">
       <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
       XEM LẠI BÀI LÀM
     </button>
     <button class="res-btn res-btn-main" onclick="location.href='select.html'">
-      <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M19.07 4.93a1 1 0 0 0-1.41 0L4.93 17.66a1 1 0 1 0 1.41 1.41L19.07 6.34a1 1 0 0 0 0-1.41z"/></svg>
       VỀ TRANG BÀI THI
     </button>
     <button class="res-btn res-btn-outline" onclick="location.href='history.html'">
       <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
       LỊCH SỬ LÀM BÀI
     </button>
+    <button class="res-btn" onclick="location.href='battle.html'" style="background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.2);color:#a78bfa">
+      <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      PHÒNG THI ĐẤU
+    </button>
   </div>
 
 </div>
 
-<!-- ── Modal xem lại bài ── -->
-<div class="res-modal" id="resModal">
+<!-- Review modal -->
+<div class="res-modal" id="resModal" onclick="if(event.target===this)nbCloseReview()">
   <div class="res-modal-box">
     <div class="res-modal-head">
       <div class="res-modal-title">
-        <svg viewBox="0 0 24 24"><path d="M20 6H4v2h16V6zm-2 4H6v2h12v-2zm2 4H4v2h16v-2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
         Chi tiết bài làm
       </div>
       <button class="res-modal-close" onclick="nbCloseReview()">
@@ -105,151 +122,75 @@
       </button>
     </div>
     <div class="res-chips" id="resChips">
-      <div class="res-chip res-chip-ok">—<small>Đúng</small></div>
-      <div class="res-chip res-chip-err">—<small>Sai</small></div>
-      <div class="res-chip res-chip-skip">—<small>Bỏ qua</small></div>
+      <div class="res-chip ok">—<small>Đúng</small></div>
+      <div class="res-chip err">—<small>Sai</small></div>
+      <div class="res-chip skip">—<small>Bỏ qua</small></div>
     </div>
     <div class="res-q-list" id="resQList">
       <div class="res-empty">
         <svg viewBox="0 0 24 24" style="animation:spin .8s linear infinite">
-          <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
+          <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8z"/>
         </svg>
-        <p>Đang chuẩn bị dữ liệu...</p>
+        <p>Đang tải...</p>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  document.getElementById('resModal').addEventListener('click',function(e){
-    if(e.target===this) nbCloseReview();
-  });
-
-  document.addEventListener('DOMContentLoaded',function(){
-    /* ── Check URL params từ nebula-bridge.js redirect ──
-       nebula-bridge.js trong quiz redirect về:
-       result.html?nb_isp=1&score=80&correct=36&total=45&status=passed
-       Khi có params này → save to GAS + localStorage ngay lập tức.   */
-    (function(){
-      const up = new URLSearchParams(location.search);
-      if(up.get('nb_isp') !== '1') return;
-      const sc  = Math.min(100,Math.max(0,parseInt(up.get('score')  ||'0')||0));
-      const cor = parseInt(up.get('correct')||'0')||0;
-      const tot = parseInt(up.get('total')  ||'0')||0;
-      const st  = up.get('status')||'completed';
-      const tn  = localStorage.getItem('currentTestName')||localStorage.getItem('currentIspringName')||'Bài thi iSpring';
-      const sN  = localStorage.getItem('studentName')||'';
-      const sSc = (localStorage.getItem('schoolName')||'').replace(/^'+/,'');
-      const sCl = (localStorage.getItem('className')||'').replace(/^'+/,'');
-      const totalStr = cor>0&&tot>0 ? cor+'/'+tot : sc+'/100';
-      /* Ghi vào localStorage */
-      localStorage.setItem('lastScore',     sc);
-      localStorage.setItem('quizMode',      'ispring');
-      localStorage.setItem('quizTotalScore','100');
-      localStorage.setItem('ispringStatus', st);
-      localStorage.setItem('correctCount',  totalStr);
-      localStorage.setItem('ispCorrect',    String(cor));
-      localStorage.setItem('ispTotal',      String(tot));
-      /* POST lên GAS — CHỈ khi player.html chưa lưu.
-         player.html set 'ispSavedByPlayer'='1' trước khi redirect.
-         Nếu cờ đó tồn tại → bỏ qua, tránh lưu trùng.            */
-      const alreadySaved = localStorage.getItem('ispSavedByPlayer') === '1';
-      localStorage.removeItem('ispSavedByPlayer'); /* xóa cờ ngay */
-      if(!alreadySaved){
-        const tnFull = '[iSpring] '+tn.replace(/^\[iSpring\]\s*/i,'');
-        try{
-          fetch(window.API_URL||window.SCRIPT_URL||'', {
-            method:'POST', mode:'no-cors',
-            headers:{'Content-Type':'text/plain;charset=utf-8'},
-            body: JSON.stringify({
-              action:'submitResult', student:sN, school:sSc,
-              testName:tnFull, score:sc, total:totalStr,
-              answers: JSON.stringify({
-                status:st, source:'nebula-bridge', score:sc,
-                correct:cor, totalQuestions:tot,
-                student:sN, school:sSc, class:sCl,
-                timestamp:new Date().toISOString()
-              })
-            })
-          });
-        }catch(e){}
-      }
-      /* Xoá URL params để tránh re-submit khi reload */
-      history.replaceState(null,'',location.pathname);
-    })();
-
-    const quizMode    = localStorage.getItem('quizMode') || 'test';
-    const isIspring   = quizMode === 'ispring';
-    const totalScore  = parseFloat(localStorage.getItem('quizTotalScore') || (isIspring?'100':'10')) || (isIspring?100:10);
-    const score       = parseFloat(localStorage.getItem('lastScore') || '0');
-    const ispStatus   = localStorage.getItem('ispringStatus') || 'completed';
-    const testName    = localStorage.getItem('currentTestName') || 'Bài thi';
-    const sName       = localStorage.getItem('studentName') || '';
-    const sSchool     = (localStorage.getItem('schoolName')||'').replace(/^'+/,'');
-    const sCls        = (localStorage.getItem('className')||'').replace(/^'+/,'');
-    const correct     = localStorage.getItem('correctCount') || '0/0';
-
-    /* ── Set score ring ── */
-    const lblEl = document.getElementById('resScoreLbl');
-    if(lblEl) lblEl.textContent = `/ ${totalScore % 1 === 0 ? totalScore.toFixed(0) : totalScore} ĐIỂM`;
-
-    /* ── Set info rows ── */
-    const _set = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-    _set('resName',    sName);
-    _set('resSchool',  sSchool + (sCls?' · '+sCls:''));
-    _set('resTestName', testName.replace(/^\[iSpring\]\s*/i,''));
-
-    /* ── iSpring mode ── */
-    const modeBadge = document.getElementById('resModeBadge');
-    if(isIspring){
-      /* Show iSpring badge */
-      if(modeBadge) modeBadge.innerHTML = `<span class="res-isp-badge"><svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg> iSpring</span>`;
-      /* Show status row + correct/total; hide default correct row */
-      const corrRow = document.getElementById('resCorrectRow');
-      const statRow = document.getElementById('resStatusRow');
-      const statEl  = document.getElementById('resStatus');
-      if(corrRow) corrRow.style.display = 'none';
-      if(statRow) statRow.style.display = '';
-      const stMap = {passed:'✓ Đạt',completed:'✓ Hoàn thành',failed:'✗ Chưa đạt',incomplete:'⚠ Chưa xong'};
-      const stColor= ['passed','completed'].includes(ispStatus)?'var(--accent)':'var(--danger)';
-      if(statEl){ statEl.textContent=stMap[ispStatus]||'Hoàn thành'; statEl.style.color=stColor; }
-      /* Show correct/total count if we have it */
-      const ispCorrect = parseInt(localStorage.getItem('ispCorrect')||'0')||0;
-      const ispTotal   = parseInt(localStorage.getItem('ispTotal')||'0')||0;
-      if(corrRow&&ispCorrect>0&&ispTotal>0){
-        corrRow.style.display='';
-        const corrEl=document.getElementById('resCorrect');
-        if(corrEl){ corrEl.textContent=ispCorrect+'/'+ispTotal+' câu'; corrEl.style.color='var(--accent)'; }
-      }
-      /* Hide review button for iSpring */
-      const reviewBtn = document.getElementById('resBtnReview');
-      if(reviewBtn) reviewBtn.style.display = 'none';
-      /* Subtitle */
-      const subEl = document.getElementById('resSubtitle');
-      if(subEl) subEl.textContent = 'KẾT QUẢ BÀI THI iSPRING';
-      /* Sync status */
-      const syncEl = document.getElementById('resSyncStatus');
-      if(syncEl) syncEl.innerHTML = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> <span style="color:var(--accent)">Đã lưu kết quả iSpring</span>`;
-    } else {
-      _set('resCorrect', correct);
-      if(modeBadge){
-        if(quizMode==='train')
-          modeBadge.innerHTML=`<span class="res-mode-sys res-mode-train"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg> LUYỆN TẬP</span>`;
-        else
-          modeBadge.innerHTML=`<span class="res-mode-sys res-mode-test"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2z"/></svg> KIỂM TRA</span>`;
-      }
-      const syncEl = document.getElementById('resSyncStatus');
-      if(quizMode==='train'){
-        if(syncEl) syncEl.innerHTML=`<svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg> <span style="color:var(--warning)">Chế độ Luyện tập — Không lưu kết quả</span>`;
-      } else {
-        if(syncEl) syncEl.innerHTML=`<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> <span style="color:var(--accent)">Đã lưu kết quả</span>`;
-      }
+document.addEventListener('DOMContentLoaded', function(){
+  /* Handle iSpring redirect params */
+  (function(){
+    const up = new URLSearchParams(location.search);
+    if(up.get('nb_isp') !== '1') return;
+    const sc  = Math.min(100,Math.max(0,parseInt(up.get('score')||'0')||0));
+    const cor = parseInt(up.get('correct')||'0')||0;
+    const tot = parseInt(up.get('total')||'0')||0;
+    const st  = up.get('status')||'completed';
+    const tn  = localStorage.getItem('currentTestName')||localStorage.getItem('currentIspringName')||'Bài thi iSpring';
+    localStorage.setItem('lastScore',      sc);
+    localStorage.setItem('quizMode',       'ispring');
+    localStorage.setItem('quizTotalScore', '100');
+    localStorage.setItem('ispringStatus',  st);
+    localStorage.setItem('correctCount',   cor>0&&tot>0?cor+'/'+tot:sc+'/100');
+    localStorage.setItem('ispCorrect',     String(cor));
+    localStorage.setItem('ispTotal',       String(tot));
+    const already = localStorage.getItem('ispSavedByPlayer')==='1';
+    localStorage.removeItem('ispSavedByPlayer');
+    if(!already && window.SCRIPT_URL){
+      const tnFull='[iSpring] '+tn.replace(/^\[iSpring\]\s*/i,'');
+      try{
+        fetch(window.SCRIPT_URL,{method:'POST',mode:'no-cors',
+          headers:{'Content-Type':'text/plain;charset=utf-8'},
+          body:JSON.stringify({action:'submitResult',
+            student:localStorage.getItem('studentName')||'',
+            school:(localStorage.getItem('schoolName')||'').replace(/^'+/,''),
+            class:(localStorage.getItem('className')||'').replace(/^'+/,''),
+            testName:tnFull,score:sc,
+            total:cor>0&&tot>0?cor+'/'+tot:sc+'/100',
+            answers:JSON.stringify({status:st,source:'nebula-bridge',score:sc,correct:cor,total:tot})
+          })
+        });
+      }catch(e){}
     }
+    history.replaceState(null,'',location.pathname);
+  })();
 
-    /* ── Init result (score ring animation + review logic) ── */
-    window._resultInitDone = true;
-    if(typeof nbResultInit==='function') nbResultInit();
-  });
+  /* Set sync status text */
+  const mode = localStorage.getItem('quizMode')||'test';
+  const sync = document.getElementById('resSyncStatus');
+  if(sync){
+    if(mode==='train'){
+      sync.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></svg> <span style="color:#fbbf24">Chế độ Luyện tập — Không lưu kết quả</span>';
+    }else if(mode==='ispring'){
+      sync.innerHTML='<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> <span style="color:var(--accent)">Đã lưu kết quả iSpring</span>';
+    }else{
+      sync.innerHTML='<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> <span style="color:var(--accent)">Đã lưu kết quả</span>';
+    }
+  }
+
+  if(typeof nbResultInit === 'function') nbResultInit();
+});
 </script>
 </body>
 </html>

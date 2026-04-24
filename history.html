@@ -3,389 +3,60 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <title>Lịch Sử Bài Làm | Nebula</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>Lịch Sử Làm Bài | Nebula</title>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+  <script src="script.js" defer></script>
 </head>
-<body class="hist-pg-body">
-<div class="hist-pg-wrap">
+<body class="hist-body">
 
-  <div class="hist-pg-header">
-    <h2><i class="fas fa-history"></i> Lịch Sử Bài Làm</h2>
-    <a href="select.html" class="btn btn-glow"><i class="fas fa-play"></i> Thi tiếp</a>
-  </div>
+<div class="hist-container">
 
-  <div class="hist-tabs">
-    <button class="hist-tab-btn active" id="tabAll" onclick="switchTab('all')">
-      <i class="fas fa-list"></i> Tất cả <span class="hist-tab-count" id="cntAll"></span>
-    </button>
-    <button class="hist-tab-btn" id="tabSys" onclick="switchTab('sys')">
-      <i class="fas fa-database"></i> Hệ thống <span class="hist-tab-count" id="cntSys"></span>
-    </button>
-    <button class="hist-tab-btn isp-tab" id="tabIsp" onclick="switchTab('isp')">
-      <i class="fas fa-rocket"></i> iSpring <span class="hist-tab-count" id="cntIsp"></span>
-    </button>
-  </div>
-
-  <div class="hist-stats-grid">
-    <div class="hist-stat-card">
-      <h2 id="stTotal" style="color:var(--primary)">0</h2>
-      <p><i class="fas fa-book-open" style="margin-right:4px;opacity:.5"></i>Bài làm</p>
-    </div>
-    <div class="hist-stat-card">
-      <h2 id="stAvg" style="color:var(--accent)">—</h2>
-      <p><i class="fas fa-chart-line" style="margin-right:4px;opacity:.5"></i>Điểm TB</p>
-    </div>
-    <div class="hist-stat-card">
-      <h2 id="stBest" style="color:var(--ispring)">—</h2>
-      <p><i class="fas fa-star" style="margin-right:4px;opacity:.5"></i>Cao nhất</p>
+  <!-- Header -->
+  <div class="hist-header">
+    <a href="select.html" class="hist-back-btn" title="Quay lại">
+      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+    </a>
+    <div>
+      <div class="hist-title">LỊCH SỬ LÀM BÀI</div>
+      <div class="hist-student" id="histStudentName">Đang tải...</div>
     </div>
   </div>
 
-  <div id="viewList">
-    <div id="histList">
-      <div class="hist-loading"><i class="fas fa-spinner fa-spin"></i><span>Đang tải lịch sử...</span></div>
-    </div>
+  <!-- Stats -->
+  <div class="hist-stats" id="histStats">
+    <div class="hist-stat"><span class="hist-stat-n">—</span><span class="hist-stat-l">Lần làm</span></div>
+    <div class="hist-stat"><span class="hist-stat-n">—</span><span class="hist-stat-l">Điểm TB</span></div>
+    <div class="hist-stat"><span class="hist-stat-n">—</span><span class="hist-stat-l">Cao nhất</span></div>
   </div>
 
-  <div id="viewDetail" style="display:none">
-    <button class="hist-back-btn" onclick="backToList()">
-      <i class="fas fa-arrow-left"></i> Quay lại
-    </button>
-    <div id="detSum" class="hist-det-summary"></div>
-    <div id="detQs"></div>
+  <!-- Filter -->
+  <div class="hist-filter-bar">
+    <select id="histFilter" onchange="if(window._histFilterFn)window._histFilterFn(this.value)">
+      <option value="all">📋 Tất cả</option>
+      <option value="sys">🖥 Hệ thống</option>
+      <option value="isp">🌠 iSpring</option>
+    </select>
+  </div>
+
+  <!-- List -->
+  <div id="histList">
+    <!-- Skeleton while loading -->
+    <div class="hist-list-inner">
+      <div class="hist-skeleton"></div>
+      <div class="hist-skeleton"></div>
+      <div class="hist-skeleton"></div>
+      <div class="hist-skeleton"></div>
+    </div>
   </div>
 
 </div>
-<script src="script.js"></script>
+
 <script>
-const API = window.API;
-let allRecs = [], curTab = "all";
-const studentName = localStorage.getItem("studentName") || "Học sinh";
-
-window.onload = async () => { await loadHistory(); };
-
-/* Override nbFmtTime để xử lý ISO 8601 với Z suffix (UTC) từ GAS */
-function nbFmtTime(val){
-  if(!val) return '—';
-  try{
-    let s=String(val).trim();
-    /* ISO 8601: 2026-04-01T17:00:00.000Z → parse directly */
-    if(/^\d{4}-\d{2}-\d{2}T/.test(s)){
-      const dt=new Date(s);
-      if(!isNaN(dt)) return dt.toLocaleString('vi-VN',{
-        hour:'2-digit',minute:'2-digit',
-        day:'2-digit',month:'2-digit',year:'numeric',
-        timeZone:'Asia/Ho_Chi_Minh'
-      });
-    }
-    /* 2026-04-22 08:33:43 format */
-    if(/^\d{4}-\d{2}-\d{2}\s/.test(s)) s=s.replace(' ','T');
-    /* dd/mm/yyyy hh:mm:ss */
-    else if(/^\d{2}\/\d{2}\/\d{4}/.test(s)){
-      const[d,t]=s.split(' '),p=d.split('/');
-      s=`${p[2]}-${p[1]}-${p[0]}T${t||'00:00:00'}`;
-    }
-    const dt=new Date(s);
-    if(!isNaN(dt)) return dt.toLocaleString('vi-VN',{
-      hour:'2-digit',minute:'2-digit',
-      day:'2-digit',month:'2-digit',year:'numeric',
-      timeZone:'Asia/Ho_Chi_Minh'
-    });
-    return val;
-  }catch(e){ return val; }
-}
-function nbParseDate(val){
-  if(!val) return 0;
-  try{
-    let s=String(val).trim();
-    if(/^\d{4}-\d{2}-\d{2}T/.test(s)) return new Date(s).getTime()||0;
-    if(/^\d{4}-\d{2}-\d{2}\s/.test(s)) s=s.replace(' ','T');
-    else if(/^\d{2}\/\d{2}\/\d{4}/.test(s)){
-      const[d,t]=s.split(' '),p=d.split('/');
-      s=`${p[2]}-${p[1]}-${p[0]}T${t||'00:00:00'}`;
-    }
-    return new Date(s).getTime()||0;
-  }catch(e){ return 0; }
-}
-
-async function loadHistory() {
-  const listEl = document.getElementById("histList");
-  if(listEl) listEl.classList.add("loading");
-  try {
-    const [sysRes, ispRes] = await Promise.all([
-      fetch(API + "?action=getResults&student=" + encodeURIComponent(studentName)).then(r => r.json()),
-      fetch(API + "?action=getIspringResults&student=" + encodeURIComponent(studentName)).then(r => r.json())
-    ]);
-
-    /* ── Lọc đúng học sinh + gắn type ── */
-    const nameLower = studentName.trim().toLowerCase();
-
-    const sys = (Array.isArray(sysRes) ? sysRes : [])
-      .filter(r => {
-        /* Bỏ các record iSpring bị lọt vào getResults (testName có [iSpring]) */
-        if(/\[iSpring\]/i.test(r.testName||'')) return false;
-        return String(r.student||'').trim().toLowerCase() === nameLower;
-      })
-      .map(r => ({ ...r, _type: "sys" }));
-
-    const isp = (Array.isArray(ispRes) ? ispRes : [])
-      .filter(r => String(r.student||'').trim().toLowerCase() === nameLower)
-      .map(r => ({ ...r, _type: "isp" }));
-
-    /* ── Loại bỏ bản ghi trùng lặp ──
-       Key: type | testName chuẩn hóa | phút (bỏ qua giây để gộp submit cách nhau <60s)
-       Xử lý thêm trường hợp iSpring bị lưu 2 lần do player + result cùng submit.  */
-    const seen = new Set();
-    const normalizeTestName = s => String(s||'').replace(/\[iSpring\]\s*/i,'').trim().toLowerCase();
-    const timeToMinute = t => {
-      const d = nbParseDate(t);
-      return isNaN(d) ? t : Math.floor(d / 60000); /* làm tròn xuống phút */
-    };
-
-    const dedup = (arr) => arr.filter(r => {
-      const key = `${r._type}|${normalizeTestName(r.testName)}|${timeToMinute(r.time)}`;
-      if(seen.has(key)) return false;
-      seen.add(key); return true;
-    });
-
-    allRecs = [...dedup(sys), ...dedup(isp)]
-      .sort((a, b) => nbParseDate(b.time) - nbParseDate(a.time));
-
-    if(listEl) listEl.classList.remove("loading");
-    updateStats(); updateCounts(); renderList(curTab);
-  } catch(e) {
-    document.getElementById("histList").innerHTML = '<div class="nodata"><i class="fas fa-wifi" style="font-size:2rem;display:block;margin-bottom:10px"></i>Lỗi kết nối</div>';
-  }
-}
-
-function updateStats() {
-  const sysSc  = allRecs.filter(r=>r._type==="sys").map(r=>parseFloat(r.score||0));
-  const ispSc  = allRecs.filter(r=>r._type==="isp").map(r=>{
-    /* Cap iSpring score: nếu > 100 → chia để về đúng thang */
-    const s = parseFloat(r.score||0);
-    if(s > 100) return parseFloat((s / Math.pow(10, Math.floor(Math.log10(s/100)+1))).toFixed(1));
-    return s;
+  /* Override nbHistoryInit to expose filter function */
+  document.addEventListener('DOMContentLoaded', function(){
+    if(typeof nbHistoryInit === 'function') nbHistoryInit();
   });
-
-  document.getElementById("stTotal").textContent = allRecs.length;
-
-  if(sysSc.length || ispSc.length){
-    const normalized = [
-      ...sysSc.map(s => s > 10 ? s/10 : s),
-      ...ispSc.map(s => s / 10)
-    ];
-    const avg = normalized.reduce((a,b)=>a+b,0) / normalized.length;
-    document.getElementById("stAvg").textContent = avg.toFixed(1) + "/10";
-
-    const bestSys = sysSc.length ? Math.max(...sysSc.map(s => s > 10 ? s/10 : s)) : null;
-    const bestIsp = ispSc.length ? Math.max(...ispSc) : null;
-    if(bestSys !== null && bestIsp !== null){
-      document.getElementById("stBest").textContent = Math.max(bestSys, bestIsp/10).toFixed(1).replace(/\.0$/,"") + "/10";
-    } else if(bestSys !== null){
-      document.getElementById("stBest").textContent = bestSys.toFixed(1).replace(/\.0$/,"") + "/10";
-    } else if(bestIsp !== null){
-      document.getElementById("stBest").textContent = bestIsp.toFixed(0) + "/100";
-    }
-  } else {
-    document.getElementById("stAvg").textContent  = "—";
-    document.getElementById("stBest").textContent = "—";
-  }
-}
-
-function updateCounts() {
-  const s = allRecs.filter(r=>r._type==="sys").length;
-  const i = allRecs.filter(r=>r._type==="isp").length;
-  document.getElementById("cntAll").textContent = `(${allRecs.length})`;
-  document.getElementById("cntSys").textContent = `(${s})`;
-  document.getElementById("cntIsp").textContent = `(${i})`;
-}
-
-function switchTab(tab) {
-  curTab = tab;
-  document.querySelectorAll(".hist-tab-btn").forEach(b => b.classList.remove("active"));
-  const idMap = { all:"tabAll", sys:"tabSys", isp:"tabIsp" };
-  if(idMap[tab]) document.getElementById(idMap[tab]).classList.add("active");
-  renderList(tab);
-}
-
-function renderList(tab) {
-  const el = document.getElementById("histList");
-  const recs = allRecs.filter(r => tab==="sys"?r._type==="sys":tab==="isp"?r._type==="isp":true);
-  if (!recs.length) {
-    el.innerHTML='<div class="nodata"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:10px"></i>Chưa có lịch sử</div>';
-    return;
-  }
-  el.innerHTML = recs.map(r => {
-    const isp   = r._type === "isp";
-    const name  = (r.testName||"").replace(/\[iSpring\]/ig,"").trim();    const score = parseFloat(r.score||0);
-
-    /* ── Hiển thị điểm đúng thang ── */
-    let dispScore, col;
-    if(isp){
-      /* iSpring: thang 100 — cap phòng dữ liệu cũ bị sai (ví dụ 1900 thay vì 19) */
-      const safeScore = score > 100 ? parseFloat((score / Math.pow(10, Math.floor(Math.log10(score/100)+1))).toFixed(1)) : score;
-      const displayPct = Math.min(100, Math.max(0, safeScore));
-      dispScore = displayPct.toFixed(0) + "<small style='font-size:.6em;opacity:.6'>/100</small>";
-      col = displayPct >= 85 ? "var(--accent)" : displayPct >= 60 ? "var(--primary)" : "var(--danger)";
-    } else {
-      /* Hệ thống: hiển thị theo đúng thang gốc — không chia về /10
-         score ≤ 10 → thang /10 | score > 10 → thang /100
-         Nhất quán với dữ liệu trong AppScript */
-      const rawMax = score > 10 ? 100 : 10;
-      const fmtVal = score > 10 ? Math.round(score) : parseFloat(score.toFixed(1));
-      dispScore = String(fmtVal).replace(/\.0$/,"") + `<small style='font-size:.6em;opacity:.6'>/${rawMax}</small>`;
-      col = score > 10
-        ? (score >= 80 ? "var(--accent)" : score >= 50 ? "var(--primary)" : "var(--danger)")
-        : (score >= 8  ? "var(--accent)" : score >= 5  ? "var(--primary)" : "var(--danger)");
-    }
-
-    const badge = isp
-      ? `<span class="hist-badge badge-isp"><i class="fas fa-rocket"></i> iSpring</span>`
-      : `<span class="hist-badge badge-sys"><i class="fas fa-database"></i> Hệ thống</span>`;
-
-    /* Hiển thị câu đúng nếu có */
-    /* total có thể là "2/4" hoặc Date string nếu GAS format sai — lọc */
-    const rawTotal = String(r.total||'').trim();
-    const cleanTotal = /^\d+\/\d+$/.test(rawTotal) ? rawTotal : '';
-    const totalStr = cleanTotal ? `<span><i class="fas fa-check"></i> ${cleanTotal}</span>` : '';
-
-    return `<div class="hist-item" onclick="openDetail(${allRecs.indexOf(r)})">
-      <div class="hist-item-info">
-        <div class="hist-item-name">${name}</div>
-        <div class="hist-item-meta"><span><i class="far fa-clock"></i> ${nbFmtTime(r.time)}</span>${totalStr}${badge}</div>
-      </div>
-      <div class="hist-score" style="color:${col}">${dispScore}</div>
-      <i class="fas fa-chevron-right hist-arrow"></i>
-    </div>`;
-  }).join("");
-}
-
-async function openDetail(idx) {
-  const rec = allRecs[idx];
-  document.getElementById("viewList").style.display   = "none";
-  document.getElementById("viewDetail").style.display = "block";
-  window.scrollTo(0,0);
-  const name  = (rec.testName||"").replace(/\[iSpring\]/ig,"").trim();
-  const isIsp = rec._type==="isp";
-  /* Hiển thị theo thang gốc — khớp với AppScript */
-  let scoreRaw = parseFloat(rec.score||0);
-  const scoreMax = isIsp ? 100 : (scoreRaw > 10 ? 100 : 10);
-  const scoreDisplay = isIsp
-    ? Math.min(100, Math.max(0, scoreRaw)).toFixed(0)
-    : (scoreRaw > 10 ? Math.round(scoreRaw).toString() : scoreRaw.toFixed(1).replace(/\.0$/,""));
-  const scoreCol = isIsp
-    ? (scoreRaw>=80?'var(--accent)':scoreRaw>=50?'var(--primary)':'var(--danger)')
-    : (scoreRaw > 10
-       ? (scoreRaw>=80?'var(--accent)':scoreRaw>=50?'var(--primary)':'var(--danger)')
-       : (scoreRaw>=8 ?'var(--accent)':scoreRaw>=5 ?'var(--primary)':'var(--danger)'));
-  const ispBadge = isIsp ? `<span class="hist-det-badge" style="background:rgba(249,115,22,.12);color:var(--ispring);border-color:rgba(249,115,22,.25)"><i class="fas fa-rocket"></i> iSpring</span>` : "";
-  document.getElementById("detSum").innerHTML = `
-    <h3>${name}</h3>
-    <div class="hist-det-badges">
-      <span class="hist-det-badge score" style="color:${scoreCol}"><i class="fas fa-star"></i> ${scoreDisplay}/${scoreMax} điểm</span>
-      <span class="hist-det-badge"><i class="fas fa-check-double"></i> ${rec.total||"—"}</span>
-      <span class="hist-det-badge"><i class="far fa-clock"></i> ${nbFmtTime(rec.time)}</span>
-      ${ispBadge}
-    </div>`;
-
-  const qEl = document.getElementById("detQs");
-  if (isIsp) {
-    qEl.innerHTML = `<div class="hist-stat-card" style="text-align:center;padding:36px 20px"><i class="fas fa-rocket fa-3x" style="color:var(--ispring);display:block;margin-bottom:14px"></i><p style="opacity:.65">Bài thi iSpring không lưu chi tiết câu hỏi.</p></div>`;
-    return;
-  }
-
-  qEl.innerHTML = '<div class="hist-loading"><i class="fas fa-spinner fa-spin"></i><span>Đang tải câu hỏi...</span></div>';
-
-  // Parse saved answers
-  let ans = {};
-  try { ans = typeof rec.answers==="string" ? JSON.parse(rec.answers) : (rec.answers||{}); } catch(e){}
-
-  try {
-    const tests = await fetch(API+"?action=getTests").then(r=>r.json());
-    const found = tests.find(t=>(t.name||"").trim().toLowerCase()===name.toLowerCase());
-    if (!found) { qEl.innerHTML='<div class="nodata">Không tìm thấy đề thi</div>'; return; }
-    const qlist = await fetch(API+"?action=getQuestions&testId="+found.id).then(r=>r.json());
-    if (!qlist.length) { qEl.innerHTML='<div class="nodata">Chưa có câu hỏi</div>'; return; }
-
-    let cOk=0, cErr=0, cSkip=0;
-
-    const cards = qlist.map((q,i) => {
-      const sa   = String(ans[q.question]||"").trim();
-      const ca   = String(q.correct||q.correctAnswer||"").trim();
-      const type = String(q.type||"single").toLowerCase();
-      const ok   = typeof nbCheckAns==="function" ? nbCheckAns(type, sa, ca) : false;
-      const st   = !sa ? "u" : (ok ? "c" : "w");
-      if(st==="c") cOk++; else if(st==="w") cErr++; else cSkip++;
-
-      const stIcon  = st==="c"?'check-circle':st==="w"?'times-circle':'minus-circle';
-      const stColor = st==="c"?'var(--accent)':st==="w"?'var(--danger)':'var(--muted)';
-      const stLabel = st==="c"?'Đúng':st==="w"?'Sai':'Chưa làm';
-
-      // Build answer detail
-      let detailHtml = '';
-      if (st !== "u") {
-        // User answer row
-        detailHtml += `<div class="hq-ans-row hq-ans-user" style="${st==='c'?'border-color:rgba(0,255,204,.3)':'border-color:rgba(255,71,87,.3)'}">
-          <span class="hq-ans-label"><i class="fas fa-pen" style="margin-right:4px"></i>Bài làm:</span>
-          <span class="hq-ans-val ${st==='c'?'hq-val-ok':'hq-val-err'}">${_escHtml(sa||'—')}</span>
-        </div>`;
-      }
-      if (st === "w" || st === "u") {
-        // Correct answer row (show when wrong or skipped)
-        const caDisplay = ca.replace(/\|/g, ' / ');
-        detailHtml += `<div class="hq-ans-row hq-ans-correct">
-          <span class="hq-ans-label"><i class="fas fa-check" style="margin-right:4px;color:var(--accent)"></i>Đáp án đúng:</span>
-          <span class="hq-ans-val hq-val-ok">${_escHtml(caDisplay||'—')}</span>
-        </div>`;
-      }
-
-      // Image
-      const imgHtml = (q.image && q.image.length > 10)
-        ? `<img src="${q.image}" class="hq-img" onerror="this.style.display='none'" loading="lazy">`
-        : '';
-
-      // Type badge
-      const typeBadgeMap = { tf:'Đúng/Sai', multiple:'Nhiều đáp án', fill:'Điền khuyết', matching:'Ghép cặp', ordering:'Sắp xếp', single:'Trắc nghiệm' };
-      const typeBadge = `<span class="hq-type-badge">${typeBadgeMap[type]||'Trắc nghiệm'}</span>`;
-
-      return `<div class="hq-card hq-${st}">
-        <div class="hq-card-head" onclick="this.closest('.hq-card').classList.toggle('hq-open')">
-          <i class="fas fa-${stIcon}" style="color:${stColor};font-size:1.1rem;flex-shrink:0"></i>
-          <div class="hq-q-text">${i+1}. ${_escHtml(q.question)}</div>
-          <div class="hq-head-right">
-            ${typeBadge}
-            <span class="hq-status-tag" style="color:${stColor}">${stLabel}</span>
-            <i class="fas fa-chevron-down hq-chevron"></i>
-          </div>
-        </div>
-        <div class="hq-card-body">
-          ${imgHtml}
-          ${detailHtml || `<div style="font-size:.78rem;opacity:.45;padding:4px 0">Không có dữ liệu đáp án</div>`}
-        </div>
-      </div>`;
-    });
-
-    // Summary chips
-    const chipBar = `<div class="hq-chips">
-      <div class="hq-chip hq-chip-ok"><i class="fas fa-check-circle"></i> ${cOk} Đúng</div>
-      <div class="hq-chip hq-chip-err"><i class="fas fa-times-circle"></i> ${cErr} Sai</div>
-      <div class="hq-chip hq-chip-skip"><i class="fas fa-minus-circle"></i> ${cSkip} Bỏ qua</div>
-    </div>`;
-
-    qEl.innerHTML = chipBar + cards.join("");
-
-  } catch(e) {
-    qEl.innerHTML='<div class="nodata">Lỗi tải câu hỏi</div>';
-  }
-}
-
-function _escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-function backToList() {
-  document.getElementById("viewDetail").style.display = "none";
-  document.getElementById("viewList").style.display   = "block";
-}
 </script>
 </body>
 </html>
