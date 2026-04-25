@@ -1,13 +1,12 @@
 @echo off
-title Nebula Quiz
+title Nebula Quiz v3.2
 color 0A
 echo.
 echo  ===================================
-echo   NEBULA QUIZ - Khoi dong server
+echo   NEBULA QUIZ v3.2 - Khoi dong
 echo  ===================================
 echo.
 
-:: Thu Python truoc (co san tren Windows 10/11)
 python --version >nul 2>&1
 if %errorlevel% equ 0 (
   echo  Dung Python HTTP Server...
@@ -34,7 +33,5 @@ if %errorlevel% equ 0 (
 )
 
 echo  [LOI] Can cai Python hoac Node.js
-echo  Tai Python: https://www.python.org/downloads/
 pause
-
 :end

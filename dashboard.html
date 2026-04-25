@@ -188,7 +188,43 @@
   <!-- ── TAB: RESULTS ── -->
   <div class="db-tab-pane" data-tab="results">
     <div class="db-pane-title">📊 Kết Quả Làm Bài</div>
+
+    <!-- Charts -->
+    <div class="db-charts-grid">
+      <div class="db-chart-box" id="dbChart1">
+        <div class="db-chart-title">Phân bố điểm</div>
+        <div class="db-empty">Đang tải...</div>
+      </div>
+      <div class="db-chart-box" id="dbChart2">
+        <div class="db-chart-title">Bài thi phổ biến</div>
+        <div class="db-empty">Đang tải...</div>
+      </div>
+    </div>
+
+    <!-- Filter toolbar -->
     <div class="db-card">
+      <div class="db-card-head">
+        <span>Danh sách kết quả</span>
+        <span class="db-auto-refresh-lbl">🔄 Tự động cập nhật</span>
+      </div>
+      <div class="db-result-toolbar">
+        <input type="text" id="dbResultSearch" placeholder="🔍 Tìm theo tên, bài thi, trường..."
+          oninput="window._dbFilterResults&&window._dbFilterResults()">
+        <select id="dbResultSrc" onchange="window._dbFilterResults&&window._dbFilterResults()">
+          <option value="all">📋 Tất cả</option>
+          <option value="sys">🖥 Hệ thống</option>
+          <option value="isp">🌠 iSpring</option>
+        </select>
+        <select id="dbResultScoreMin" onchange="window._dbFilterResults&&window._dbFilterResults()" style="width:auto">
+          <option value="0">Điểm từ: 0</option>
+          <option value="5">Điểm từ: 5</option>
+          <option value="7">Điểm từ: 7</option>
+          <option value="8">Điểm từ: 8</option>
+          <option value="50">% từ: 50</option>
+          <option value="70">% từ: 70</option>
+        </select>
+        <span class="db-result-count" id="dbResultCount"></span>
+      </div>
       <div id="dbResultList"><div class="db-empty"><i class="fas fa-circle-notch fa-spin"></i> Đang tải...</div></div>
     </div>
   </div>

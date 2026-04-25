@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quiz Online | Premium Edition</title>
+  <title>Nebula Quiz | Premium Edition</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="idx-body">
@@ -12,7 +12,6 @@
   <div class="idx-orb" id="orb1"></div>
   <div class="idx-orb idx-orb-2" id="orb2"></div>
 
-  <!-- Các hạt sáng được tạo bằng CSS thuần, không cần JS -->
   <div class="idx-particles" aria-hidden="true">
     <span></span><span></span><span></span><span></span><span></span>
     <span></span><span></span><span></span><span></span><span></span>
@@ -22,81 +21,69 @@
   <div class="idx-container">
     <div class="idx-box" id="mainBox">
 
-      <!-- Badge trạng thái -->
       <div class="idx-status-badge">
         <span class="idx-status-dot"></span> Hệ thống đang hoạt động
       </div>
 
       <div class="idx-logo-container">
-        <!-- SVG icon inline - không cần FontAwesome load -->
-        <svg class="idx-logo-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <svg class="idx-logo-svg" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stop-color="#ffffff"/>
               <stop offset="100%" stop-color="#4facfe"/>
             </linearGradient>
           </defs>
-          <!-- Rocket body -->
           <path d="M32 4 C32 4 20 16 18 32 L32 36 L46 32 C44 16 32 4 32 4Z" fill="url(#rg)" opacity="0.9"/>
-          <!-- Rocket fins -->
           <path d="M18 32 L10 44 L22 40 Z" fill="url(#rg)" opacity="0.6"/>
           <path d="M46 32 L54 44 L42 40 Z" fill="url(#rg)" opacity="0.6"/>
-          <!-- Window -->
-          <circle cx="32" cy="26" r="5" fill="#0f172a" stroke="#4facfe" stroke-width="1.5"/>
+          <circle cx="32" cy="26" r="5" fill="#070d1a" stroke="#4facfe" stroke-width="1.5"/>
           <circle cx="32" cy="26" r="2.5" fill="#4facfe" opacity="0.7"/>
-          <!-- Flame -->
           <ellipse cx="32" cy="42" rx="5" ry="8" fill="#f97316" opacity="0.8"/>
           <ellipse cx="32" cy="44" rx="3" ry="5" fill="#fbbf24" opacity="0.9"/>
         </svg>
       </div>
 
-      <h1 class="idx-title">QUIZ ONLINE</h1>
+      <h1 class="idx-title">NEBULA QUIZ</h1>
       <p class="idx-desc">Nền tảng ôn luyện trắc nghiệm tối ưu<br>kiến tạo tri thức tương lai</p>
 
       <div class="idx-menu-actions">
-        <button class="idx-btn idx-btn-student" onclick="nbIdxGoTo('login.html?role=student')" aria-label="Học sinh đăng nhập">
-          <!-- SVG: graduation cap -->
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <button class="idx-btn idx-btn-student" onclick="nbIdxGoTo('login.html?role=student')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
           </svg>
           Học sinh đăng nhập
-          <svg class="idx-btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <svg class="idx-btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
           </svg>
         </button>
 
-        <button class="idx-btn idx-btn-admin" onclick="nbIdxGoTo('login.html?role=admin')" aria-label="Khu vực quản trị">
-          <!-- SVG: shield -->
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+        <button class="idx-btn idx-btn-admin" onclick="nbIdxGoTo('login.html?role=admin')">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5L12 1zm0 4l5 2.18V11c0 3.5-2.33 6.79-5 7.93-2.67-1.14-5-4.43-5-7.93V7.18L12 5zm-1 3v4h2V8h-2zm0 6v2h2v-2h-2z"/>
           </svg>
           Khu vực quản trị
+          <svg class="idx-btn-arrow" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6z"/>
+          </svg>
         </button>
       </div>
 
       <div class="idx-footer-text">
-        Premium Edition &bull; 2026 &bull; Kieu Le Dang Khoa
+        Nebula Quiz v3.2 &bull; 2026 &bull; Premium Edition
       </div>
     </div>
   </div>
 
   <script src="script.js" defer></script>
   <script>
-    // Tilt + orb mouse effect — chỉ desktop
     if(window.matchMedia('(pointer:fine)').matches){
-      document.addEventListener('mousemove', (e) => {
-        const x = (e.clientX - innerWidth / 2) / 35;
-        const y = (e.clientY - innerHeight / 2) / 35;
-        document.getElementById('orb1').style.transform = `translate(${x*1.5}px,${y*1.5}px)`;
-        document.getElementById('orb2').style.transform = `translate(${-x}px,${-y}px)`;
-        document.getElementById('mainBox').style.transform =
-          `perspective(1000px) rotateY(${x/2}deg) rotateX(${-y/2}deg)`;
+      document.addEventListener('mousemove',(e)=>{
+        const x=(e.clientX-innerWidth/2)/35, y=(e.clientY-innerHeight/2)/35;
+        const o1=document.getElementById('orb1'),o2=document.getElementById('orb2'),mb=document.getElementById('mainBox');
+        if(o1)o1.style.transform=`translate(${x*1.5}px,${y*1.5}px)`;
+        if(o2)o2.style.transform=`translate(${-x}px,${-y}px)`;
+        if(mb)mb.style.transform=`perspective(1000px) rotateY(${x/2}deg) rotateX(${-y/2}deg)`;
       });
-    }
-
-    function nbIdxGoTo(url){
-      document.getElementById('mainBox').classList.add('idx-fade-out');
-      setTimeout(() => { window.location.href = url; }, 400);
     }
   </script>
 </body>

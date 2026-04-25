@@ -10,10 +10,8 @@
 </head>
 <body class="sel-body">
 
-  <!-- Top Navigation -->
-  <nav class="sel-nav animate__animated animate__fadeInDown">
+  <nav class="sel-nav">
     <a class="sel-brand" href="index.html">
-      <!-- Meteor icon -->
       <svg viewBox="0 0 24 24">
         <path d="M19.07 4.93a1 1 0 0 0-1.41 0L4.93 17.66a1 1 0 1 0 1.41 1.41L19.07 6.34a1 1 0 0 0 0-1.41zM6.5 8C5.12 8 4 9.12 4 10.5S5.12 13 6.5 13 9 11.88 9 10.5 7.88 8 6.5 8zm11 5c-1.38 0-2.5 1.12-2.5 2.5S16.12 18 17.5 18 20 16.88 20 15.5 18.88 13 17.5 13z"/>
       </svg>
@@ -33,9 +31,8 @@
   </nav>
 
   <div class="sel-container">
-    <div class="sel-box animate__animated animate__zoomIn">
+    <div class="sel-box">
 
-      <!-- Tiêu đề -->
       <h2 class="sel-title">
         <svg class="sel-title-icon" viewBox="0 0 24 24">
           <path d="M19.07 4.93a1 1 0 0 0-1.41 0L4.93 17.66a1 1 0 1 0 1.41 1.41L19.07 6.34a1 1 0 0 0 0-1.41zM6.5 8C5.12 8 4 9.12 4 10.5S5.12 13 6.5 13 9 11.88 9 10.5 7.88 8 6.5 8zm11 5c-1.38 0-2.5 1.12-2.5 2.5S16.12 18 17.5 18 20 16.88 20 15.5 18.88 13 17.5 13z"/>
@@ -44,16 +41,15 @@
       </h2>
       <p class="sel-welcome" id="selWelcome">Chào mừng bạn trở lại!</p>
 
-      <!-- Tìm kiếm -->
       <div class="sel-search">
         <svg class="sel-search-icon" viewBox="0 0 24 24">
           <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
         </svg>
-        <input type="text" id="selSearch" placeholder="Tìm kiếm tất cả bài thi..."
+        <input type="text" id="selSearch" placeholder="Tìm kiếm bài thi..."
           oninput="if(window._nbRenderAll)window._nbRenderAll()">
       </div>
 
-      <!-- ── Section: Hệ thống ── -->
+      <!-- Section: Hệ thống -->
       <div class="sel-section-head sel-section-sys">
         <div class="sel-section-icon">
           <svg viewBox="0 0 24 24"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 16 18 16s1.5.67 1.5 1.5S18.83 19 18 19zM20 3H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1V4c0-.55-.45-1-1-1zm-2 6c-.83 0-1.5-.67-1.5-1.5S17.17 6 18 6s1.5.67 1.5 1.5S18.83 9 18 9z"/></svg>
@@ -67,10 +63,9 @@
         <div class="sel-skeleton"></div>
       </div>
 
-      <!-- Divider -->
       <div class="sel-divider"><span>hoặc chọn từ</span></div>
 
-      <!-- ── Section: iSpring ── -->
+      <!-- Section: iSpring -->
       <div class="sel-section-head sel-section-isp">
         <div class="sel-section-icon">
           <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
@@ -85,20 +80,24 @@
         </div>
       </div>
 
-      <!-- Footer -->
-      <div class="sel-footer">
+      <!-- Footer links -->
+      <div class="sel-footer" style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
         <a href="history.html" class="sel-history-btn">
           <svg viewBox="0 0 24 24">
             <path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
           </svg>
-          Xem lịch sử bài làm
+          Lịch sử làm bài
+        </a>
+        <a href="battle.html" class="sel-history-btn" style="color:#a78bfa;border-color:rgba(139,92,246,.2)">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+          Phòng Thi Đấu
         </a>
       </div>
 
     </div>
   </div>
 
-  <!-- iSpring Modal (ẩn, dùng khi cần preview) -->
+  <!-- iSpring Modal -->
   <div class="sel-modal" id="selIspringModal">
     <div class="sel-modal-inner">
       <div class="sel-modal-head">
@@ -116,137 +115,53 @@
   </div>
 
   <script>
-    /* Close modal */
-    window._nbCloseModal = function(){
+    window._nbCloseModal=function(){
       document.getElementById('selIspringModal').style.display='none';
       document.getElementById('selIspringFrame').src='';
     };
-    document.getElementById('selIspringModal').addEventListener('click', function(e){
-      if(e.target===this) window._nbCloseModal();
+    document.getElementById('selIspringModal').addEventListener('click',function(e){
+      if(e.target===this)window._nbCloseModal();
     });
 
-    document.addEventListener('DOMContentLoaded', function(){
-      window._selectInitDone = true;          /* chặn script.js gọi lại lần 2 */
-      if(typeof nbSelectInit === 'function') nbSelectInit();
-    });
-
-    /* ══════════════════════════════════════════════════════════
-       Override _nbLaunchIspring: Hiện thông báo nhắc nhở trước
-       khi vào bài iSpring (bài iSpring không lưu trạng thái,
-       mỗi lần vào là làm lại từ đầu).
-       ══════════════════════════════════════════════════════════ */
-    window._nbLaunchIspring = function(testJson){
-      const test = JSON.parse(testJson);
-      if(!test.path){
-        if(typeof nbAlert==='function') nbAlert('warning','Thiếu đường dẫn','Bài thi này chưa có path. Liên hệ admin.');
-        return;
+    // iSpring launch with warning popup
+    window._nbLaunchIspring=function(testJson){
+      const test=JSON.parse(testJson);
+      if(!test.path){if(typeof nbToast!=='undefined')nbToast('warning','Thiếu đường dẫn','Bài thi này chưa có path. Liên hệ admin.');return;}
+      if(typeof Swal==='undefined'){
+        nb.set('currentIspringName',test.name);
+        location.href='player.html?path='+encodeURIComponent(test.path);return;
       }
-
-      /* ── Popup nhắc nhở ── */
       Swal.fire({
-        title: 'Lưu ý trước khi bắt đầu',
-        html: `
-          <div style="text-align:left;font-size:.88rem;line-height:1.75;color:rgba(255,255,255,.8)">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:10px">
-              <svg width="18" height="18" fill="var(--ispring)" viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg>
-              <b style="color:var(--ispring);font-size:.95rem">${nbEsc ? nbEsc(test.name) : test.name}</b>
-            </div>
-            <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px">
-              <li style="display:flex;align-items:flex-start;gap:9px">
-                <span style="color:var(--warning);flex-shrink:0;margin-top:1px">⚠</span>
-                <span>Bài thi iSpring <b>không lưu tiến độ</b> — mỗi lần mở là <b>bắt đầu lại từ đầu</b>.</span>
-              </li>
-              <li style="display:flex;align-items:flex-start;gap:9px">
-                <span style="color:var(--primary);flex-shrink:0;margin-top:1px">📶</span>
-                <span>Giữ <b>kết nối internet ổn định</b> trong suốt bài thi để ghi điểm chính xác.</span>
-              </li>
-              <li style="display:flex;align-items:flex-start;gap:9px">
-                <span style="color:var(--accent);flex-shrink:0;margin-top:1px">✅</span>
-                <span>Hoàn thành bài thi đến <b>màn hình kết quả</b> của iSpring để hệ thống ghi nhận điểm.</span>
-              </li>
-              <li style="display:flex;align-items:flex-start;gap:9px">
-                <span style="color:var(--danger);flex-shrink:0;margin-top:1px">🚫</span>
-                <span>Không tắt trình duyệt hoặc bấm nút <b>Thoát</b> khi chưa hoàn thành.</span>
-              </li>
-            </ul>
-            ${(typeof sanitizeDur==='function' && sanitizeDur(test.duration))
-              ? `<div style="margin-top:12px;padding:8px 12px;background:rgba(249,115,22,.08);border-radius:10px;border:1px solid rgba(249,115,22,.2);font-size:.82rem;color:rgba(255,255,255,.7)">
-                  ⏱ Thời gian làm bài: <b style="color:var(--ispring)">${sanitizeDur(test.duration)} phút</b>
-                </div>`
-              : ''}
-          </div>`,
-        icon: 'info',
-        showCancelButton: true,
-        confirmButtonText: '✓ Đã hiểu, bắt đầu!',
-        cancelButtonText: '← Quay lại',
-        confirmButtonColor: 'rgba(249,115,22,.9)',
-        background: 'rgba(10,15,30,0.97)',
-        color: '#f1f5f9',
-        customClass: { popup: 'nb-swal-popup' }
-      }).then(res => {
+        title:'Lưu ý trước khi bắt đầu',
+        html:`<div style="text-align:left;font-size:.86rem;line-height:1.75;color:rgba(255,255,255,.8)">
+          <div style="font-weight:700;color:var(--ispring);margin-bottom:10px">
+            🌠 ${(test.name||'').replace(/</g,'&lt;')}
+          </div>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:8px">
+            <li>⚠️ Bài iSpring <b>không lưu tiến độ</b> — mỗi lần mở là <b>bắt đầu lại từ đầu</b>.</li>
+            <li>📶 Giữ <b>kết nối internet ổn định</b> trong suốt bài thi.</li>
+            <li>✅ Hoàn thành đến <b>màn hình kết quả</b> của iSpring để ghi điểm.</li>
+            <li>🚫 Không tắt trình duyệt khi chưa hoàn thành.</li>
+            ${test.duration?`<li>⏱ Thời gian: <b style="color:var(--ispring)">${test.duration} phút</b></li>`:''}
+          </ul>
+        </div>`,
+        icon:'info',showCancelButton:true,
+        confirmButtonText:'✓ Đã hiểu, bắt đầu!',cancelButtonText:'← Quay lại',
+        confirmButtonColor:'rgba(249,115,22,.9)',
+        background:'rgba(8,14,26,.98)',color:'#f1f5f9',
+        customClass:{popup:'nb-swal-popup'}
+      }).then(res=>{
         if(res.isConfirmed){
-          if(typeof nb !== 'undefined') nb.set('currentIspringName', test.name);
-          else localStorage.setItem('currentIspringName', test.name);
-          location.href = `player.html?path=${encodeURIComponent(test.path)}`;
+          nb.set('currentIspringName',test.name);
+          location.href='player.html?path='+encodeURIComponent(test.path);
         }
       });
     };
-    // Hàm này sẽ ghi đè hàm _nbConfirmLaunch trong script.js
-    window._nbConfirmLaunch = function(testJson){
-        const test = JSON.parse(testJson);
-        if(!test.qCount || test.qCount === 0){
-            if(typeof Swal !== 'undefined') Swal.fire({ icon: 'info', title: 'Đề thi đang cập nhật', text: 'Đề thi này chưa có câu hỏi. Vui lòng thử lại sau!', background: 'rgba(10,15,30,0.97)', color: '#f1f5f9', confirmButtonText:'Đã hiểu' });
-            return;
-        }
-        const dur = (typeof sanitizeDur !== 'undefined') ? sanitizeDur(test.duration) : (parseInt(test.duration) || 45);
-        const descRow = test.desc
-          ? `<div class="swal-launch-row swal-launch-row--last"><span>📝 Mô tả: <b>${test.desc}</b></span></div>`
-          : '';
 
-        Swal.fire({
-            title: 'Bắt đầu bài thi?',
-            html: `
-                <div class="swal-launch-body">
-                    <div class="swal-launch-row">
-                        <span>📝 Bài thi: <b class="swal-highlight">${test.name}</b></span>
-                    </div>
-                    <div class="swal-launch-row">
-                        <span>⏳ Thời gian: <b>${dur} phút</b></span>
-                    </div>
-                    <div class="swal-launch-row${descRow?'':' swal-launch-row--last'}">
-                        <span>❓ Số câu: <b>${test.qCount} câu hỏi</b></span>
-                    </div>
-                    ${descRow}
-                    <div class="swal-mode-wrap">
-                        <label class="swal-mode-label">Chọn chế độ làm bài:</label>
-                        <select id="swal-mode-select">
-                            <option value="train" selected>🎓 LUYỆN TẬP (Không giới hạn, xem đáp án ngay)</option>
-                            <option value="test">⏱️ KIỂM TRA (Tính giờ, chấm điểm cuối bài)</option>
-                        </select>
-                    </div>
-                </div>
-            `,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'BẮT ĐẦU',
-            cancelButtonText: 'ĐỂ SAU',
-            background: 'rgba(10,15,30,0.97)',
-            color: '#f1f5f9',
-            preConfirm: () => {
-                return document.getElementById('swal-mode-select').value;
-            }
-        }).then(res => {
-            if (res.isConfirmed) {
-                const selectedMode = res.value || 'train';
-                localStorage.setItem('currentTestId', test.id);
-                localStorage.setItem('currentTestName', test.name);
-                localStorage.setItem('currentTestDuration', dur);
-                localStorage.setItem('currentTest', JSON.stringify({...test, duration: dur}));
-                localStorage.setItem('quizMode', selectedMode);
-                location.href = 'quiz.html';
-            }
-        });
-    };
+    document.addEventListener('DOMContentLoaded',function(){
+      window._selectInitDone=true;
+      if(typeof nbSelectInit==='function')nbSelectInit();
+    });
   </script>
 </body>
 </html>

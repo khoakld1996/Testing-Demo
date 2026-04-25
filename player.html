@@ -5,17 +5,14 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="format-detection" content="telephone=no">
   <title>Nebula | iSpring</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@4/animate.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="player-body">
 
-<!-- ── Header ── -->
+<!-- Header -->
 <div id="pl-hdr">
   <div class="pl-hl">
     <svg class="pl-icon" viewBox="0 0 24 24">
@@ -26,33 +23,33 @@
   </div>
   <div class="pl-hr">
     <span class="pl-student" id="pl-student"></span>
-    <button id="pl-submit-btn" class="pl-submit-score" onclick="window._plManualScore && window._plManualScore()" style="display:none">
+    <button id="pl-submit-btn" class="pl-submit-score" onclick="window._plManualScore&&window._plManualScore()" style="display:none">
       <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
       Nộp kết quả
     </button>
-    <button id="pl-exit" class="locked" onclick="window._plExit && window._plExit()">
+    <button id="pl-exit" class="locked" onclick="window._plExit&&window._plExit()">
       <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
       Thoát
     </button>
   </div>
 </div>
 
-<!-- ── Progress bar ── -->
+<!-- Progress bar -->
 <div id="pl-pgb"><div id="pl-pgf"></div></div>
 
-<!-- ── iframe ── -->
+<!-- iframe -->
 <div id="pl-wrap">
   <iframe id="pl-frame" allow="fullscreen" allowfullscreen></iframe>
 </div>
 
-<!-- ── Loading overlay ── -->
+<!-- Loading overlay -->
 <div id="pl-loading">
   <div class="pl-spinner"></div>
   <div class="pl-load-text">Đang tải bài học...</div>
   <div class="pl-load-name" id="pl-load-name"></div>
 </div>
 
-<!-- ── Exit confirm dialog ── -->
+<!-- Exit confirm dialog -->
 <div id="pl-dlg">
   <div class="pl-dlg-box">
     <div class="pl-dlg-icon">⚠️</div>
@@ -62,14 +59,14 @@
       Kết quả sẽ không được lưu nếu thoát lúc này.
     </div>
     <div class="pl-dlg-btns">
-      <button class="pl-dlg-btn pl-dlg-stay" onclick="window._plCloseDlg && window._plCloseDlg()">
-        <svg style="width:13px;height:13px;fill:currentColor;vertical-align:middle;margin-right:5px" viewBox="0 0 24 24">
+      <button class="pl-dlg-btn pl-dlg-stay" onclick="window._plCloseDlg&&window._plCloseDlg()">
+        <svg style="width:13px;height:13px;fill:currentColor;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
           <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
         </svg>
         Tiếp tục làm bài
       </button>
-      <button class="pl-dlg-btn pl-dlg-leave" onclick="window._plForceExit && window._plForceExit()">
-        <svg style="width:13px;height:13px;fill:currentColor;vertical-align:middle;margin-right:5px" viewBox="0 0 24 24">
+      <button class="pl-dlg-btn pl-dlg-leave" onclick="window._plForceExit&&window._plForceExit()">
+        <svg style="width:13px;height:13px;fill:currentColor;vertical-align:middle;margin-right:4px" viewBox="0 0 24 24">
           <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
         </svg>
         Thoát không lưu
@@ -78,16 +75,14 @@
   </div>
 </div>
 
-<!-- ── Result panel ── -->
+<!-- Result panel -->
 <div id="pl-result">
   <div class="pl-result-inner">
     <div class="pl-result-card">
-
       <span class="pl-trophy" id="pl-trophy">🏆</span>
       <div class="pl-result-title" id="pl-result-title">HOÀN THÀNH!</div>
       <div class="pl-result-sub">KẾT QUẢ BÀI THI ISPRING</div>
 
-      <!-- Score ring -->
       <div class="pl-ring">
         <svg viewBox="0 0 130 130" width="130" height="130">
           <circle class="pl-ring-bg" cx="65" cy="65" r="56"/>
@@ -100,7 +95,6 @@
         </div>
       </div>
 
-      <!-- Info rows -->
       <div class="pl-info-box">
         <div class="pl-info-row">
           <span class="pl-info-lbl">
@@ -108,13 +102,6 @@
             Thí sinh
           </span>
           <span class="pl-info-val" id="pl-r-name">—</span>
-        </div>
-        <div class="pl-info-row">
-          <span class="pl-info-lbl">
-            <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
-            Trường / Lớp
-          </span>
-          <span class="pl-info-val" id="pl-r-school">—</span>
         </div>
         <div class="pl-info-row">
           <span class="pl-info-lbl">
@@ -132,55 +119,42 @@
         </div>
       </div>
 
-      <!-- Score distribution bar -->
-      <div class="pl-dist-wrap" id="pl-dist-wrap" style="display:none">
-        <div class="pl-dist-title">Phân tích điểm số</div>
-        <div class="pl-dist-bars" id="pl-dist-bars"></div>
-        <div class="pl-dist-labels">
-          <span>0–49</span><span>50–69</span><span>70–84</span><span>85–100</span>
-        </div>
-        <div class="pl-dist-legend" id="pl-dist-legend"></div>
-      </div>
-
-      <!-- Sync status -->
       <div id="pl-sync" class="saving">
-        <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
-        Đang lưu kết quả...
+        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+        <span id="pl-sync-text">Đang lưu kết quả...</span>
       </div>
 
-      <!-- Action buttons -->
       <div class="pl-result-btns">
-        <button class="pl-result-btn pl-btn-result" onclick="window._plGoResult && window._plGoResult()">
+        <button class="pl-result-btn pl-btn-result" onclick="window._plGoResult&&window._plGoResult()">
           <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
-          TRANG KẾT QUẢ NEBULA
+          XEM KẾT QUẢ CHI TIẾT
         </button>
-        <button class="pl-result-btn pl-btn-retry" onclick="window._plRetry && window._plRetry()">
+        <button class="pl-result-btn pl-btn-retry" onclick="window._plRetry&&window._plRetry()">
           <svg viewBox="0 0 24 24"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
           LÀM LẠI BÀI NÀY
         </button>
-        <button class="pl-result-btn pl-btn-list" onclick="window._plGoSel && window._plGoSel()">
+        <button class="pl-result-btn pl-btn-list" onclick="window._plGoSel&&window._plGoSel()">
           <svg viewBox="0 0 24 24"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
           VỀ DANH SÁCH BÀI THI
         </button>
-        <button class="pl-result-btn pl-btn-hist" onclick="window._plGoHist && window._plGoHist()">
+        <button class="pl-result-btn pl-btn-hist" onclick="window._plGoHist&&window._plGoHist()">
           <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
           XEM LỊCH SỬ LÀM BÀI
         </button>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- ── Error panel ── -->
+<!-- Error panel -->
 <div id="pl-error">
   <div class="pl-err-icon">
     <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
   </div>
   <div class="pl-err-title" id="pl-err-title">Lỗi tải bài</div>
-  <div class="pl-err-msg"   id="pl-err-msg">Không tìm thấy đường dẫn.</div>
-  <button class="pl-err-btn" onclick="window._plGoSel && window._plGoSel()">
-    <svg style="width:13px;height:13px;fill:currentColor;vertical-align:middle;margin-right:5px" viewBox="0 0 24 24">
+  <div class="pl-err-msg" id="pl-err-msg">Không tìm thấy đường dẫn.</div>
+  <button class="pl-err-btn" onclick="window._plGoSel&&window._plGoSel()">
+    <svg style="width:13px;height:13px;fill:currentColor;margin-right:5px" viewBox="0 0 24 24">
       <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
     </svg>
     Quay lại chọn bài
@@ -188,5 +162,13 @@
 </div>
 
 <script src="script.js" defer></script>
+<script>
+  // FIX: Single init — player.html calls _plInit only once via this script
+  document.addEventListener('DOMContentLoaded', function(){
+    if(typeof _plInit === 'function' && !window._plInited) {
+      _plInit();
+    }
+  });
+</script>
 </body>
 </html>

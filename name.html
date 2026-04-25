@@ -9,85 +9,61 @@
   <script src="script.js" defer></script>
 </head>
 <body class="nm-body">
-
   <div class="nm-container">
-    <div class="nm-box animate__animated animate__zoomIn">
-
-      <!-- Icon header -->
+    <div class="nm-box">
       <div class="nm-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 2.75c1.24 0 2.25 1.01 2.25 2.25s-1.01 2.25-2.25 2.25S9.75 10.24 9.75 9 10.76 6.75 12 6.75zM17 17H7v-.75c0-1.67 3.33-2.5 5-2.5s5 .83 5 2.5V17z"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-8 2.75c1.24 0 2.25 1.01 2.25 2.25s-1.01 2.25-2.25 2.25S9.75 10.24 9.75 9 10.76 6.75 12 6.75zM17 17H7v-.75c0-1.67 3.33-2.5 5-2.5s5 .83 5 2.5V17z"/></svg>
       </div>
-
       <h2 class="nm-title">XÁC NHẬN HỒ SƠ</h2>
-      <p class="nm-subtitle">Kiểm tra thông tin trước khi bắt đầu bài thi</p>
+      <p class="nm-subtitle">Kiểm tra thông tin trước khi vào hệ thống thi</p>
 
-      <!-- Họ và tên -->
       <div class="nm-field">
         <label class="nm-label">
           <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           Họ và tên thí sinh
         </label>
         <div class="nm-input-wrap">
-          <svg class="nm-input-icon" viewBox="0 0 24 24">
-            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
-          </svg>
-          <input id="nameInput" type="text" class="nm-input"
-            placeholder="Đang truy xuất..." autocomplete="name">
+          <svg class="nm-input-icon" viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+          <input id="nameInput" type="text" class="nm-input" placeholder="Nhập họ và tên..." lang="vi" autocomplete="name">
         </div>
       </div>
 
-      <!-- Tên trường -->
       <div class="nm-field">
         <label class="nm-label">
           <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
           Tên trường / Đơn vị
         </label>
         <div class="nm-input-wrap">
-          <svg class="nm-input-icon" viewBox="0 0 24 24">
-            <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/>
-          </svg>
-          <input id="schoolInput" type="text" class="nm-input"
-            placeholder="Đang tải..." autocomplete="organization">
+          <svg class="nm-input-icon" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+          <input id="schoolInput" type="text" class="nm-input" placeholder="Tên trường..." lang="vi" autocomplete="organization">
         </div>
       </div>
 
-      <!-- Lớp học -->
       <div class="nm-field">
         <label class="nm-label">
-          <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
           Lớp học
         </label>
         <div class="nm-input-wrap">
-          <svg class="nm-input-icon" viewBox="0 0 24 24">
-            <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/>
-          </svg>
-          <input id="classInput" type="text" class="nm-input"
-            placeholder="Đang tải..." autocomplete="off">
+          <svg class="nm-input-icon" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-5h2v2h-2zm0-8h2v6h-2z"/></svg>
+          <input id="classInput" type="text" class="nm-input" placeholder="Ví dụ: 10A1" autocomplete="off">
         </div>
       </div>
 
-      <!-- Nút tiếp tục -->
       <button class="nm-btn" id="btnContinue" onclick="nbNameSubmit()">
         VÀO HỆ THỐNG THI
-        <svg viewBox="0 0 24 24">
-          <path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/>
-        </svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5zm2 13.5h-4l-1 4h6l-1-4zm-2-9c-.83 0-1.5.67-1.5 1.5S11.17 10 12 10s1.5-.67 1.5-1.5S12.83 7 12 7z"/></svg>
       </button>
 
-      <!-- Quay lại -->
       <button class="nm-back" onclick="location.href='index.html'">
         <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         Quay lại trang chủ
       </button>
-
     </div>
   </div>
-
   <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      if(typeof nbNameInit === 'function') nbNameInit();
+    document.addEventListener('DOMContentLoaded',function(){
+      if(typeof nbNameInit==='function') nbNameInit();
     });
   </script>
 </body>
