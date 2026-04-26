@@ -191,7 +191,24 @@ async function nbLgnHandle(action){
     nb.setJson('currentUser',{username:res.username||user,name:res.name||'',school:res.school||'',class:res.class||'',role:res.role||'student'});
     nb.set('studentName',res.name||''); nb.set('schoolName',res.school||''); nb.set('className',res.class||'');
     nb.set('loginTime',Date.now());
-    location.href=isAdmin?'dashboard.html':'name.html';
+    // Show success popup before redirect
+    const destUrl=isAdmin?'dashboard.html':'name.html';
+    if(typeof Swal!=='undefined'){
+      await Swal.fire({
+        icon:'success',
+        title:'Đăng nhập thành công!',
+        html:`<div style="font-size:.9rem;line-height:1.6">
+          Xin chào, <b style="color:var(--primary)">${nbEsc(res.name||user)}</b>!<br>
+          <span style="color:#64748b;font-size:.78rem">${isAdmin?'Quản trị viên':'Học sinh'} · @${nbEsc(res.username||user)}</span>
+        </div>`,
+        timer:1600,showConfirmButton:false,
+        background:'rgba(8,14,26,0.98)',color:'#f1f5f9',
+        customClass:{popup:'nb-swal-popup'}
+      });
+    }else{
+      nbToast('success','Đăng nhập thành công!',`Xin chào ${res.name||user}`);
+    }
+    location.href=destUrl;
   }else{
     const name=document.getElementById('regFullName')?.value?.trim();
     const cls=document.getElementById('regClass')?.value?.trim();
@@ -268,15 +285,22 @@ async function nbSelectInit(){
   _nbRenderAll();
 }
 
+// Global maps to avoid JSON-in-onclick escaping issues
+window._nbTestMap={};
+window._nbIspMap={};
+
 window._nbRenderAll=function(){
   const q=(document.getElementById('selSearch')?.value||'').toLowerCase();
   const f=x=>!q||String(x.name||'').toLowerCase().includes(q)||(x.desc||'').toLowerCase().includes(q);
   const t=_selTests.filter(f),isp=_selIspring.filter(f);
   const _cnt=(id,n,u)=>{const e=document.getElementById(id);if(e)e.textContent=`${n} ${u}`;};
   _cnt('selSysCount',t.length,'đề');_cnt('selIspCount',isp.length,'bài');
+  // Rebuild lookup maps
+  t.forEach(x=>{window._nbTestMap[x.id]=x;});
+  isp.forEach(x=>{window._nbIspMap[x.id]=x;});
   const tEl=document.getElementById('selTestList');
   if(tEl){ tEl.innerHTML=!t.length?'<div class="sel-empty">Chưa có bài thi</div>':
-    t.map(x=>`<div class="sel-test-item" onclick="_nbConfirmLaunch('${nbEsc(JSON.stringify(x))}')" tabindex="0">
+    t.map(x=>`<div class="sel-test-item" onclick="_nbConfirmLaunch('${x.id}')" tabindex="0">
       <div class="sel-test-main">
         <div class="sel-test-name">${nbEsc(x.name)}</div>
         ${x.desc?`<div class="sel-test-desc">${nbEsc(x.desc)}</div>`:''}
@@ -287,7 +311,7 @@ window._nbRenderAll=function(){
   }
   const iEl=document.getElementById('selIspringList');
   if(iEl){ iEl.innerHTML=!isp.length?'<div class="sel-empty">Chưa có bài iSpring</div>':
-    isp.map(x=>`<div class="sel-test-item sel-isp-item" onclick="_nbLaunchIspring('${nbEsc(JSON.stringify(x))}')" tabindex="0">
+    isp.map(x=>`<div class="sel-test-item sel-isp-item" onclick="_nbLaunchIspring('${x.id}')" tabindex="0">
       <div class="sel-isp-badge-icon"><svg viewBox="0 0 24 24"><path d="M12 2.5s4.5 2.04 4.5 10.5c0 2.49-1.04 5.57-1.6 7H9.1c-.56-1.43-1.6-4.51-1.6-7C7.5 4.54 12 2.5 12 2.5z"/></svg></div>
       <div class="sel-test-main">
         <div class="sel-test-name">${nbEsc(x.name)}</div>
@@ -299,8 +323,10 @@ window._nbRenderAll=function(){
   }
 };
 
-window._nbConfirmLaunch=window._nbConfirmLaunch||function(tj){
-  const t=JSON.parse(tj);
+// FIX: look up test by id from global map — no JSON in onclick
+window._nbConfirmLaunch=function(testId){
+  const t=window._nbTestMap[testId];
+  if(!t){nbToast('error','Lỗi','Không tìm thấy bài thi');return;}
   if(!t.qCount){nbToast('info','Đề trống','Đề thi chưa có câu hỏi');return;}
   if(typeof Swal==='undefined'){_startQuiz(t,'train');return;}
   Swal.fire({
@@ -323,10 +349,23 @@ window._nbConfirmLaunch=window._nbConfirmLaunch||function(tj){
   }).then(r=>{if(r.isConfirmed)_startQuiz(t,r.value||'train');});
 };
 
+// FIX: defined _nbLaunchIspring — was missing, causing iSpring player to never load
+window._nbLaunchIspring=function(ispId){
+  const x=window._nbIspMap[ispId];
+  if(!x){nbToast('error','Lỗi','Không tìm thấy bài iSpring');return;}
+  if(!x.path){nbToast('error','Lỗi','Bài iSpring chưa có đường dẫn');return;}
+  nb.set('currentIspringName',x.name||'Bài thi iSpring');
+  nb.set('currentIspringId',x.id||'');
+  nb.set('quizMode','ispring');
+  location.href='player.html?path='+encodeURIComponent(x.path);
+};
+
 function _startQuiz(t,mode){
   nb.set('currentTestId',t.id);nb.set('currentTestName',t.name);
   nb.set('currentTestDuration',t.duration||45);nb.setJson('currentTest',t);
-  nb.set('quizMode',mode);location.href='quiz.html';
+  nb.set('quizMode',mode);
+  nb.set('quizTotalScore',t.maxScore||10); // FIX: persist totalScore so result page is in sync
+  location.href='quiz.html';
 }
 
 window._nbSelectLogout=function(){ nbLogout(); };
@@ -399,7 +438,8 @@ window.qzCheckBeforeSubmit=function(){
 
 async function qzSubmit(timeout=false){
   if(_qzDone)return;_qzDone=true;clearInterval(_qzTimer);
-  const ts=parseFloat(_qzQ[0]?.totalScore)||10;
+  // FIX: use stored quizTotalScore (set when test started) for consistency with result page
+  const ts=parseFloat(nb.get('quizTotalScore'))||parseFloat(_qzQ[0]?.totalScore)||10;
   const n=_qzQ.length;
   let correct=0,earned=0;
   _qzQ.forEach((q,i)=>{
@@ -795,9 +835,12 @@ window.nbOpenReview=function(){
 window.nbCloseReview=function(){const m=document.getElementById('resModal');if(m)m.style.display='none';};
 
 // =================================================================
-// PAGE: HISTORY — smooth, no jank
+// PAGE: HISTORY — with pagination, retry, review per item
 // =================================================================
 let _histAll=[];
+const HIST_PAGE_SIZE=10;
+let _histPage=1,_histFiltered=[];
+
 async function nbHistoryInit(){
   if(!nbCurrentUser()){location.href='index.html';return;}
   nbCheckSession();
@@ -807,13 +850,24 @@ async function nbHistoryInit(){
   const listEl=document.getElementById('histList');
   const statsEl=document.getElementById('histStats');
   if(listEl)listEl.innerHTML=`<div class="hist-list-inner">${Array(4).fill('<div class="hist-skeleton"></div>').join('')}</div>`;
+  // Inject search+page controls into filter bar
+  const fb=document.getElementById('histFilterBar')||document.querySelector('.hist-filter-bar');
+  if(fb&&!document.getElementById('histSearch')){
+    const si=document.createElement('input');
+    si.id='histSearch';si.type='text';si.placeholder='🔍 Tìm bài thi...';
+    si.style.cssText='flex:1;padding:7px 14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:99px;color:#f0f4f8;font-size:.78rem;outline:none;min-width:0;';
+    si.addEventListener('input',()=>{_histApplyFilter();});
+    fb.appendChild(si);
+  }
   try{
     const [sysRes,ispRes]=await Promise.all([
       gasGet({action:'getResults',student:name}),
       gasGet({action:'getIspringResults',student:name})
     ]);
     _histAll=[
-      ...(Array.isArray(sysRes)?sysRes:[]).map(r=>({...r,src:'sys'})),
+      ...(Array.isArray(sysRes)?sysRes:[])
+        .filter(r=>!String(r.testName||'').toLowerCase().includes('[ispring]'))
+        .map(r=>({...r,src:'sys'})),
       ...(Array.isArray(ispRes)?ispRes:[]).map(r=>({...r,src:'isp'}))
     ].sort((a,b)=>new Date(b.time||0)-new Date(a.time||0));
 
@@ -830,12 +884,15 @@ async function nbHistoryInit(){
         <div class="hist-stat"><span class="hist-stat-n">${avg}</span><span class="hist-stat-l">Điểm TB</span></div>
         <div class="hist-stat"><span class="hist-stat-n">${best}</span><span class="hist-stat-l">Cao nhất</span></div>`;
     }
-    _histRender(_histAll);
+    _histFiltered=[..._histAll];_histPage=1;
+    _histRender(_histFiltered);
     const filter=document.getElementById('histFilter');
     if(filter){
       window._histFilterFn=f=>{
-        const filtered=f==='all'?_histAll:_histAll.filter(r=>r.src===f);
-        _histRender(filtered);
+        const src=f==='all'?_histAll:_histAll.filter(r=>r.src===f);
+        const q=(document.getElementById('histSearch')?.value||'').toLowerCase();
+        _histFiltered=q?src.filter(r=>(r.testName||'').toLowerCase().includes(q)):src;
+        _histPage=1;_histRender(_histFiltered);
       };
     }
   }catch(e){
@@ -843,14 +900,27 @@ async function nbHistoryInit(){
   }
 }
 
+function _histApplyFilter(){
+  const q=(document.getElementById('histSearch')?.value||'').toLowerCase();
+  const src=document.getElementById('histFilter')?.value||'all';
+  const base=src==='all'?_histAll:_histAll.filter(r=>r.src===src);
+  _histFiltered=q?base.filter(r=>(r.testName||'').toLowerCase().includes(q)):base;
+  _histPage=1;_histRender(_histFiltered);
+}
+
 function _histRender(data){
   const el=document.getElementById('histList');if(!el)return;
   if(!data.length){el.innerHTML='<div class="hist-empty">Không có kết quả nào</div>';return;}
-  el.innerHTML=`<div class="hist-list-inner">${data.map(r=>{
+  const pages=Math.ceil(data.length/HIST_PAGE_SIZE);
+  if(_histPage<1)_histPage=1;if(_histPage>pages)_histPage=pages;
+  const page=data.slice((_histPage-1)*HIST_PAGE_SIZE,_histPage*HIST_PAGE_SIZE);
+
+  el.innerHTML=`<div class="hist-list-inner">${page.map((r,i)=>{
     const sc=parseFloat(r.score||0);
     const col=sc>=8||sc>=80?'var(--accent)':sc>=5||sc>=50?'var(--primary)':'var(--danger)';
     const dt=r.time?new Date(r.time).toLocaleString('vi-VN'):'—';
     const name=(r.testName||r.test_name||'Bài thi').replace(/^\[iSpring\]\s*/i,'');
+    const gIdx=(_histPage-1)*HIST_PAGE_SIZE+i;
     return `<div class="hist-item">
       <div class="hist-score-ring" style="--ring-color:${col}"><span>${sc%1===0?sc:sc.toFixed(1)}</span></div>
       <div class="hist-info">
@@ -861,9 +931,86 @@ function _histRender(data){
           <span>🕐 ${dt}</span>
         </div>
       </div>
+      <div class="hist-item-acts">
+        ${r.src==='sys'?`<button class="hist-act-btn hist-act-retry" title="Làm lại" onclick="window._histRetry(${gIdx})">🔄</button>`:''}
+        ${r.src==='sys'&&r.answers?`<button class="hist-act-btn hist-act-review" title="Xem lại bài" onclick="window._histReview(${gIdx})">👁</button>`:''}
+      </div>
     </div>`;
   }).join('')}</div>`;
+
+  // Pagination controls
+  if(pages>1){
+    const pg=document.createElement('div');
+    pg.className='hist-pagination';
+    pg.innerHTML=`
+      <button class="hist-pg-btn" ${_histPage<=1?'disabled':''} onclick="window._histChangePage(${_histPage-1})">←</button>
+      <span class="hist-pg-info">${_histPage} / ${pages} <small style="color:var(--text3)">(${data.length} bài)</small></span>
+      <button class="hist-pg-btn" ${_histPage>=pages?'disabled':''} onclick="window._histChangePage(${_histPage+1})">→</button>`;
+    el.appendChild(pg);
+  }
 }
+
+window._histChangePage=function(p){_histPage=p;_histRender(_histFiltered);document.getElementById('histList')?.scrollIntoView({behavior:'smooth',block:'start'});};
+
+// Retry: re-launch the test for this result
+window._histRetry=async function(idx){
+  const r=_histFiltered[idx];if(!r)return;
+  const tn=String(r.testName||'').replace(/^\[iSpring\]\s*/i,'');
+  try{
+    const tests=await gasGet({action:'getTests'});
+    const test=(Array.isArray(tests)?tests:[]).find(t=>t.name===tn||t.name===r.testName);
+    if(test){_startQuiz(test,'test');}
+    else nbToast('warning','Không tìm thấy','Bài thi không còn tồn tại');
+  }catch(e){nbToast('error','Lỗi','Không thể tải bài thi');}
+};
+
+// Review: show questions & answers from stored answers JSON
+window._histReview=async function(idx){
+  const r=_histFiltered[idx];if(!r)return;
+  let ansData={};
+  try{ansData=JSON.parse(r.answers||'{}');}catch{}
+  const qs=ansData.answers; // quizAnswers
+  if(!qs||typeof qs!=='object'){
+    // Try to load questions from server
+    nbToast('info','Đang tải...','');
+    const tn=String(r.testName||'').replace(/^\[iSpring\]\s*/i,'');
+    try{
+      const tests=await gasGet({action:'getTests'});
+      const test=(Array.isArray(tests)?tests:[]).find(t=>t.name===tn);
+      if(!test){nbToast('warning','','Không tìm thấy dữ liệu bài làm');return;}
+      const questions=await gasGet({action:'getQuestions',testId:test.id});
+      if(!Array.isArray(questions)||!questions.length){nbToast('warning','','Không có câu hỏi');return;}
+      // Store for review modal and open it
+      nb.setJson('quizQuestions',questions.map(q=>({...q,answer:_pj(q.answer,{}),correct:q.correct||q.correctAnswer||''})));
+      nb.setJson('quizAnswers',{});
+    }catch(e){nbToast('error','Lỗi','');return;}
+  }else{
+    // We have answer data from submission
+    nb.set('lastScore',r.score||0);
+    nb.set('quizTotalScore',10);
+    nb.set('correctCount',r.total||'');
+    // Try to get questions too
+    const tn=String(r.testName||'').replace(/^\[iSpring\]\s*/i,'');
+    try{
+      const tests=await gasGet({action:'getTests'});
+      const test=(Array.isArray(tests)?tests:[]).find(t=>t.name===tn);
+      if(test){
+        const questions=await gasGet({action:'getQuestions',testId:test.id});
+        if(Array.isArray(questions)&&questions.length){
+          nb.setJson('quizQuestions',questions.map(q=>({...q,answer:_pj(q.answer,{}),correct:q.correct||q.correctAnswer||''})));
+          nb.setJson('quizAnswers',qs||{});
+        }
+      }
+    }catch{}
+  }
+  // Open review modal if on result page, else navigate to result
+  if(typeof nbOpenReview==='function'&&document.getElementById('resModal')){
+    nbOpenReview();
+  }else{
+    nb.set('quizMode','train');
+    location.href='result.html';
+  }
+};
 
 // =================================================================
 // PAGE: DASHBOARD — pagination, charts, search/filter for results
@@ -883,18 +1030,25 @@ async function nbDashboardInit(){
   const topU=document.getElementById('dbTopUser');
   if(topU)topU.textContent=user?.name||user?.username||'';
   document.querySelectorAll('.super-only').forEach(el=>el.style.display=nbIsSuperAdmin()?'':'none');
-  await _dbLoadAll();
+  // FIX: only load stats + pending on init (fast). Other tabs load lazily on click.
+  window._dbTabLoaded={overview:true,pending:true};
+  await Promise.all([_dbLoadStats(),_dbLoadPending()]);
   _dbPollId=setInterval(_dbAutoRefresh,10000);
 }
 
 async function _dbAutoRefresh(){
   nbCheckSession();
-  await Promise.all([_dbLoadStats(),_dbLoadResults()]);
-  const pend=await gasGet({action:'getPendingUsers'});
-  const b=document.getElementById('dbPendingBadge');
-  if(b&&Array.isArray(pend))b.textContent=pend.length||'';
+  await _dbLoadStats();
+  // Only refresh currently visible tab data
+  const activeTab=document.querySelector('.db-tab-pane.active')?.dataset?.tab||'overview';
+  if(activeTab==='results')  _dbLoadResults();
+  if(activeTab==='pending')  _dbLoadPending();
+  if(activeTab==='battle')   _dbLoadBattleRooms();
+  if(activeTab==='tests')    _dbLoadTests();
+  if(activeTab==='ispring')  _dbLoadIspring();
 }
 
+// Full reload - used when forced (e.g. after creating a test)
 async function _dbLoadAll(){
   await Promise.all([
     _dbLoadStats(),_dbLoadTests(),_dbLoadPending(),_dbLoadResults(),
@@ -973,8 +1127,11 @@ async function _dbLoadResults(){
       gasGet({action:'getResults'}),
       gasGet({action:'getIspringResults'})
     ]);
+    // FIX: sysData already contains iSpring results (same Results sheet), deduplicate by excluding [iSpring] tagged entries from sysData
     _dbResultAll=[
-      ...(Array.isArray(sysData)?sysData:[]).map(r=>({...r,src:'sys'})),
+      ...(Array.isArray(sysData)?sysData:[])
+        .filter(r=>!String(r.testName||'').toLowerCase().includes('[ispring]'))
+        .map(r=>({...r,src:'sys'})),
       ...(Array.isArray(ispData)?ispData:[]).map(r=>({...r,src:'isp'}))
     ].sort((a,b)=>new Date(b.time||0)-new Date(a.time||0));
     _dbResultFiltered=[..._dbResultAll];
@@ -1338,9 +1495,18 @@ window.dbCancelRoom=async function(id){
   await gasPost({action:'updateBattleRoom',id,status:'cancelled'});setTimeout(_dbLoadBattleRooms,800);
 };
 
-window.dbSwitchTab=function(tab){
-  document.querySelectorAll('.db-tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+window.dbSwitchTab=async function(tab){
+  document.querySelectorAll('.db-nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   document.querySelectorAll('.db-tab-pane').forEach(p=>p.classList.toggle('active',p.dataset.tab===tab));
+  if(!window._dbTabLoaded)window._dbTabLoaded={};
+  if(window._dbTabLoaded[tab])return; // already loaded once
+  window._dbTabLoaded[tab]=true;
+  if(tab==='tests')    await _dbLoadTests();
+  if(tab==='ispring')  await _dbLoadIspring();
+  if(tab==='results')  await _dbLoadResults();
+  if(tab==='battle')   await _dbLoadBattleRooms();
+  if(tab==='pending')  await _dbLoadPending();
+  if(tab==='admins'&&nbIsSuperAdmin()) await _dbLoadAdmins();
 };
 
 // =================================================================
@@ -1468,6 +1634,15 @@ window.fetchQuestionStats=async function(testId){
 window.fillEditData=function(d){
   document.getElementById('qType').value=d.type||'single';
   document.getElementById('qText').value=d.question||'';
+  // FIX: restore time, score, scoreMode from edit data
+  if(document.getElementById('testTime'))
+    document.getElementById('testTime').value=d.testTime||d.testtime||45;
+  if(document.getElementById('totalScore'))
+    document.getElementById('totalScore').value=d.totalScore||d.totalscore||10;
+  if(document.getElementById('scoreMode')&&(d.scoreMode||d.scoremode))
+    document.getElementById('scoreMode').value=d.scoreMode||d.scoremode||'equal';
+  if(typeof toggleScoreUI==='function')toggleScoreUI();
+  if(typeof calculatePreviewPoints==='function')calculatePreviewPoints();
   if(d.image&&d.image.length>5){
     document.getElementById('qUrl').value=d.image;
     const img=document.getElementById('qPrevImg'),box=document.getElementById('qPrevBox');
@@ -1510,10 +1685,22 @@ function _plInit(){
   const battle=params.get('battle');
   document.getElementById('pl-name').textContent=nb.get('currentIspringName')||'iSpring';
   document.getElementById('pl-student').textContent=nbStudentName();
+  // FIX: populate the loading screen name
+  const loadName=document.getElementById('pl-load-name');
+  if(loadName)loadName.textContent=nb.get('currentIspringName')||'';
   if(!path){document.getElementById('pl-error').style.display='flex';return;}
   const frame=document.getElementById('pl-frame');
   document.getElementById('pl-loading').style.display='flex';
+  // Simulated progress bar while iframe loads
+  const pgf=document.getElementById('pl-pgf');
+  let _pct=0;
+  const _progTimer=setInterval(()=>{
+    _pct=Math.min(_pct+Math.random()*4,88);
+    if(pgf)pgf.style.width=_pct+'%';
+  },200);
   frame.addEventListener('load',()=>{
+    clearInterval(_progTimer);
+    if(pgf){pgf.style.width='100%';setTimeout(()=>{pgf.style.width='0%';pgf.style.transition='none';},600);}
     document.getElementById('pl-loading').style.display='none';
     setTimeout(()=>{
       document.getElementById('pl-exit').classList.remove('locked');
@@ -1536,6 +1723,7 @@ function _plInit(){
 
     nb.set('lastScore',sc);nb.set('quizMode','ispring');nb.set('quizTotalScore','100');
     nb.set('ispringStatus',st);nb.set('ispCorrect',cor);nb.set('ispTotal',tot);
+    nb.set('correctCount',cor>0&&tot>0?`${cor}/${tot}`:`${sc}/100`);
     nb.set('currentTestName',tn);nb.set('ispSavedByPlayer','1');
 
     // Show result panel
@@ -1547,8 +1735,16 @@ function _plInit(){
       const _s=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
       _s('pl-score-num',sc);_s('pl-r-name',nbStudentName());
       _s('pl-r-test',tn.replace(/^\[iSpring\]\s*/i,''));
-      _s('pl-r-status',{passed:'✓ Đạt',completed:'✓ Hoàn thành',failed:'✗ Chưa đạt',incomplete:'⚠ Chưa xong'}[st]||'Hoàn thành');
+      const stLabel={passed:'✓ Đạt',completed:'✓ Hoàn thành',failed:'✗ Chưa đạt',incomplete:'⚠ Chưa xong'}[st]||'Hoàn thành';
+      _s('pl-r-status',stLabel);
+      const statusEl=document.getElementById('pl-r-status');
+      if(statusEl)statusEl.className=`pl-info-val ${['passed','completed'].includes(st)?'ok':'err'}`;
     }
+    // Update sync status
+    const syncEl=document.getElementById('pl-sync');
+    const syncTxt=document.getElementById('pl-sync-text');
+    if(syncEl)syncEl.className='saving';
+    if(syncTxt)syncTxt.textContent='Đang lưu kết quả...';
 
     // Save to GAS once
     try{
@@ -1558,7 +1754,12 @@ function _plInit(){
         answers:JSON.stringify({status:st,source:'player',score:sc,correct:cor,total:tot,
           student:nbStudentName(),school:nbSchool(),class:nbClass(),
           timestamp:new Date().toISOString()})});
-    }catch(e){}
+      if(syncTxt)syncTxt.textContent='✓ Đã lưu kết quả thành công';
+      if(syncEl){syncEl.className='saved';syncEl.style.color='var(--accent)';}
+    }catch(e){
+      if(syncTxt)syncTxt.textContent='⚠ Lưu thất bại - kết quả cục bộ';
+      if(syncEl)syncEl.style.color='var(--warning)';
+    }
 
     if(battle){
       try{await gasPost({action:'submitBattleResult',roomId:battle,studentName:nbStudentName(),school:nbSchool(),class:nbClass(),score:sc,scorePct:sc,correct:cor,total:tot,timeSec:0});}catch(e){}
@@ -1575,10 +1776,34 @@ function _plInit(){
     }
   },{passive:true});
 
-  // Manual submit button
-  window._plManualScore=function(){
-    if(!_resultHandled){
-      _handleIspringResult(0,'completed',0,0);
+  // Manual submit button — show score input dialog if auto score not received
+  window._plManualScore=async function(){
+    if(_resultHandled){nbToast('info','Đã lưu','Kết quả đã được lưu');return;}
+    // Ask user to enter the score they see in iSpring
+    if(typeof Swal!=='undefined'){
+      const {value,isConfirmed}=await Swal.fire({
+        title:'Nộp kết quả',
+        html:`<div style="font-size:.88rem;color:#94a3b8;margin-bottom:12px">Nhập điểm hiển thị trong bài thi (0–100)</div>
+              <input id="swal-isp-score" class="swal2-input" type="number" min="0" max="100" placeholder="Điểm (0-100)" style="text-align:center;font-size:1.2rem;font-weight:700">
+              <select id="swal-isp-status" class="swal2-input" style="height:42px">
+                <option value="completed">✓ Hoàn thành</option>
+                <option value="passed">✓ Đạt yêu cầu</option>
+                <option value="failed">✗ Chưa đạt</option>
+                <option value="incomplete">⚠ Chưa hoàn tất</option>
+              </select>`,
+        background:'rgba(8,14,26,.98)',color:'#f1f5f9',showCancelButton:true,
+        confirmButtonText:'📤 Nộp kết quả',cancelButtonText:'Tiếp tục làm',
+        customClass:{popup:'nb-swal-popup'},
+        preConfirm:()=>{
+          const sc=parseInt(document.getElementById('swal-isp-score').value)||0;
+          const st=document.getElementById('swal-isp-status').value;
+          return {sc,st};
+        }
+      });
+      if(isConfirmed&&value){_handleIspringResult(value.sc,value.st,0,0);}
+    }else{
+      const sc=parseInt(prompt('Nhập điểm (0-100):')||'0')||0;
+      _handleIspringResult(sc,'completed',0,0);
     }
   };
   window._plExit=()=>{document.getElementById('pl-dlg').style.display='flex';};
@@ -1602,37 +1827,80 @@ async function nbBattleInit(){
   setInterval(_battleLoad,15000);
 }
 
+// Store rooms globally for safe lookup (avoids JSON-in-onclick escaping bugs)
+window._nbBattleRooms={};
+
 async function _battleLoad(){
-  const [rooms,leaderboard]=await Promise.all([gasGet({action:'getBattleRooms'}),gasGet({action:'getLeaderboard'})]);
-  const active=(Array.isArray(rooms)?rooms:[]).filter(r=>['waiting','active'].includes(r.status));
+  const [rooms,leaderboard]=await Promise.all([
+    gasGet({action:'getBattleRooms'}),
+    gasGet({action:'getLeaderboard'})
+  ]);
+  const allRooms=Array.isArray(rooms)?rooms:[];
+  // Build room lookup map
+  allRooms.forEach(r=>{window._nbBattleRooms[r.id]=r;});
+  const active=allRooms.filter(r=>['waiting','active'].includes(r.status));
   const el=document.getElementById('battleRooms');
   if(el){
-    if(!active.length){el.innerHTML='<div class="battle-empty"><div class="battle-empty-icon">⚔️</div><p>Chưa có phòng thi nào đang hoạt động</p><small>Liên hệ admin để mở phòng thi đấu</small></div>';}
-    else el.innerHTML=active.map(r=>`
-      <div class="battle-card">
-        <div class="battle-card-header"><span class="battle-room-code">${r.roomCode}</span><span class="battle-status ${r.status}">${r.status==='active'?'🔴 ĐANG THI':'⏳ Chờ bắt đầu'}</span></div>
-        <div class="battle-card-name">${nbEsc(r.name||'')}</div>
-        <div class="battle-card-meta"><span>⏱ ${r.duration}p</span><span>🎯 Đạt ${r.passScore}%</span><span>⭐ +${r.rpWin}/-${Math.abs(r.rpLoss||10)} RP</span></div>
-        <div class="battle-card-actions">
-          ${r.status==='active'
-            ?`<button class="battle-btn-join" onclick="nbBattleJoinStart('${r.id}','${nbEsc(JSON.stringify(r))}')">⚔️ BẮT ĐẦU THI</button>`
-            :`<button class="battle-btn-join waiting" onclick="nbBattleJoin('${r.id}')">+ Đăng ký tham gia</button>`}
-        </div>
-      </div>`).join('');
+    if(!active.length){
+      el.innerHTML='<div class="battle-empty"><div class="battle-empty-icon">⚔️</div><p>Chưa có phòng thi nào đang hoạt động</p><small>Liên hệ admin để mở phòng thi đấu</small></div>';
+    }else{
+      el.innerHTML=active.map(r=>`
+        <div class="battle-card">
+          <div class="battle-card-header">
+            <span class="battle-room-code">${r.roomCode}</span>
+            <span class="battle-status ${r.status}">${r.status==='active'?'🔴 ĐANG THI':'⏳ Chờ bắt đầu'}</span>
+          </div>
+          <div class="battle-card-name">${nbEsc(r.name||'')}</div>
+          <div class="battle-card-meta">
+            <span>⏱ ${r.duration}p</span>
+            <span>🎯 Đạt ${r.passScore}%</span>
+            <span>⭐ +${r.rpWin}/-${Math.abs(r.rpLoss||10)} RP</span>
+          </div>
+          <div class="battle-card-actions">
+            ${r.status==='active'
+              ?`<button class="battle-btn-join" onclick="nbBattleJoinStart('${r.id}')">⚔️ BẮT ĐẦU THI</button>`
+              :`<button class="battle-btn-join waiting" onclick="nbBattleJoin('${r.id}')">+ Đăng ký tham gia</button>`}
+          </div>
+        </div>`).join('');
+    }
   }
+
+  // Leaderboard
   const lb=document.getElementById('battleLeaderboard');
-  if(lb&&Array.isArray(leaderboard)&&leaderboard.length){
-    lb.innerHTML=`<div class="lb-title">🏆 Bảng Xếp Hạng</div>`+
-      leaderboard.slice(0,20).map((p,i)=>{
+  if(lb){
+    const lba=Array.isArray(leaderboard)?leaderboard:[];
+    if(!lba.length){
+      lb.innerHTML='<div class="battle-lb-empty">Chưa có dữ liệu xếp hạng</div>';
+    }else{
+      const myName=nbStudentName().trim().toLowerCase();
+      lb.innerHTML=lba.slice(0,20).map((p,i)=>{
         const t=NB_TIERS.find(x=>x.name===p.tier?.name)||nbGetTier(p.rp||0);
-        return `<div class="lb-row ${i<3?'lb-top':''}">
+        const isMe=myName&&(p.studentName||'').trim().toLowerCase()===myName;
+        return `<div class="lb-row ${i<3?'lb-top':''} ${isMe?'lb-me':''}">
           <span class="lb-rank ${['gold','silver','bronze'][i]||''}">${i+1}</span>
           <span class="lb-tier" style="color:${t.color}">${t.icon}</span>
-          <span class="lb-name">${nbEsc(p.studentName||'')}</span>
-          <span class="lb-school">${nbEsc((p.school||'').slice(0,15))}</span>
+          <span class="lb-name">${nbEsc(p.studentName||'')}${isMe?' <span class="lb-you">Bạn</span>':''}</span>
+          <span class="lb-school">${nbEsc((p.school||'').slice(0,14))}</span>
           <span class="lb-rp" style="color:${t.color}">${p.rp||0} RP</span>
         </div>`;
       }).join('');
+
+      // My stats panel
+      const myStats=lba.find(p=>(p.studentName||'').trim().toLowerCase()===myName);
+      const msEl=document.getElementById('battleMyStats');
+      if(msEl&&myStats){
+        const t=NB_TIERS.find(x=>x.name===myStats.tier?.name)||nbGetTier(myStats.rp||0);
+        msEl.style.display='';
+        const tierEl=document.getElementById('battleMyTier');
+        if(tierEl)tierEl.innerHTML=`<span style="color:${t.color};font-size:1.4rem">${t.icon}</span> <span style="color:${t.color};font-weight:800">${t.name}</span>`;
+        const infoEl=document.getElementById('battleMyInfo');
+        if(infoEl)infoEl.innerHTML=`
+          <div class="btl-my-row"><span>RP</span><b style="color:${t.color}">${myStats.rp||0}</b></div>
+          <div class="btl-my-row"><span>Trận</span><b>${myStats.matches||0}</b></div>
+          <div class="btl-my-row"><span>Thắng</span><b style="color:var(--accent)">${myStats.wins||0}</b></div>
+          <div class="btl-my-row"><span>Hạng</span><b>#${myStats.rank||'?'}</b></div>`;
+      }
+    }
   }
 }
 
@@ -1641,18 +1909,23 @@ window.nbBattleJoin=async function(roomId){
   nbToast('success','Đã đăng ký!','Chờ admin bắt đầu phòng thi');_battleLoad();
 };
 
-window.nbBattleJoinStart=async function(roomId,roomJson){
-  const room=JSON.parse(roomJson);if(!room)return;
+window.nbBattleJoinStart=async function(roomId){
+  const room=window._nbBattleRooms[roomId];
+  if(!room){nbToast('error','Lỗi','Không tìm thấy phòng thi');return;}
   nb.set('battleRoomId',roomId);
   await gasPost({action:'joinBattleRoom',roomId,studentName:nbStudentName(),school:nbSchool(),class:nbClass()});
   if(room.sourceType==='ispring'&&room.ispringId){
     const isps=await gasGet({action:'getIspring'});
     const isp=(Array.isArray(isps)?isps:[]).find(x=>x.id===room.ispringId);
     if(isp){nb.set('currentIspringName',isp.name);location.href=`player.html?path=${encodeURIComponent(isp.path)}&battle=${roomId}`;}
+    else nbToast('error','Lỗi','Không tìm thấy bài iSpring');
   }else if(room.testId){
     const tests=await gasGet({action:'getTests'});
     const test=(Array.isArray(tests)?tests:[]).find(x=>x.id===room.testId);
-    if(test){nb.set('currentTestId',test.id);nb.set('currentTestName',test.name);nb.set('currentTestDuration',room.duration||test.duration||45);nb.setJson('currentTest',test);nb.set('quizMode','test');location.href='quiz.html';}
+    if(test){nb.set('currentTestId',test.id);nb.set('currentTestName',test.name);nb.set('currentTestDuration',room.duration||test.duration||45);nb.setJson('currentTest',test);nb.set('quizMode','test');nb.set('quizTotalScore',test.maxScore||10);location.href='quiz.html';}
+    else nbToast('error','Lỗi','Không tìm thấy bài thi');
+  }else{
+    nbToast('error','Lỗi','Phòng chưa cấu hình bài thi');
   }
 };
 
